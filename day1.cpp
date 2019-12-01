@@ -3,28 +3,30 @@
 #include <string>
 #include <math.h>
 
-long long int part1(std::ifstream& file1);
-long long int part2(std::ifstream& file2);
+long long int part1(std::ifstream& file);
+long long int part2(std::ifstream& file);
 
 int main() {
 
-    std::ifstream file1("./day1.txt");
-    std::ifstream file2("./day1_part2.txt");
+    std::ifstream file("./day1.txt");
 
-    std::cout << "Fuel for part 1 = " << part1(file1) << std::endl;
-    std::cout << "Fuel for part 2 = " << part2(file2) << std::endl;
+    std::cout << "Fuel for part 1 = " << part1(file) << std::endl;
+
+    file.seekg(0, file.beg);
+
+    std::cout << "Fuel for part 2 = " << part2(file) << std::endl;
 
 }
 
-long long int part1(std::ifstream& file1) {
+long long int part1(std::ifstream& file) {
     std::string line;
     long long int total = 0;
 
-    if(file1.is_open()) {
+    if(file.is_open()) {
 
-        while (!file1.eof())
+        while (!file.eof())
         {
-            getline(file1, line);
+            getline(file, line);
             total +=  floor(std::stoi(line)/3)-2;
         }
     }
@@ -32,16 +34,16 @@ long long int part1(std::ifstream& file1) {
     return total;
 }
 
-long long int part2(std::ifstream& file2) {
+long long int part2(std::ifstream& file) {
     std::string line;
     long long int total = 0;
     long long int tmp;
 
-    if(file2.is_open()) {
+    if(file.is_open()) {
 
-        while (!file2.eof())
+        while (!file.eof())
         {
-            getline(file2, line);
+            getline(file, line);
             tmp = floor(std::stoi(line)/3)-2;
 
             while(tmp > 0) {
