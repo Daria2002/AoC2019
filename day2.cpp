@@ -4,6 +4,8 @@
 #include <math.h>
 #include <vector>
 #include <streambuf>
+#include <functional>
+#include <map>
 
 #define HALT 99
 #define ADD 1
@@ -24,18 +26,13 @@ const std::vector<int> explode(const std::string& s, const char& c)
 	return v;
 }
 
-void calculateNumbers(std::vector<int>& numbers)
+void calculateNumbers(std::vector<int>& numbers, std::map<int, std::function<int(int, int)>>& functions)
 {
-	for(int i = 0; i < numbers.size(); i++) {
-        if(numbers[i] == 1) {
-            numbers[numbers[i+3]] = numbers[numbers[i+1]] + numbers[numbers[i+2]];
-            i += 3;
-        } else if(numbers[i] == 2) {
-            numbers[numbers[i+3]] = numbers[numbers[i+1]] * numbers[numbers[i+2]];
-            i += 3;
-        } else if(numbers[i] == 99) {
+	for(int i = 0; i < numbers.size(); i = i+4) {
+        if(numbers[i] == 99) {
             break;
         }
+        numbers[numbers[i+3]] = functions[numbers[i]](numbers[numbers[i+1]], numbers[numbers[i+2]]);
     }
 }
 
@@ -48,12 +45,15 @@ int main() {
 
     std::vector<int> numbers{explode(temp, ',')};
 
+    std::map<int, std::function<int(int, int)>> functions;
     
+    functions.emplace(ADD, [](int x, int y)->int{return x+y;});
+    functions.emplace(MULTIPLY, [](int x, int y)->int{return x*y;});
 
     numbers[1] = 12;
     numbers[2] = 2;
 
-    calculateNumbers(numbers);
+    calculateNumbers(numbers, functions);
 
     std::cout << numbers[0] << std::endl;
  
@@ -63,7 +63,7 @@ int main() {
             numbers[1] = i;
             numbers[2] = j;
 
-            calculateNumbers(numbers);
+            calculateNumbers(numbers, functions);
 
             if(numbers[0] == 19690720) {
                 std::cout << 100 * i + j << std::endl;
