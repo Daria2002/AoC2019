@@ -5,6 +5,10 @@
 #include <vector>
 #include <streambuf>
 
+#define HALT 99
+#define ADD 1
+#define MULTIPLY 2
+
 const std::vector<int> explode(const std::string& s, const char& c)
 {
 	std::string buff{""};
@@ -43,6 +47,8 @@ int main() {
     std::getline(file, temp);
 
     std::vector<int> numbers{explode(temp, ',')};
+
+    
 
     numbers[1] = 12;
     numbers[2] = 2;
