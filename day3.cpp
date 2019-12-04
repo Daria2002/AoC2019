@@ -82,10 +82,24 @@ private:
             pairs_tmp = functions[instructions[i].at(0)](std::stoi(instructions[i].substr(1, instructions[i].size()-1)), pairs_tmp);
         }
 
-
         return pairs_tmp;
     }
 };
+
+int get_min(std::vector<std::pair<int, int>> first, std::vector<std::pair<int, int>> second) {
+    int min = pow(10, 5);
+
+    for(int i = 0; i < first.size(); i++) {
+        if(std::find(second.begin(), second.end(), first[i]) != second.end()) {
+            if((std::abs(first[i].first) + std::abs(first[i].second)) > 0 && (std::abs(first[i].first) + std::abs(first[i].second)) < min) {
+                min = std::abs(first[i].first) + std::abs(first[i].second);
+                break;
+            }
+        }
+    }
+
+    return min;
+}
 
 int main() {
     std::ifstream file("./day3.txt");
@@ -101,17 +115,11 @@ int main() {
     std::vector<std::pair<int, int>> pairs1 = l1.get_pairs();
     std::vector<std::pair<int, int>> pairs2 = l2.get_pairs();
 
-    int min = pow(10, 5);
+    sort(pairs1.begin(), pairs1.end());
+    sort(pairs2.begin(), pairs2.end());
 
-    for(int i = 0; i < pairs1.size(); i++) {
-        if(std::find(pairs2.begin(), pairs2.end(), pairs1[i]) != pairs2.end()) {
-            if((pairs1[i].first + pairs1[i].second) > 0 && (pairs1[i].first + pairs1[i].second) < min) {
-                min = std::abs(pairs1[i].first) + std::abs(pairs1[i].second);
-            }
-        }
-    }
-    
+    int min = pairs1.size() > pairs2.size() ? get_min(pairs1, pairs2) : get_min(pairs2, pairs1);
     std::cout << min << std::endl;
-
+    
     return 0;
 }
