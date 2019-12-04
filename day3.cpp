@@ -22,34 +22,34 @@ class Line
 public:
     Line(std::string str) {
         line = str;
-        functions.emplace(LEFT, [&](int val, std::vector<std::pair<int, int>> pairs_tmp){
+        functions.emplace(LEFT, [&](int val, std::vector<std::pair<int, int>>& pairs_tmp){
             for(int i = 0; i < val; i++) {
                 current_x -= 1;
-                pairs_tmp.push_back(std::make_pair(current_x, current_y));
-            }
-            return pairs_tmp;
-            });
-        functions.emplace(RIGHT, [&](int val, std::vector<std::pair<int, int>> pairs_tmp){
+                std::pair<int, int> tmp_pair = std::make_pair(current_x, current_y);
+                pairs_tmp.push_back(tmp_pair);
+                steps_map[tmp_pair] = steps++;
+            }});
+        functions.emplace(RIGHT, [&](int val, std::vector<std::pair<int, int>>& pairs_tmp){
             for(int i = 0; i < val; i++) {
                 current_x += 1;
-                pairs_tmp.push_back(std::make_pair(current_x, current_y));
-            }
-            return pairs_tmp;
-            });
-        functions.emplace(UP, [&](int val, std::vector<std::pair<int, int>> pairs_tmp){
+                std::pair<int, int> tmp_pair = std::make_pair(current_x, current_y);
+                pairs_tmp.push_back(tmp_pair);
+                steps_map[tmp_pair] = steps++;
+            }});
+        functions.emplace(UP, [&](int val, std::vector<std::pair<int, int>>& pairs_tmp){
             for(int i = 0; i < val; i++) {
                 current_y += 1;
-                pairs_tmp.push_back(std::make_pair(current_x, current_y));
-            }
-            return pairs_tmp;
-            });
-        functions.emplace(DOWN, [&](int val, std::vector<std::pair<int, int>> pairs_tmp){
+                std::pair<int, int> tmp_pair = std::make_pair(current_x, current_y);
+                pairs_tmp.push_back(tmp_pair);
+                steps_map[tmp_pair] = steps++;
+            }});
+        functions.emplace(DOWN, [&](int val, std::vector<std::pair<int, int>>& pairs_tmp){
             for(int i = 0; i < val; i++) {
                 current_y -= 1;
-                pairs_tmp.push_back(std::make_pair(current_x, current_y));
-            }
-            return pairs_tmp;
-            });
+                std::pair<int, int> tmp_pair = std::make_pair(current_x, current_y);
+                pairs_tmp.push_back(tmp_pair);
+                steps_map[tmp_pair] = steps++;
+            }});
         pairs = make_pairs(split_line(line));
     }
 
@@ -57,12 +57,18 @@ public:
         return pairs;
     }
 
+    std::map<std::pair<int, int>, int> get_steps() {
+        return steps_map;
+    }
+
 private:
     std::string line;
     std::vector<std::pair<int, int>> pairs;
     int current_x = 0;
     int current_y = 0;
-    std::map<char, std::function<std::vector<std::pair<int, int>>(int, std::vector<std::pair<int, int>>)>> functions;
+    int steps = 1;
+    std::map<std::pair<int, int>, int> steps_map;
+    std::map<char, std::function<void(int, std::vector<std::pair<int, int>>&)>> functions;
 
     std::vector<std::string> split_line(std::string str) {
         std::stringstream ss(str);
@@ -79,22 +85,36 @@ private:
         std::vector<std::pair<int, int>> pairs_tmp;
 
         for(int i = 0; i < instructions.size(); i++) {
-            pairs_tmp = functions[instructions[i].at(0)](std::stoi(instructions[i].substr(1, instructions[i].size()-1)), pairs_tmp);
+            functions[instructions[i].at(0)](std::stoi(instructions[i].substr(1, instructions[i].size()-1)), pairs_tmp);
         }
 
         return pairs_tmp;
     }
 };
 
-int get_min(std::vector<std::pair<int, int>> first, std::vector<std::pair<int, int>> second) {
+int get_min(std::vector<std::pair<int, int>> first, std::vector<std::pair<int, int>> second, std::vector<std::pair<int, int>>& intersections) {
     int min = pow(10, 5);
 
     for(int i = 0; i < first.size(); i++) {
         if(std::find(second.begin(), second.end(), first[i]) != second.end()) {
+            intersections.push_back(first[i]);
             if((std::abs(first[i].first) + std::abs(first[i].second)) > 0 && (std::abs(first[i].first) + std::abs(first[i].second)) < min) {
                 min = std::abs(first[i].first) + std::abs(first[i].second);
-                break;
             }
+        }
+    }
+
+    return min;
+}
+
+int get_min_steps(std::map<std::pair<int, int>, int> steps_map1, 
+std::map<std::pair<int, int>, int> steps_map2, 
+std::vector<std::pair<int, int>> intersections) {
+    int min = pow(10, 5);
+
+    for(int i = 0; i < intersections.size(); i++) {
+        if((steps_map1[intersections[i]] + steps_map2[intersections[i]]) < min) {
+            min = steps_map1[intersections[i]] + steps_map2[intersections[i]];
         }
     }
 
@@ -115,11 +135,16 @@ int main() {
     std::vector<std::pair<int, int>> pairs1 = l1.get_pairs();
     std::vector<std::pair<int, int>> pairs2 = l2.get_pairs();
 
-    sort(pairs1.begin(), pairs1.end());
-    sort(pairs2.begin(), pairs2.end());
+    std::vector<std::pair<int, int>> intersections;
 
-    int min = pairs1.size() > pairs2.size() ? get_min(pairs1, pairs2) : get_min(pairs2, pairs1);
+    int min = pairs1.size() < pairs2.size() ? get_min(pairs1, pairs2, intersections) : get_min(pairs2, pairs1, intersections);
     std::cout << min << std::endl;
     
+    std::map<std::pair<int, int>, int> steps_map1 = l1.get_steps();
+    std::map<std::pair<int, int>, int> steps_map2 = l2.get_steps();
+
+    min = get_min_steps(steps_map1, steps_map2, intersections);
+    std::cout << min << std::endl;
+
     return 0;
 }
