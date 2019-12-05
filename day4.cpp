@@ -1,13 +1,18 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include <map>
+#include <functional>
 
 #define LOWER 248345
 #define HIGHER 746315
 
 #define ASCII_ZERO 48
 
-int part1();
+#define PART1 1
+#define PART2 2
+
+int part(int, std::map<int, std::function<bool(std::string, int, int)>>);
 
 /*
 It is a six-digit number.
@@ -17,12 +22,18 @@ Going from left to right, the digits never decrease; they only ever increase or 
 */
 int main() {
 
-    std::cout << "part1 = " << part1() << std::endl;
-    
+    std::map<int, std::function<bool(std::string, int, int)>> functions;
+    functions.emplace(PART1, [=](std::string num, int j, int digit) { return true;});
 
+    functions.emplace(PART2, [=](std::string num, int j, int digit) {
+        if((j == 1 || (j > 1 && num[j-2]-ASCII_ZERO != digit)) && (j == 5 || (j < 5 && (num[j+1]-ASCII_ZERO != digit)))) {
+            return true;}});
+
+    std::cout << "part1 = " << part(1, functions) << std::endl;
+    std::cout << "part2 = " << part(2, functions) << std::endl;
 }
 
-int part1() {
+int part(int part_number, std::map<int, std::function<bool(std::string, int, int)>> functions) {
     int counter = 0;
     int tmp = 0;
     int previous = 0;
@@ -45,7 +56,7 @@ int part1() {
                 ascending = false;
                 break;
             }
-            if(last_digit == digit) {
+            if(last_digit == digit && functions[part_number](num, j, digit) == true) {
                 duplicates_exists = true;
             }
             last_digit = digit;
