@@ -92,12 +92,13 @@ private:
     }
 };
 
-int get_min(std::vector<std::pair<int, int>> first, std::vector<std::pair<int, int>> second, std::vector<std::pair<int, int>>& intersections) {
+int get_min(std::vector<std::pair<int, int>> first, std::vector<std::pair<int, int>> second, std::map<std::pair<int, int>, int>& intersections, 
+std::map<std::pair<int, int>, int> steps1, std::map<std::pair<int, int>, int> steps2) {
     int min = pow(10, 5);
 
     for(int i = 0; i < first.size(); i++) {
         if(std::find(second.begin(), second.end(), first[i]) != second.end()) {
-            intersections.push_back(first[i]);
+            intersections[first[i]] = steps1[first[i]] + steps2[first[i]];
             if((std::abs(first[i].first) + std::abs(first[i].second)) > 0 && (std::abs(first[i].first) + std::abs(first[i].second)) < min) {
                 min = std::abs(first[i].first) + std::abs(first[i].second);
             }
@@ -107,14 +108,14 @@ int get_min(std::vector<std::pair<int, int>> first, std::vector<std::pair<int, i
     return min;
 }
 
-int get_min_steps(std::map<std::pair<int, int>, int> steps_map1, 
-std::map<std::pair<int, int>, int> steps_map2, 
-std::vector<std::pair<int, int>> intersections) {
+int get_min_steps( std::map<std::pair<int, int>, int> intersections) {
     int min = pow(10, 5);
 
-    for(int i = 0; i < intersections.size(); i++) {
-        if((steps_map1[intersections[i]] + steps_map2[intersections[i]]) < min) {
-            min = steps_map1[intersections[i]] + steps_map2[intersections[i]];
+    for(std::map<std::pair<int, int>,int>::iterator iter = intersections.begin(); iter != intersections.end(); ++iter)
+    {
+        int v = iter->second;
+        if(v < min) {
+            min = v;
         }
     }
 
@@ -134,16 +135,16 @@ int main() {
 
     std::vector<std::pair<int, int>> pairs1 = l1.get_pairs();
     std::vector<std::pair<int, int>> pairs2 = l2.get_pairs();
-
-    std::vector<std::pair<int, int>> intersections;
-
-    int min = pairs1.size() < pairs2.size() ? get_min(pairs1, pairs2, intersections) : get_min(pairs2, pairs1, intersections);
-    std::cout << min << std::endl;
     
     std::map<std::pair<int, int>, int> steps_map1 = l1.get_steps();
     std::map<std::pair<int, int>, int> steps_map2 = l2.get_steps();
 
-    min = get_min_steps(steps_map1, steps_map2, intersections);
+    std::map<std::pair<int, int>, int> intersections;
+
+    int min = get_min(pairs1, pairs2, intersections, steps_map1, steps_map2);
+    std::cout << min << std::endl;
+
+    min = get_min_steps(intersections);
     std::cout << min << std::endl;
 
     return 0;
