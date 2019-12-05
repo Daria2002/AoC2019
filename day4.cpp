@@ -20,6 +20,7 @@ int main() {
     for(int i = LOWER; i <= HIGHER; i++) {
 
         for(int j = 1; j <= 6; j++) {
+            
             tmp = pow(10, i);
             if(previous < i/tmp) {
 
