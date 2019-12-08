@@ -36,49 +36,56 @@ int main() {
     }
     
     int num_of_params = 1;
-    std::array<int, 3> indices = {0};
+    std::array<int, 3> indices_mode = {0};
     int i;
 
     std::map<int, std::function<void()>> functions;
     functions.emplace(1, [&]() {
         num_of_params = 3;
-        elements[indices[2]] = elements[indices[0]] + elements[indices[1]];
+        std::array<int, 3> params;
+        for(int j = 0; j < num_of_params; j++) {
+            params[j] = indices_mode[j] == 0 ? elements[i+j+1] : i+j+1;
+        }
+        elements[params[2]] = elements[params[0]] + elements[params[1]];
     });
 
     functions.emplace(2, [&]() {
         num_of_params = 3;
-        elements[indices[2]] = elements[indices[0]] * elements[indices[1]];
+        std::array<int, 3> params;
+        for(int j = 0; j < num_of_params; j++) {
+            params[j] = indices_mode[j] == 0 ? elements[i+j+1] : i+j+1;
+        }
+        elements[params[2]] = elements[params[0]] * elements[params[1]];    
     });
 
     functions.emplace(3, [&]() {
         num_of_params = 1;
-        elements[elements[i+1]] = input;
+        int ind = indices_mode[2] == 0 ? elements[i+1] : i+1;
+        elements[ind] = input;
     });
 
     functions.emplace(4, [&]() {
         num_of_params = 1;
-        output = elements[i+1];
+        output = indices_mode[2] == 0 ? elements[elements[i+1]] : elements[i+1];
         std::cout << "output = " << output << std::endl;
     });
 
     for(i = 0; i < elements.size() && elements[i] != 99; i += num_of_params+1) {
         element = std::to_string(elements[i]);
-        //!!!!!!
-        // 104 valja
-        // if there is no elements before opcode, than initialize modes to 0
-        if(element.size() != 4) {
-            indices = {elements[i+1], elements[i+2], elements[i+3]};
-            std::cout << "el val = " << elements[i] << std::endl;
-            functions[elements[i]]();
-        } else {
-            // if position mode use index written in param value, otherwise 
-            // param index
-            for(int j = 0; j < 3; j++) {
-                indices[j] = element.at(j) == 0 ? elements[i+j+1] : i+j+1;
+
+        // 104
+        
+        // 0104
+        int help = 0;
+        for(int k = 0; k < 3; k++) {
+            if(element.size() > 4-k) {
+                indices_mode[k] = element.at(help++)-ASCII_ZERO;
+            } else {
+                indices_mode[k] = 0;
             }
-            std::cout << "int val of el.at(3) = " << element.at(3)-ASCII_ZERO << std::endl;
-            functions[element.at(3)-ASCII_ZERO]();
         }
+        
+        functions[element[element.size()-1]-ASCII_ZERO]();
 
     }
     
