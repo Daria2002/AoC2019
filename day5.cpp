@@ -6,7 +6,7 @@
 #include <vector>
 #include <stdio.h>
 #include <string.h>
-#include <bits/stdc++.h> 
+#include <bits/stdc++.h>
 #include <functional>
 #include <algorithm>
 #include <math.h>
@@ -22,24 +22,25 @@ int main() {
     int input;
     int output;
     std::cin >> input;
-    
+   
     std::ifstream file("./day5.txt");
     std::string line;
     getline(file, line);
     std::string element;
     std::stringstream ss(line);
-    
+   
     std::vector<int> elements;
     // put elements to int vector
     while(std::getline(ss, element, ',')) {
         elements.push_back(std::stoi(element));
     }
-    
+   
     int num_of_params = 1;
     std::array<int, 3> indices_mode = {0};
     int i;
 
     std::map<int, std::function<void()>> functions;
+   
     functions.emplace(1, [&]() {
         num_of_params = 3;
         std::array<int, 3> params;
@@ -70,19 +71,32 @@ int main() {
         std::cout << "output = " << output << std::endl;
     });
 
-    // functions.emplace(5, [&]() {
-    //     num_of_params = 2;
-    //     if(elements[i+1] != 0) {
+    functions.emplace(5, [&]() {
+        num_of_params = 2;
+        std::array<int, 2> params;
+        for(int j = 0; j < num_of_params; j++) {
+            params[j] = indices_mode[j] == 0 ? elements[i+j+1] : i+j+1;
+        }
+        if(elements[params[0]] != 0) {
+            // because there is num_of_params+1 in for loop
+            num_of_params = -1;
+            i = elements[params[1]];
+        }
+    });
 
-    //     }
-    // });
-
-    // functions.emplace(6, [&]() {
-    //     num_of_params = 2;
-    //     if(elements[i+1] != 0) {
-            
-    //     }
-    // });
+    functions.emplace(6, [&]() {
+         num_of_params = 2;
+        std::array<int, 2> params;
+        for(int j = 0; j < num_of_params; j++) {
+            params[j] = indices_mode[j] == 0 ? elements[i+j+1] : i+j+1;
+        }
+       
+        if(elements[params[0]] == 0) {
+            // because there is num_of_params+1 in for loop
+            num_of_params = -1;
+            i = elements[params[1]];
+        }
+    });
 
     functions.emplace(7, [&]() {
         num_of_params = 3;
@@ -114,7 +128,6 @@ int main() {
 
     for(i = 0; i < elements.size() && elements[i] != 99; i += num_of_params+1) {
         element = std::to_string(elements[i]);
-
         int help = 0;
         for(int k = 0; k < 3; k++) {
             if(element.size() > 4-k) {
@@ -123,10 +136,7 @@ int main() {
                 indices_mode[2-k] = 0;
             }
         }
-        
         functions[element[element.size()-1]-ASCII_ZERO]();
-
     }
-    
     return 0;
 }
