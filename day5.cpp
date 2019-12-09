@@ -66,22 +66,61 @@ int main() {
 
     functions.emplace(4, [&]() {
         num_of_params = 1;
-        output = indices_mode[2] == 0 ? elements[elements[i+1]] : elements[i+1];
+        output = indices_mode[0] == 0 ? elements[elements[i+1]] : elements[i+1];
         std::cout << "output = " << output << std::endl;
+    });
+
+    // functions.emplace(5, [&]() {
+    //     num_of_params = 2;
+    //     if(elements[i+1] != 0) {
+
+    //     }
+    // });
+
+    // functions.emplace(6, [&]() {
+    //     num_of_params = 2;
+    //     if(elements[i+1] != 0) {
+            
+    //     }
+    // });
+
+    functions.emplace(7, [&]() {
+        num_of_params = 3;
+        std::array<int, 3> params;
+        for(int j = 0; j < num_of_params; j++) {
+            params[j] = indices_mode[j] == 0 ? elements[i+j+1] : i+j+1;
+        }
+
+        if(elements[params[0]] < elements[params[1]]) {
+            elements[params[2]] = 1;
+        } else {
+            elements[params[2]] = 0;
+        }
+    });
+
+    functions.emplace(8, [&]() {
+        num_of_params = 3;
+        std::array<int, 3> params;
+        for(int j = 0; j < num_of_params; j++) {
+            params[j] = indices_mode[j] == 0 ? elements[i+j+1] : i+j+1;
+        }
+
+        if(elements[params[0]] == elements[params[1]]) {
+            elements[params[2]] = 1;
+        } else {
+            elements[params[2]] = 0;
+        }
     });
 
     for(i = 0; i < elements.size() && elements[i] != 99; i += num_of_params+1) {
         element = std::to_string(elements[i]);
 
-        // 104
-        
-        // 0104
         int help = 0;
         for(int k = 0; k < 3; k++) {
             if(element.size() > 4-k) {
-                indices_mode[k] = element.at(help++)-ASCII_ZERO;
+                indices_mode[2-k] = element.at(help++)-ASCII_ZERO;
             } else {
-                indices_mode[k] = 0;
+                indices_mode[2-k] = 0;
             }
         }
         
