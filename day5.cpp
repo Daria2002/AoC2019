@@ -10,10 +10,7 @@
 #include <functional>
 #include <algorithm>
 #include <math.h>
-#include <fstream>
-#include <iostream>
 #include <utility>
-#include <vector>
 #include <array>
 
 #define ASCII_ZERO 48
