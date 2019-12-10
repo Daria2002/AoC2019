@@ -10,7 +10,8 @@
 using namespace boost::algorithm;
 
 int part1(std::unordered_map<std::string, std::string> map);
-int part2(std::unordered_map<std::string, std::string> map, std::string str, int& count);
+int part2(std::unordered_map<std::string, std::string> map, std::string str,
+ int count, std::string last);
 
 int main() {
     std::ifstream file("./day6.txt");
@@ -25,7 +26,7 @@ int main() {
     }
     
     std::cout << "part1 = " << part1(map) << std::endl;
-    // std::cout << "part2 = " << part2(map) << std::endl; 
+    std::cout << "part2 = " << part2(map, "YOU", 0, "") << std::endl; 
     
     return 0;
 }
@@ -44,23 +45,28 @@ int part1(std::unordered_map<std::string, std::string> map) {
     return count;
 }
 
-int part2(std::unordered_map<std::string, std::string> map, std::string str, int& count) {
-    std::string tmp;
-
-    // if there is end
-    if(map.find(map[str]) == map.end()) {
+int part2(std::unordered_map<std::string, std::string> map, std::string str,
+int count, std::string last) {
+    // if destination reached
+    if(str == "SAN") {
         return 1;
     }
 
-    count = part2(map, map[str], count);
-    return count++; // jel ovo ok, jel povecava adr ili vrijednost
-
-    for (auto el : map) {
-        tmp = el.first;
-        while(map.find(tmp) != map.end()) {
-            count++;
-            tmp = map[tmp];
+    auto it = map.begin();
+    std::string first;
+    while(it != map.end()) {
+        first = it -> first;
+        count = part2(map, first, count, str);
+        it++;
+    }
+    std::string second;
+    for(auto el:map) {
+        if(el.first != str)
+            continue;
+        second = el.second;
+        if(second == str && second != last) {
+            part2(map, second, count, str);
         }
     }
-    return count;
+    return count++;
 } 
