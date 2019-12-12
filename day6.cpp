@@ -14,7 +14,7 @@ using namespace boost::algorithm;
 */
 int part1(std::unordered_map<std::string, std::string> map);
 int part2(std::unordered_map<std::string, std::string> map, std::string str,
- int count, std::string last);
+ std::string last);
 std::vector<std::string> splitStringToArray(std::string str, char token);
 
 int main() {
@@ -30,7 +30,7 @@ int main() {
     }
    
     std::cout << "part1 = " << part1(map) << std::endl;
-    std::cout << "part2 = " << part2(map, "YOU", 0, "") << std::endl;
+    std::cout << "part2 = " << part2(map, map.find("YOU")->second, "YOU") << std::endl;
    
     return 0;
 }
@@ -61,38 +61,28 @@ int part1(std::unordered_map<std::string, std::string> map) {
 }
 
 int part2(std::unordered_map<std::string, std::string> map, std::string str,
-int count, std::string last) {
-    // if destination reached
+std::string last) {
+    int count = map.size();
     if(str == "SAN") {
-        return 1;
+        return 0;
+    } 
+    if(str == "COM") {
+        return map.size();
     }
-    std::string second;
-    auto it = map.begin();
-    std::string first;
-    while(it != map.end()) {
-        it = map.find(str);
-        if(str == "SAN") {
-            return 1;
-        }
-        if(str == "COM") {
-            return -1;
-        }
-        second = it -> second;
-        std::cout << "second = " << second << std::endl;
-        if(second != last)
-            count = part2(map, second, count, str);
 
+    auto it = map.find(str);
+    if(it != map.end() && it->second != last) {
+        std::cout << "ispod = " << it->second << std::endl;
+        count = std::min(count, 1 + part2(map, it->second, str));
+    }   
 
-        for(auto el:map) {
-            if(el.second != str)
-                continue;
-            first = el.first;
-            part2(map, first, count, str);
-        }
-
-        it++;
+    auto el_help = std::find_if(map.begin(), map.end(), [&](std::pair<std::string, std::string> pair) 
+    {return (pair.second == str);});
+    if(el_help != map.end() && el_help->first != last) {
+        std::cout << "iznad = " << el_help->second << std::endl;
+        count = std::min(count, 1 + part2(map, el_help->first, str));
     }
-    return count++;
+    return count;
 } 
 
 
