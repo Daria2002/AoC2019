@@ -30,7 +30,7 @@ int main() {
     }
    
     std::cout << "part1 = " << part1(map) << std::endl;
-    std::cout << "part2 = " << part2(map, map.find("YOU")->second, "YOU") << std::endl;
+    std::cout << "part2 = " << part2(map, map.find("YOU")->second, "YOU")-1 << std::endl;
    
     return 0;
 }
@@ -72,19 +72,27 @@ std::string last) {
 
     auto it = map.find(str);
     if(it != map.end() && it->second != last) {
-        std::cout << "ispod = " << it->second << std::endl;
         count = std::min(count, 1 + part2(map, it->second, str));
     }   
 
-    auto el_help = std::find_if(map.begin(), map.end(), [&](std::pair<std::string, std::string> pair) 
-    {return (pair.second == str);});
-    if(el_help != map.end() && el_help->first != last) {
-        std::cout << "iznad = " << el_help->second << std::endl;
-        count = std::min(count, 1 + part2(map, el_help->first, str));
+    it = std::find_if(map.begin(), map.end(), [&](std::pair<std::string, std::string> p) 
+    {return (p.second == str);});
+
+    while(it != map.end()) {
+        count = std::min(count, 1 + part2(map, it->first, str));
+        it = std::find_if(std::next(it), map.end(), [&](std::pair<std::string, std::string> p) 
+        {return (p.second == str);});
     }
+
     return count;
 } 
 
+// auto it = find_if(map.begin(), map.end(), check_value);
+//     while (it != map.end())
+//     {
+//         // KOD ...
+//         it = find_if(std::next(it), map.end(), check_value);
+//     }
 
 /*
 COM)B
