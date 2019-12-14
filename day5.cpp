@@ -15,9 +15,10 @@
 
 #define ASCII_ZERO 48
 
+void day5(std::vector<int>, int);
+
 int main() {
     int input;
-    int output;
     std::cin >> input;
    
     std::ifstream file("./day5.txt");
@@ -31,8 +32,16 @@ int main() {
     while(std::getline(ss, element, ',')) {
         elements.push_back(std::stoi(element));
     }
-   
+    
+    day5(elements, input);
+
+    return 0;
+}
+
+void day5(std::vector<int> elements, int input) {
     int num_of_params = 1;
+    std::string element;
+    int output;
     std::array<int, 3> indices_mode = {0};
     int i;
 
@@ -135,5 +144,4 @@ int main() {
         }
         functions[element[element.size()-1]-ASCII_ZERO]();
     }
-    return 0;
 }
