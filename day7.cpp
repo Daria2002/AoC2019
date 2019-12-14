@@ -134,6 +134,8 @@ class Amplifier
     private:
 };
 
+int part1(std::vector<int>);
+
 int main() {
 
     std::ifstream file("day7.txt");
@@ -150,6 +152,13 @@ int main() {
         elements.push_back(std::stoi(element));
     }
 
+    std::cout << "part1 = " << part1(elements) << std::endl;
+    
+
+    return 0;
+}
+
+int part1(std::vector<int> elements) {
     std::array<int, 5> phase_numbers = {0, 1, 2, 3, 4};
     std::sort(phase_numbers.begin(), phase_numbers.end());
 
@@ -168,8 +177,5 @@ int main() {
         outputs.push_back(output);
     } while (std::next_permutation(phase_numbers.begin(), phase_numbers.end()));
 
-    std::cout << "best output = " << 
-    *std::max_element(outputs.begin(), outputs.end()) << std::endl;
-
-    return 0;
+    return *std::max_element(outputs.begin(), outputs.end());
 }
