@@ -14,7 +14,9 @@ class Amplifier
 
         }
 
-        int get_output(std::vector<int> elements, std::array<int, 2> input) {
+        bool halt = false;
+
+        int get_output(std::vector<int> elements, std::array<int, 2> input, bool ini_start) {
             int num_of_params = 1;
             std::string element;
             int output;
@@ -46,7 +48,12 @@ class Amplifier
             functions.emplace(3, [&]() {
                 num_of_params = 1;
                 int ind = indices_mode[2] == 0 ? elements[i+1] : i+1;
-                elements[ind] = input[index++];
+                if(index >= 2) {
+                    elements[ind] = input[1];
+                } else {    
+                    elements[ind] = input[index++];
+                }
+                
                 return 0;
             });
 
@@ -115,7 +122,15 @@ class Amplifier
                 return 0;
             });
 
-            for(i = 0; i < elements.size() && elements[i] != 99; i += num_of_params+1) {
+            if(ini_start) {
+                start = 0;
+            }
+
+            for(i = start; i < elements.size() && elements[i] != 99; i += num_of_params+1) {
+                if(elements[i] == 99) {
+                    halt = true;
+                    return output;
+                }
                 element = std::to_string(elements[i]);
                 int help = 0;
                 for(int k = 0; k < 3; k++) {
@@ -126,15 +141,18 @@ class Amplifier
                     }
                 }
                 if(element[element.size()-1]-ASCII_ZERO == 4) {
+                    start = i+1+1;
                     return functions[element[element.size()-1]-ASCII_ZERO]();
                 }
                 functions[element[element.size()-1]-ASCII_ZERO]();
             }
         }
     private:
+        int start = 0;
 };
 
 int part1(std::vector<int>);
+int part2(std::vector<int>);
 
 int main() {
 
@@ -153,6 +171,7 @@ int main() {
     }
 
     std::cout << "part1 = " << part1(elements) << std::endl;
+    std::cout << "part2 = " << part2(elements) << std::endl;
     
 
     return 0;
@@ -172,9 +191,44 @@ int part1(std::vector<int> elements) {
             Amplifier a;
             amplifiers.push_back(a);
             input = {phase_numbers[i], output};
-            output = amplifiers[i].get_output(elements, input);
+            output = amplifiers[i].get_output(elements, input, true);
         }
         outputs.push_back(output);
+    } while (std::next_permutation(phase_numbers.begin(), phase_numbers.end()));
+
+    return *std::max_element(outputs.begin(), outputs.end());
+}
+
+// phase setting only once
+int part2(std::vector<int> elements) {
+    std::array<int, 5> phase_numbers = {5, 6, 7, 8, 9};
+    std::sort(phase_numbers.begin(), phase_numbers.end());
+
+    int output;
+    std::array<int, 2> input;
+    std::vector<int> outputs;
+    bool halt = false;
+    do {
+        std::vector<Amplifier> amplifiers;
+        output = 0;
+
+        for(int i = 0; i < 5; i++) {
+            Amplifier a;
+            amplifiers.push_back(a);
+        }
+
+        while(!halt) {
+            for(int i = 0; i < 5; i++) {
+                input = {phase_numbers[i], output};
+                output = amplifiers[i].get_output(elements, input, false);
+                if(amplifiers[i].halt == true) {
+                    halt = true;
+                    break;
+                }
+            }
+            outputs.push_back(output);
+        }
+        halt = false;
     } while (std::next_permutation(phase_numbers.begin(), phase_numbers.end()));
 
     return *std::max_element(outputs.begin(), outputs.end());
