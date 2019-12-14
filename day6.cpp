@@ -75,37 +75,13 @@ std::string last) {
         count = std::min(count, 1 + part2(map, it->second, str));
     }   
 
-    it = std::find_if(map.begin(), map.end(), [&](std::pair<std::string, std::string> p) 
-    {return (p.second == str);});
-
-    while(it != map.end()) {
-        count = std::min(count, 1 + part2(map, it->first, str));
+    it = map.begin();
+    while(1) {
         it = std::find_if(std::next(it), map.end(), [&](std::pair<std::string, std::string> p) 
-        {return (p.second == str);});
+            {return (p.second == str);});
+        if(it == map.end()) break; 
+        count = std::min(count, 1 + part2(map, it->first, str));
     }
 
     return count;
-} 
-
-// auto it = find_if(map.begin(), map.end(), check_value);
-//     while (it != map.end())
-//     {
-//         // KOD ...
-//         it = find_if(std::next(it), map.end(), check_value);
-//     }
-
-/*
-COM)B
-B)C
-C)D
-D)E
-E)F
-B)G
-G)H
-D)I
-E)J
-J)K
-K)L
-K)YOU
-I)SAN
-*/
+}
