@@ -56,7 +56,7 @@ void day5(std::vector<long long int> elements, int input) {
             } else if(indices_mode[j] == 1) {
                 params[j] = i+j+1;
             } else if(indices_mode[j] == 2) {
-                params[j] = i+j+1+relative_base;
+                params[j] = elements[i+j+1]+relative_base;
             }
         }
         elements[params[2]] = elements[params[0]] + elements[params[1]];
@@ -71,7 +71,7 @@ void day5(std::vector<long long int> elements, int input) {
             } else if(indices_mode[j] == 1) {
                 params[j] = i+j+1;
             } else if(indices_mode[j] == 2) {
-                params[j] = i+j+1+relative_base;
+                params[j] = elements[i+j+1]+relative_base;
             }
         }
         elements[params[2]] = elements[params[0]] * elements[params[1]];    
@@ -85,7 +85,7 @@ void day5(std::vector<long long int> elements, int input) {
         } else if(indices_mode[2] == 1) {
             ind = i+1;
         } else if(indices_mode[2] == 2) {
-            ind = i+1+relative_base;
+            ind = elements[i+1]+relative_base;
         }
        
         elements[ind] = input;
@@ -98,10 +98,10 @@ void day5(std::vector<long long int> elements, int input) {
         } else if(indices_mode[0] == 1) {
             output = elements[i+1];
         } else if(indices_mode[0] == 2) {
-            if(i+relative_base < elements.size())
-                output = elements[i+relative_base];
-            else 
-                output = 0;
+            if(elements[i+1]+relative_base >= elements.size()) {
+                fill_with_zeros();
+            }
+            output = elements[elements[i+1]+relative_base];
         }
         std::cout << "output = " << output << std::endl;
     });
@@ -115,7 +115,7 @@ void day5(std::vector<long long int> elements, int input) {
             } else if(indices_mode[j] == 1) {
                 params[j] = i+j+1;
             } else if(indices_mode[j] == 2) {
-                params[j] = i+j+1+relative_base;
+                params[j] = elements[i+j+1]+relative_base;
             }
         }
         if(elements[params[0]] != 0) {
@@ -134,13 +134,14 @@ void day5(std::vector<long long int> elements, int input) {
             } else if(indices_mode[j] == 1) {
                 params[j] = i+j+1;
             } else if(indices_mode[j] == 2) {
-                params[j] = i+j+1+relative_base;
+                params[j] = elements[i+j+1]+relative_base;
             }
         }
        
         if(elements[params[0]] == 0) {
             // because there is num_of_params+1 in for loop
             num_of_params = -1;
+            std::cout << "i je prije bio = " << i << ", a sad je = " << elements[params[1]] << std::endl;
             i = elements[params[1]];
         }
     });
@@ -154,7 +155,7 @@ void day5(std::vector<long long int> elements, int input) {
             } else if(indices_mode[j] == 1) {
                 params[j] = i+j+1;
             } else if(indices_mode[j] == 2) {
-                params[j] = i+j+1+relative_base;
+                params[j] = elements[i+j+1]+relative_base;
             }
         }
 
@@ -174,7 +175,7 @@ void day5(std::vector<long long int> elements, int input) {
             } else if(indices_mode[j] == 1) {
                 params[j] = i+j+1;
             } else if(indices_mode[j] == 2) {
-                params[j] = i+j+1+relative_base;
+                params[j] = elements[i+j+1]+relative_base;
             }
         }
 
@@ -193,7 +194,7 @@ void day5(std::vector<long long int> elements, int input) {
         } else if(indices_mode[0] == 1) {
             el = elements[i+1];
         } else if(indices_mode[0] == 2) {
-            el = elements[i+1+relative_base];
+            el = elements[elements[i+1]+relative_base];
         }
        
         relative_base += el;
@@ -201,6 +202,7 @@ void day5(std::vector<long long int> elements, int input) {
 
     for(i = 0; i < elements.size() && elements[i] != 99; i += num_of_params+1) {
         element = std::to_string(elements[i]);
+        std::cout << "element = " << element << std::endl;
         int help = 0;
         for(int k = 0; k < 3; k++) {
             if(element.size() > 4-k) {
@@ -209,6 +211,7 @@ void day5(std::vector<long long int> elements, int input) {
                 indices_mode[2-k] = 0;
             }
         }
+        std::cout << "naredba = " << element[element.size()-1]-ASCII_ZERO << std::endl;
         functions[element[element.size()-1]-ASCII_ZERO]();
     }
 }
