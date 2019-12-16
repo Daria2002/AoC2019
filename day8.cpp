@@ -7,21 +7,46 @@
  * image cosists of layers, each layer has matrix
  * matrix has defined number of pixels wide and tall
  * */
-class Image
+class Layer
 {
 
     public:
-        Image(int pixels_wide, int pixels_tall,
+        Layer(int pixels_wide, int pixels_tall,
             std::vector<int> elements) 
         {
             pixels_wide = pixels_wide;
             pixels_tall = pixels_tall;
         }
 
+        int get_zero() {
+            return calculate_occurence(0);
+        }
+
+        int get_one() {
+            return calculate_occurence(1);
+        }
+
+        int get_two() {
+            return calculate_occurence(2);
+        }
+
     private:
         int pixels_wide;
         int pixels_tall;
         int **matrix;
+
+        int calculate_occurence(int element) {
+            int count = 0;
+            for(int i = 0; i < pixels_tall; i++) {
+                for(int j = 0; j < pixels_wide; j++) {
+                    if(matrix[i][j] == 0) {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        } 
 
         int** alloc_array(int **p) {
             // dynamically allocates memory for pixels_wide
@@ -54,5 +79,10 @@ int main() {
     std::getline(file, str);
     std::stringstream ss(str);
 
-    std::cout << str << std::endl;
+    std::vector<int> elements;
+    while(std::getline(ss, str, ',')) {
+        elements.push_back(std::stoi(str));
+    }
+
+    std::vector<Layer> Image;
 }
