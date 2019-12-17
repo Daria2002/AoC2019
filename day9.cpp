@@ -37,101 +37,77 @@ class Intcode_calculator {
     };
    
     public:
-        std::map<int, std::function<void(std::array<long long int, 3>)>> functions;
+        std::map<int, std::function<void()>> functions;
 
         Intcode_calculator(std::vector<long long int> _elements, int _input) : elements(_elements), input(_input)
         {
-            functions.emplace(Operations::SUM, [&](std::array<long long int, 3> param) {
-                std::cout << "1" << std::endl;
+            // capture class members by saying 'this' in the capture list
+            functions.emplace(Operations::SUM, [&]() {
                 num_of_params = 3;
-                elements[param[2]] = elements[param[0]] + elements[param[1]];
+                elements[params[2]] = elements[params[0]] + elements[params[1]];
             });
 
-            functions.emplace(Operations::MUL, [&](std::array<long long int, 3> param) {
-                std::cout << "2" << std::endl;
+            functions.emplace(Operations::MUL, [&]() {
                 num_of_params = 3;
-                elements[param[2]] = elements[param[0]] * elements[param[1]];    
+                elements[params[2]] = elements[params[0]] * elements[params[1]];    
             });
 
-            functions.emplace(Operations::SAVE_INPUT, [&](std::array<long long int, 3> param) {
-                std::cout << "3" << std::endl;
+            functions.emplace(Operations::SAVE_INPUT, [&]() {
                 num_of_params = 1;
-               
-                //int ind;
-                //if(indices_mode[2] == 0) {
-                  //  ind = elements[i+1];
-                //} else if(indices_mode[2] == 1) {
-                  //  ind = i+1;
-                //} else if(indices_mode[2] == 2) {
-                 //   ind = elements[i+1]+relative_base;
-                //}
-                //elements[ind] = input;
-               
-                elements[param[0]] = input;
+                elements[params[0]] = input;
             });
 
-            functions.emplace(Operations::OUTPUT, [&](std::array<long long int, 3> param) {
-                std::cout << "4" << std::endl;
+            functions.emplace(Operations::OUTPUT, [&]() {
                 num_of_params = 1;
-                output = elements[param[0]];
+                output = elements[params[0]];
                 std::cout << "output = " << output << std::endl;
             });
 
-            functions.emplace(Operations::JUMP_IF_TRUE, [&](std::array<long long int, 3> param) {
-                std::cout << "5" << std::endl;
+            functions.emplace(Operations::JUMP_IF_TRUE, [&]() {
                 num_of_params = 2;
-                if(elements[param[0]] != 0) {
+                if(elements[params[0]] != 0) {
                     // because there is num_of_params+1 in for loop
                     num_of_params = -1;
-                    i = elements[param[1]];
+                    i = elements[params[1]];
                 }
             });
 
-            functions.emplace(Operations::JUMP_IF_FALSE, [&](std::array<long long int, 3> param) {
-                std::cout << "6" << std::endl;
+            functions.emplace(Operations::JUMP_IF_FALSE, [&]() {
                 num_of_params = 2;
-                if(elements[param[0]] == 0) {
+                if(elements[params[0]] == 0) {
                     // because there is num_of_params+1 in for loop
                     num_of_params = -1;
-                    std::cout << "i je prije bio = " << i << ", a sad je = " << elements[param[1]] << std::endl;
-                    i = elements[param[1]];
+                    i = elements[params[1]];
                 }
             });
 
-            functions.emplace(Operations::LESS_THAN, [&](std::array<long long int, 3> param) {
-                std::cout << "7" << std::endl;
+            functions.emplace(Operations::LESS_THAN, [&]() {
                 num_of_params = 3;
-                if(elements[param[0]] < elements[param[1]]) {
-                    elements[param[2]] = 1;
+                if(elements[params[0]] < elements[params[1]]) {
+                    elements[params[2]] = 1;
                 } else {
-                    elements[param[2]] = 0;
+                    elements[params[2]] = 0;
                 }
             });
 
-            functions.emplace(Operations::EQUALS, [&](std::array<long long int, 3> param) {
-                std::cout << "8" << std::endl;
+            functions.emplace(Operations::EQUALS, [&]() {
                 num_of_params = 3;
-                if(elements[param[0]] == elements[param[1]]) {
-                    elements[param[2]] = 1;
+                if(elements[params[0]] == elements[params[1]]) {
+                    elements[params[2]] = 1;
                 } else {
-                    elements[param[2]] = 0;
+                    elements[params[2]] = 0;
                 }
             });
        
-            functions.emplace(Operations::RELATIVE_BASE, [&](std::array<long long int, 3> param) {
-                std::cout << "9" << std::endl;
-                std::cout << "Sada je operacija 9 " << std::endl;
+            functions.emplace(Operations::RELATIVE_BASE, [&]() {
                 num_of_params = 1;
-                std::cout << "params[0] = " << param[0] << std::endl;
-                relative_base += elements[param[0]];
+                relative_base += elements[params[0]];
             });
         }
 
         void calculate() {
-            std::array<long long int, 3> params;
             for(i = 0; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
-                std::cout << "element = " << element << std::endl;
                 int help = 0;
                 for(int k = 0; k < 3; k++) {
                     if(element.size() > 4-k) {
@@ -140,7 +116,7 @@ class Intcode_calculator {
                         indices_mode[2-k] = 0;
                     }
                 }
-                std::cout << "naredba = " << element[element.size()-1]-ASCII_ZERO << std::endl;
+                //std::cout << "naredba = " << element[element.size()-1]-ASCII_ZERO << std::endl;
                
                 for(int j = 0; j < 3; j++) {
                     // last element and it is 99
@@ -162,18 +138,12 @@ class Intcode_calculator {
                         fill_with_zeros(elements, params[j]);
                     }
                 }
-                std::cout << "element = " << element << std::endl;
-                std::cout << "index = " << element[element.size()-1]-ASCII_ZERO << std::endl;
-                std::cout << "params[0] = " << params[0] << std::endl;
-                std::cout << "params[1] = " << params[1] << std::endl;
-                std::cout << "params[2] = " << params[2] << std::endl;
-               
-                std::cout << "func size = " << functions.size() << std::endl;
-                functions[element[element.size()-1]-ASCII_ZERO](params);
+                functions[element[element.size()-1]-ASCII_ZERO]();
             }
         }
 
     private:
+        std::array<long long int, 3> params;
         int num_of_params = 1;
         int relative_base = 0;
         std::vector<long long int> elements;
@@ -184,10 +154,9 @@ class Intcode_calculator {
         int input;
        
         void fill_with_zeros(std::vector<long long int> &elements, long long int index) {
-            //std::for_each(elements.end(), elements.end() + index, [](long long int &num) {num = 0;});
             int size = elements.size();
             for(int i = size; i <= index; i++) {
-                elements[i] = 0;
+                elements.push_back(0);
             }
         }
 };
