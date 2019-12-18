@@ -37,11 +37,20 @@ class Coordinate {
         int get_y() {
             return _y;
         }
+
+        void set_angles(std::vector<double> angles) {
+            _angles = angles;
+        }
+
+        std::vector<double> get_angles() {
+            return _angles;
+        }
     
     private:
         double _x; 
         double _y;
         int _max;
+        std::vector<double> _angles;
 };
 
 Coordinate findMaxCoordinate(int** matrix, int rows, int columns) 
@@ -88,34 +97,72 @@ int** build_matrix(std::vector<std::string> vector_array, int rows, int columns,
     return matrix;
 }
 
-Coordinate part1(int **matrix, int rows, int columns, std::vector<std::pair<int, int>>& pairs) {
+Coordinate part1(int **matrix, int rows, int columns, std::vector<std::pair<int, int>>& asteroids) {
+    int** scores = new int*[rows];
     std::vector<double> angles;
     int count = 0;
     for(int i = 0; i < rows; i++) {
+        scores[i] = new int[columns];
         for(int j = 0; j < columns; j++) {
-            if(matrix[i][j] == 0) continue;
+            if(matrix[i][j] == 0) {
+                scores[i][j] = 0;
+                continue;
+            } 
             angles.clear();
             Coordinate coordinate(i, j);
-            for(int k = 0; k < pairs.size(); k++) {
-                if(pairs[k].first == i && pairs[k].second == j) {
+            for(int k = 0; k < asteroids.size(); k++) {
+                if(asteroids[k].first == i && asteroids[k].second == j) {
                     continue;
                 }
-                double angle = coordinate.calculate_angle(pairs[k].first, pairs[k].second);
+                double angle = coordinate.calculate_angle(asteroids[k].first, asteroids[k].second);
                 // if angle doesn't exist in vector of angles
                 if(std::find(angles.begin(), angles.end(), angle) == angles.end()) {
                     angles.push_back(angle);
                     count++;
                 }
             }
-            matrix[i][j] = count;
+            scores[i][j] = count;
             count = 0;
         }
     }
 
-    return findMaxCoordinate(matrix, rows, columns);
+    return findMaxCoordinate(scores, rows, columns);
 }
 
-int part2() {
+int part2(Coordinate monitoring_station, int** matrix, int rows, int columns, std::vector<std::pair<int, int>>& asteroids) {
+    std::vector<double> angles;
+    int count = 0;
+    int j, i;
+    int not_finished = true;
+    for(i = 0; i < rows && not_finished == true; i++) {
+        not_finished = false;
+        for(j = 0; j < columns; j++) {
+            if(matrix[i][j] == 0) continue;
+
+            angles.clear();
+            Coordinate coordinate(i, j);
+            for(int k = 0; k < asteroids.size(); k++) {
+                if(asteroids[k].first == i && asteroids[k].second == j) {
+                    continue;
+                }
+                double angle = coordinate.calculate_angle(asteroids[k].first, asteroids[k].second);
+                // if angle doesn't exist in vector of angles
+                if(std::find(angles.begin(), angles.end(), angle) == angles.end()) {
+                    angles.push_back(angle);
+                    count++;
+                    if(count == 200) {
+                        return (asteroids[k].second) * 100 + (asteroids[k].first);
+                    }
+                    // vaporization
+                    matrix[i][j] = 0;
+                } else {
+                    // there is not detected asteroid
+                    not_finished = true;
+                }
+            }
+        }
+    }
+
     return 1;
 }
 
@@ -133,13 +180,17 @@ int main()
         vector_array.push_back(str);
     }
     
-    std::vector<std::pair<int, int>> pairs;
-    int** matrix = build_matrix(vector_array, rows, columns, pairs);
-    
-    Coordinate monitoring_station = part1(matrix, rows, columns, pairs);
+    // only asteroids
+    std::vector<std::pair<int, int>> asteroids;
+    int** matrix = build_matrix(vector_array, rows, columns, asteroids);
+    std::vector<Coordinate> coordinates;
+
+    Coordinate monitoring_station = part1(matrix, rows, columns, asteroids);
 
     std::cout << "part1 = " << monitoring_station.get_max() << std::endl;
-    std::cout << "part2 = " << part2() << std::endl;
+    std::cout << "part2 = " << part2(monitoring_station, matrix, rows, columns, asteroids) << std::endl;
+
+
 
     return 0;
 }
