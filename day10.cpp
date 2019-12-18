@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 #include <math.h>
+#include <map>
 
 #define MIN 0
 
@@ -129,7 +130,8 @@ Coordinate part1(int **matrix, int rows, int columns, std::vector<std::pair<int,
     return findMaxCoordinate(scores, rows, columns);
 }
 
-int part2(Coordinate monitoring_station, int** matrix, int rows, int columns, std::vector<std::pair<int, int>>& asteroids) {
+int part2(Coordinate monitoring_station, int** matrix, int rows, int columns, std::vector<std::pair<int, int>>& asteroids, 
+          std::map<double, std::vector<std::pair<int, int>>> map_angle_and_asteroids) {
     std::vector<double> angles;
     int count = 0;
     int j, i;
@@ -166,6 +168,25 @@ int part2(Coordinate monitoring_station, int** matrix, int rows, int columns, st
     return 1;
 }
 
+std::map<double, std::vector<std::pair<int, int>>> build_asteroids_map(Coordinate monitoring_station, int** matrix, int rows, int columns) {
+    std::map<double, std::vector<std::pair<int, int>>> map;
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < columns; j++) {
+            double angle = monitoring_station.calculate_angle(i, j);
+            std::vector<std::pair<int, int>> v;
+            // add angle if it doesn't exist, otherwise append vector of pairs
+            if(map.find(angle) != map.end) {
+                v = map[angle];
+                v.push_back(std::make_pair(i, j));
+                map[angle] = v;
+            } else {
+                v.push_back(std::make_pair(i, j));
+                map[angle] = v;
+            }
+        }
+    }
+}
+
 int main()
 {
     std::fstream file("./day10.txt");
@@ -185,12 +206,17 @@ int main()
     int** matrix = build_matrix(vector_array, rows, columns, asteroids);
     std::vector<Coordinate> coordinates;
 
+    // key = angle
+    // value = vector of pairs with angle = key
+    std::map<double, std::vector<std::pair<int, int>>> map_angle_and_asteroids;
+
     Coordinate monitoring_station = part1(matrix, rows, columns, asteroids);
 
     std::cout << "part1 = " << monitoring_station.get_max() << std::endl;
-    std::cout << "part2 = " << part2(monitoring_station, matrix, rows, columns, asteroids) << std::endl;
 
+    map_angle_and_asteroids = build_asteroids_map(monitoring_station, matrix, rows, columns);
 
+    std::cout << "part2 = " << part2(monitoring_station, matrix, rows, columns, asteroids, map_angle_and_asteroids) << std::endl;
 
     return 0;
 }
