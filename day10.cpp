@@ -158,7 +158,7 @@ int part2(Coordinate monitoring_station, int** matrix, int rows, int columns, st
                     // vaporization
                     matrix[i][j] = 0;
                 } else {
-                    // there is not detected asteroid
+                    // there is asteroid but it cannot be detected
                     not_finished = true;
                 }
             }
@@ -185,6 +185,7 @@ std::map<double, std::vector<std::pair<int, int>>> build_asteroids_map(Coordinat
             }
         }
     }
+    return map;
 }
 
 int main()
