@@ -8,6 +8,7 @@
 #include <map>
 
 #define MIN 0
+#define TOL 1e-1
 
 class Coordinate {
     public:
@@ -19,8 +20,7 @@ class Coordinate {
         double calculate_angle(int point_x, int point_y) {
             double x = point_x + 0.5;
             double y = point_y + 0.5;
-            double help = (x-_x)/(y-_y); 
-            return atan2((x-_x),(y-_y));
+            return atan2((_y-y), (_x-x));
         }
 
         void set_max(int max) {
@@ -135,35 +135,30 @@ int part2(Coordinate monitoring_station, int** matrix, int rows, int columns, st
     std::vector<double> angles;
     int count = 0;
     int j, i;
-    int not_finished = true;
-    for(i = 0; i < rows && not_finished == true; i++) {
-        not_finished = false;
-        for(j = 0; j < columns; j++) {
-            if(matrix[i][j] == 0) continue;
-
-            angles.clear();
-            Coordinate coordinate(i, j);
-            for(int k = 0; k < asteroids.size(); k++) {
-                if(asteroids[k].first == i && asteroids[k].second == j) {
-                    continue;
-                }
-                double angle = coordinate.calculate_angle(asteroids[k].first, asteroids[k].second);
-                // if angle doesn't exist in vector of angles
-                if(std::find(angles.begin(), angles.end(), angle) == angles.end()) {
-                    angles.push_back(angle);
-                    count++;
-                    if(count == 200) {
-                        return (asteroids[k].second) * 100 + (asteroids[k].first);
-                    }
-                    // vaporization
-                    matrix[i][j] = 0;
-                } else {
-                    // there is asteroid but it cannot be detected
-                    not_finished = true;
-                }
-            }
+    
+    // get element at 90 degrees
+    auto iter_start = std::find_if(map_angle_and_asteroids.rbegin(), map_angle_and_asteroids.rend(), [&](auto& item) {
+        std::cout << "kut = " << item.first << std::endl;
+        if(item.first >= M_PI_2 && item.first < M_PI_2 + TOL) {
+            std::cout << "ovo je ok = " << item.first << std::endl;
+            return true;
         }
+        return false;
+    });
+
+    // iterate from 90 to 0, if degree = map.begin() (in other words, 0 degrees), iterate in reverse order (from 360 to 90)
+    // before iterating in reverse order iter_start should be assigned to map.end(), a end na iter_start
+
+
+    for(auto it = map_angle_and_asteroids.rbegin(); it !=  map_angle_and_asteroids.rend(); it++) {
+        std::cout << "angle = " << it -> first << std::endl;
     }
+
+    std::cout << "begin value = " << map_angle_and_asteroids.begin() -> first << std::endl;
+    std::cout << "rbegin value = " << map_angle_and_asteroids.rbegin() -> first << std::endl;
+    std::cout << "end value = " << map_angle_and_asteroids.end() -> first << std::endl;
+    std::cout << "rend value = " << map_angle_and_asteroids.rend() -> first << std::endl;
+
 
     return 1;
 }
@@ -175,7 +170,7 @@ std::map<double, std::vector<std::pair<int, int>>> build_asteroids_map(Coordinat
             double angle = monitoring_station.calculate_angle(i, j);
             std::vector<std::pair<int, int>> v;
             // add angle if it doesn't exist, otherwise append vector of pairs
-            if(map.find(angle) != map.end) {
+            if(map.find(angle) != map.end()) {
                 v = map[angle];
                 v.push_back(std::make_pair(i, j));
                 map[angle] = v;
