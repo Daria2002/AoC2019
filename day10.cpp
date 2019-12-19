@@ -16,6 +16,12 @@ class Coordinate {
             _x = x + 0.5;
             _y = y + 0.5;
         }
+
+        double calculate_euclidian(int point_x, int point_y) {
+            double x = point_x + 0.5;
+            double y = point_y + 0.5;
+            return sqrt(pow(x-_x, 2) + pow(y-_y, 2));
+        }
     
         double calculate_angle(int point_x, int point_y) {
             double x = point_x + 0.5;
@@ -151,15 +157,15 @@ int part2(Coordinate monitoring_station, int** matrix, int rows, int columns, st
 
 
     for(auto it = map_angle_and_asteroids.rbegin(); it !=  map_angle_and_asteroids.rend(); it++) {
+        std::sort(map_angle_and_asteroids[it->first].begin(), map_angle_and_asteroids[it->first].end(),
+        [&](std::pair<int, int>& a, std::pair<int, int>& b){
+            return (monitoring_station.calculate_euclidian(a.first, a.second) < monitoring_station.calculate_euclidian(b.first, b.second));
+        });
+
+        map_angle_and_asteroids[it->first].erase(map_angle_and_asteroids[it->first].begin());
+
         std::cout << "angle = " << it -> first << std::endl;
     }
-
-    std::cout << "begin value = " << map_angle_and_asteroids.begin() -> first << std::endl;
-    std::cout << "rbegin value = " << map_angle_and_asteroids.rbegin() -> first << std::endl;
-    std::cout << "end value = " << map_angle_and_asteroids.end() -> first << std::endl;
-    std::cout << "rend value = " << map_angle_and_asteroids.rend() -> first << std::endl;
-
-
     return 1;
 }
 
