@@ -8,7 +8,7 @@
 #include <map>
 
 #define MIN 0
-#define TOL 1e-1
+#define TOL 1e-15
 
 class Asteroid {
     public:
@@ -31,7 +31,7 @@ class Asteroid {
         double calculate_angle(int point_x, int point_y) {
             double x = point_x + 0.5;
             double y = point_y + 0.5;
-            return atan2((_y-y), (_x-x));
+            return atan2((_y-y), -(_x-x));
         }
 
         void set_max(int max) {
@@ -116,49 +116,41 @@ Asteroid part1(int **matrix, int rows, int columns, std::vector<std::pair<int, i
             count = 0;
         }
     }
-
     return findMonitoringStation(scores, rows, columns);
 }
 
 int part2(Asteroid monitoring_station, int** matrix, int rows, int columns, std::vector<std::pair<int, int>>& asteroids, 
           std::map<double, std::vector<std::pair<int, int>>> map_angle_and_asteroids) {
-    int count = 0;
-    
+
+    for (auto& item : map_angle_and_asteroids)
+        std::sort(item.second.begin(), item.second.end(),
+            [&](std::pair<int, int>& a, std::pair<int, int>& b){
+                return (monitoring_station.calculate_euclidian(a.first, a.second) < monitoring_station.calculate_euclidian(b.first, b.second));
+            });
+
     // get element at 90 degrees
-    auto iter_start = std::find_if(map_angle_and_asteroids.rbegin(), map_angle_and_asteroids.rend(), [&](auto& item) {
+    auto iter = std::find_if(map_angle_and_asteroids.rbegin(), map_angle_and_asteroids.rend(), [&](auto& item) {
         if(item.first >= M_PI_2 && item.first < M_PI_2 + TOL) {
             return true;
         }
         return false;
     });
-
-    // iterate from 90 to 0, if degree = map.begin() (in other words, 0 degrees), iterate in reverse order (from 360 to 90)
-    // before iterating in reverse order iter_start should be assigned to map.end(), a end na iter_start
-    for(auto it = iter_start; it !=  map_angle_and_asteroids.rend(); it++) {
-        if((it->second).size() == 0) {
-            continue;
+    const auto iter_start(iter);
+    int count = 0;
+    while (map_angle_and_asteroids.size() > 0)
+    {
+        if (iter->second.size() > 0) 
+        {   
+            count++;
+            if(count == 200) {
+                return iter->second[0].first * 100 + iter->second[0].second;
+            }
+            iter->second.erase(iter->second.begin()); // TODO: Change vector to list :)
+            
         }
-        std::sort(it->second.begin(), it->second.end(),
-        [&](std::pair<int, int>& a, std::pair<int, int>& b){
-            return (monitoring_station.calculate_euclidian(a.first, a.second) < monitoring_station.calculate_euclidian(b.first, b.second));
-        });
-
-        count++;
-
-        if(count == 200) {
-            std::cout << "best angle = " << it -> first << std::endl;
-            int x = (it->second).at(0).second;
-            int y = (it->second).at(0).first;
-            std::cout << "x = " << x << std::endl;
-            std::cout << "y = " << y << std::endl;
-            return x * 100 + y;
-        }
-        int x = (it->second).at(0).first;
-        int y = (it->second).at(0).second;
-        std::cout << "x = " << x << std::endl;
-        std::cout << "y = " << y << std::endl;
-        map_angle_and_asteroids[it->first].erase(map_angle_and_asteroids[it->first].begin());
-        std::cout << "angle = " << it -> first << std::endl;
+        iter++;
+        if (iter == map_angle_and_asteroids.rend())
+            iter = map_angle_and_asteroids.rbegin();
     }
     return -1;
 }
@@ -168,15 +160,13 @@ std::map<double, std::vector<std::pair<int, int>>> build_angle_asteroids_map(Ast
     int c = 0;
     for(int i = 0; i < rows; i++) {
         for(int j = 0; j < columns; j++) {
-            if(matrix[i][j] == 0) {
+            if(matrix[i][j] == 0 || (j == monitoring_station._x-0.5 && i == monitoring_station._y-0.5)) {
                 continue;
             }
             c++;
             double angle = monitoring_station.calculate_angle(j, i);
             if(angle > 1.5 && angle < 1.7) {
-                std::cout << "counter = " << c << std::endl;
                 angle = monitoring_station.calculate_angle(j, i);
-                std::cout << "angle = " << angle << std::endl;
             }
             // std::cout << "za x = " << j << ", y = " << i << std::endl; 
             // std::cout << "calculated angle = " << angle << std::endl;
@@ -220,8 +210,6 @@ int main()
 
     Asteroid monitoring_station = part1(matrix, rows, columns, asteroids);
     std::cout << "part1 = " << monitoring_station._max << std::endl;
-    std::cout << "monitoring_station_x = " << monitoring_station._x << std::endl;
-    std::cout << "monitoring_station_y = " << monitoring_station._y << std::endl;
 
     map_angle_and_asteroids = build_angle_asteroids_map(monitoring_station, matrix, rows, columns);
 
