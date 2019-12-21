@@ -59,6 +59,7 @@ Asteroid findMonitoringStation(int** matrix, int rows, int columns)
         } 
     } 
     
+    // ovdje je max_j, max_i
     Asteroid coordinate(max_j, max_i);
     coordinate.set_max(maxElement);
 
@@ -146,12 +147,16 @@ int part2(Asteroid monitoring_station, int** matrix, int rows, int columns, std:
 
         if(count == 200) {
             std::cout << "best angle = " << it -> first << std::endl;
-            int x = (it->second).at(0).first;
-            int y = (it->second).at(0).second;
+            int x = (it->second).at(0).second;
+            int y = (it->second).at(0).first;
             std::cout << "x = " << x << std::endl;
             std::cout << "y = " << y << std::endl;
             return x * 100 + y;
         }
+        int x = (it->second).at(0).first;
+        int y = (it->second).at(0).second;
+        std::cout << "x = " << x << std::endl;
+        std::cout << "y = " << y << std::endl;
         map_angle_and_asteroids[it->first].erase(map_angle_and_asteroids[it->first].begin());
         std::cout << "angle = " << it -> first << std::endl;
     }
@@ -160,9 +165,21 @@ int part2(Asteroid monitoring_station, int** matrix, int rows, int columns, std:
 
 std::map<double, std::vector<std::pair<int, int>>> build_angle_asteroids_map(Asteroid monitoring_station, int** matrix, int rows, int columns) {
     std::map<double, std::vector<std::pair<int, int>>> map;
+    int c = 0;
     for(int i = 0; i < rows; i++) {
         for(int j = 0; j < columns; j++) {
-            double angle = monitoring_station.calculate_angle(i, j);
+            if(matrix[i][j] == 0) {
+                continue;
+            }
+            c++;
+            double angle = monitoring_station.calculate_angle(j, i);
+            if(angle > 1.5 && angle < 1.7) {
+                std::cout << "counter = " << c << std::endl;
+                angle = monitoring_station.calculate_angle(j, i);
+                std::cout << "angle = " << angle << std::endl;
+            }
+            // std::cout << "za x = " << j << ", y = " << i << std::endl; 
+            // std::cout << "calculated angle = " << angle << std::endl;
             std::vector<std::pair<int, int>> v;
             // add angle if it doesn't exist, otherwise append vector of pairs
             if(map.find(angle) != map.end()) {
@@ -203,6 +220,8 @@ int main()
 
     Asteroid monitoring_station = part1(matrix, rows, columns, asteroids);
     std::cout << "part1 = " << monitoring_station._max << std::endl;
+    std::cout << "monitoring_station_x = " << monitoring_station._x << std::endl;
+    std::cout << "monitoring_station_y = " << monitoring_station._y << std::endl;
 
     map_angle_and_asteroids = build_angle_asteroids_map(monitoring_station, matrix, rows, columns);
 
