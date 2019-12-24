@@ -8,6 +8,7 @@
 #include <string.h>
 #include <bits/stdc++.h>
 #include <functional>
+#include <list>
 #include <algorithm>
 #include <math.h>
 #include <utility>
@@ -38,8 +39,9 @@ class Intcode_calculator {
    
     public:
         std::map<int, std::function<void()>> functions;
+        std::map<std::pair<int, int>, int> color_map;
 
-        Intcode_calculator(std::vector<long long int> _elements, int _input) : elements(_elements), input(_input)
+        Intcode_calculator(std::vector<long long int> _elements) : elements(_elements)
         {
             // capture class members by saying 'this' in the capture list
             functions.emplace(Operations::SUM, [&]() {
@@ -59,6 +61,12 @@ class Intcode_calculator {
                     input = color_map[current_position];
                 } else {
                     input = 0;
+                    // if(start_color_initialized) {
+                    //     input = 0;
+                    // } else {
+                    //     input = start_color;
+                    //     start_color_initialized = true;
+                    // }
                 }
                
                 elements[params[0]] = input;
@@ -72,31 +80,31 @@ class Intcode_calculator {
                     color = false;
                 } else {
                     color = true;
-                    int x = current_position.first;
-                    int y = current_position.second;
+                    int x = current_position.second;
+                    int y = current_position.first;
                    
                     if(output == 0) {
                         // turn left
                         if(current_direction == 0) {
-                            current_position = std::make_pair(x-1, y);
+                            current_position = std::make_pair(y, x-1);
                         } else if(current_direction == 1) {
-                            current_position = std::make_pair(x, y-1);
+                            current_position = std::make_pair(y-1,x);
                         } else if(current_direction == 2) {
-                            current_position = std::make_pair(x+1, y);
+                            current_position = std::make_pair(y, x+1);
                         } else if(current_direction == 3) {
-                            current_position = std::make_pair(x, y+1);
+                            current_position = std::make_pair(y+1, x);
                         }
                         current_direction = current_direction-1 < 0 ? 3 : current_direction-1;
                     } else if(output == 1) {
                         // turn right
                         if(current_direction == 0) {
-                            current_position = std::make_pair(x+1, y);
+                            current_position = std::make_pair(y, x+1);
                         } else if(current_direction == 1) {
-                            current_position = std::make_pair(x, y+1);
+                            current_position = std::make_pair(y+1, x);
                         } else if(current_direction == 2) {
-                            current_position = std::make_pair(x-1, y);
+                            current_position = std::make_pair(y, x-1);
                         } else if(current_direction == 3) {
-                            current_position = std::make_pair(x, y-1);
+                            current_position = std::make_pair(y-1, x);
                         }
                         current_direction = (current_direction + 1) % 4;
                     }
@@ -143,12 +151,13 @@ class Intcode_calculator {
                 num_of_params = 1;
                 relative_base += elements[params[0]];
             });
-
-            // initialize current position
-            current_position = std::make_pair(0, 0);
         }
 
-        void calculate() {
+        void calculate(int _start_color) {
+            color_map[std::make_pair(0, 0)] = start_color;
+            color_map.empty();
+            current_position = std::make_pair(0, 0);
+            start_color = _start_color;
             for(i = 0; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
                 int help = 0;
@@ -184,9 +193,9 @@ class Intcode_calculator {
             }
         }
 
-        int get_number_of_painted_panels() {
-            if(color_map.size() == 0) {
-                calculate();
+        int paint_panels(int _start_color) {
+            if(color_map.size() == 0 || start_color != _start_color) {
+                calculate(_start_color);
             }
             return color_map.size();
         }
@@ -200,8 +209,9 @@ class Intcode_calculator {
         std::string element;
         long long int output;
         int i;
+        bool start_color_initialized;
+        int start_color;
         int input;
-        std::map<std::pair<int, int>, int> color_map;
         std::pair<int, int> current_position;
 
         // 0 - up, 1 - right, 2 - down, 3 - left
@@ -217,9 +227,6 @@ class Intcode_calculator {
 };
 
 int main() {
-    int input;
-    std::cin >> input;
-   
     std::ifstream file("./day11.txt");
     std::string line;
     getline(file, line);
@@ -231,10 +238,64 @@ int main() {
     while(std::getline(ss, element, ',')) {
         elements.push_back(std::stoll(element));
     }
-   
-    Intcode_calculator calc(elements, input);
-    int part1 = calc.get_number_of_painted_panels();
-    std::cout << "part1 = " << part1 << std::endl;
+    
+    int start_color = 0;
+
+    Intcode_calculator calc(elements);
+    // int part1 = calc1.paint_panels(start_color);
+    // std::cout << "part1 = " << part1 << std::endl;
+
+    std::cout << "part2" << std::endl;
+    start_color = 1;
+    calc.paint_panels(start_color);
+    std::map<std::pair<int, int>, int> color_map = calc.color_map;
+
+    int row_min;
+    int row_max;
+    int column_min;
+    int column_max;
+
+    // get min, get max
+    std::for_each(color_map.begin(), color_map.end(), [&](std::pair<std::pair<int, int>, int> pair) {
+        // comparing row
+        if(pair.first.first > row_max) {
+            row_max = pair.first.first;
+        }
+        if(pair.first.first < row_min) {
+            row_min = pair.first.first;
+        }
+        // comparing columns
+        if(pair.first.second > column_max) {
+            column_max = pair.first.second;
+        }
+        if(pair.first.second < column_min) {
+            column_min = pair.first.second;
+        }
+    });
+
+    // row, vector of values in row
+    std::vector<std::vector<char>> matrix;
+    for(int i = row_min; i <= row_max; i++) {
+        std::vector<char> help;
+        for(int j = column_min; j <= column_max; j++) {
+            help.push_back('.');
+        }
+        matrix.push_back(help);
+    }
+
+    std::for_each(color_map.begin(), color_map.end(), [&](std::pair<std::pair<int, int>, int> pair) {
+        // if current panel is white, update matrix
+        if(pair.second == 1) {
+            matrix[pair.first.first-row_min][pair.first.second-column_min] = '#';
+        }
+    });
+
+    for(int i = row_min; i <= row_max; i++) {
+        for(int j = column_min; j <= column_max; j++) {
+            std::cout << matrix[i-row_min][j-column_min];
+        }
+        std::cout << "" << std::endl;
+    }
 
     return 0;
 }
