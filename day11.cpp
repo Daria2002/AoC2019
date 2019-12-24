@@ -8,7 +8,6 @@
 #include <string.h>
 #include <bits/stdc++.h>
 #include <functional>
-#include <list>
 #include <algorithm>
 #include <math.h>
 #include <utility>
@@ -61,12 +60,6 @@ class Intcode_calculator {
                     input = color_map[current_position];
                 } else {
                     input = 0;
-                    // if(start_color_initialized) {
-                    //     input = 0;
-                    // } else {
-                    //     input = start_color;
-                    //     start_color_initialized = true;
-                    // }
                 }
                
                 elements[params[0]] = input;
@@ -88,7 +81,7 @@ class Intcode_calculator {
                         if(current_direction == 0) {
                             current_position = std::make_pair(y, x-1);
                         } else if(current_direction == 1) {
-                            current_position = std::make_pair(y-1,x);
+                            current_position = std::make_pair(y-1, x);
                         } else if(current_direction == 2) {
                             current_position = std::make_pair(y, x+1);
                         } else if(current_direction == 3) {
@@ -151,13 +144,12 @@ class Intcode_calculator {
                 num_of_params = 1;
                 relative_base += elements[params[0]];
             });
+
+            // initialize current position
+            current_position = std::make_pair(0, 0);
         }
 
-        void calculate(int _start_color) {
-            color_map[std::make_pair(0, 0)] = start_color;
-            color_map.empty();
-            current_position = std::make_pair(0, 0);
-            start_color = _start_color;
+        void calculate() {
             for(i = 0; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
                 int help = 0;
@@ -193,10 +185,9 @@ class Intcode_calculator {
             }
         }
 
-        int paint_panels(int _start_color) {
-            if(color_map.size() == 0 || start_color != _start_color) {
-                calculate(_start_color);
-            }
+        int paint_panels(int start_color) {
+            color_map[std::make_pair(0,0)] = start_color;
+            calculate();
             return color_map.size();
         }
 
@@ -209,8 +200,6 @@ class Intcode_calculator {
         std::string element;
         long long int output;
         int i;
-        bool start_color_initialized;
-        int start_color;
         int input;
         std::pair<int, int> current_position;
 
@@ -238,22 +227,17 @@ int main() {
     while(std::getline(ss, element, ',')) {
         elements.push_back(std::stoll(element));
     }
-    
-    int start_color = 0;
-
+   
     Intcode_calculator calc(elements);
-    // int part1 = calc1.paint_panels(start_color);
-    // std::cout << "part1 = " << part1 << std::endl;
+    int part1 = calc.paint_panels(0);
+    std::cout << "part1 = " << part1 << std::endl;
 
+    Intcode_calculator calc2(elements);
     std::cout << "part2" << std::endl;
-    start_color = 1;
-    calc.paint_panels(start_color);
-    std::map<std::pair<int, int>, int> color_map = calc.color_map;
+    calc2.paint_panels(1);
+    std::map<std::pair<int, int>, int> color_map = calc2.color_map;
 
-    int row_min;
-    int row_max;
-    int column_min;
-    int column_max;
+    int row_min, row_max, column_min, column_max;
 
     // get min, get max
     std::for_each(color_map.begin(), color_map.end(), [&](std::pair<std::pair<int, int>, int> pair) {
