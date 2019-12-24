@@ -70,18 +70,10 @@ class Intcode_calculator {
                 if(color) {
                     color_map[current_position] = output;
                     color = false;
-                   
-                    std::cout << "color = " << output << std::endl;
-                   
                 } else {
                     color = true;
                     int x = current_position.first;
                     int y = current_position.second;
-                   
-                    std::cout << "output = " << output << std::endl;
-                    std::cout << "ex direction = " << current_direction << std::endl;
-                    std::cout << "ex x = " << x << std::endl;
-                    std::cout << "ex y = " << y << std::endl;
                    
                     if(output == 0) {
                         // turn left
@@ -94,7 +86,7 @@ class Intcode_calculator {
                         } else if(current_direction == 3) {
                             current_position = std::make_pair(x, y+1);
                         }
-                        current_direction = current_direction-1 <= 0 ? 3 : current_direction-1;
+                        current_direction = current_direction-1 < 0 ? 3 : current_direction-1;
                     } else if(output == 1) {
                         // turn right
                         if(current_direction == 0) {
@@ -108,11 +100,6 @@ class Intcode_calculator {
                         }
                         current_direction = (current_direction + 1) % 4;
                     }
-                   
-                    std::cout << "current_direction = " << current_direction << std::endl;
-                    std::cout << "x = " << current_position.first << std::endl;
-                    std::cout << "y = " << current_position.second << std::endl;
-                   
                 }
             });
            
