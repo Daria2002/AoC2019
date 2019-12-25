@@ -148,4 +148,60 @@ int main() {
 
     int part1 = calculate_total_energy(state);
     std::cout << "part1 = " << part1 << std::endl;
+
+    std::array<int, 1000> x_values;
+    std::array<int, 1000> y_values;
+    std::array<int, 1000> z_values;
+
+    int period_x = 0;
+    int period_y = 0;
+    int period_z = 0;
+
+    // storing x, y, z values for the first moon
+    for(int i = 0; i < moons.size(); i++) {
+        // vector of all moons for i-th step
+        std::vector<Moon> tmp = moons[i];
+        
+        x_values[i] = tmp[0]._x;
+        if(i != 0 && x_values[0] == x_values[i] && period_x == 0) {
+            period_x = i;
+        }
+
+        y_values[i] = tmp[0]._y;
+        if(i != 0 && y_values[0] == y_values[i] && period_y == 0) {
+            period_y = i;
+        }
+
+        z_values[i] = tmp[0]._z;
+        if(i != 0 && z_values[0] == z_values[i] && period_z == 0) {
+            period_z = i;
+        }
+    }
+
+    std::cout << "period x = " << period_x << std::endl;
+    std::cout << "period y = " << period_y << std::endl;
+    std::cout << "period z = " << period_z << std::endl;
+
+    
+
+    // for(int i = 0; i < 1000; i++) {
+    //     for(int j = min_x; j < x_values[i]; j++) {
+    //         std::cout << " ";
+    //     }
+    //     std::cout << "*" << std::endl;
+    // }
+
+    // for(int i = 0; i < 1000; i++) {
+    //     for(int j = min_y; j < y_values[i]; j++) {
+    //         std::cout << " ";
+    //     }
+    //     std::cout << "*" << std::endl;
+    // }
+
+    // for(int i = 0; i < 1000; i++) {
+    //     for(int j = min_z; j < z_values[i]; j++) {
+    //         std::cout << " ";
+    //     }
+    //     std::cout << "*" << std::endl;
+    // }
 }
