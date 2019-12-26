@@ -8,16 +8,13 @@
 #define NUMBER_OF_STEPS 1000
 
 class Moon {
-
     public:
-        int _x, _y, _z, _v_x, _v_y, _v_z;
-        Moon(int x, int y, int z) : _x(x), _y(y), _z(z)
-        {
+        long long int _x, _y, _z, _v_x, _v_y, _v_z;
+        Moon(long long int x,long long int y,long long int z) : _x(x), _y(y), _z(z) {
             _v_x = _v_y = _v_z = 0;
         }
-
         void update_velocities(std::vector<Moon> moon) {
-            for(int i = 0; i < moon.size(); i++) {
+            for(long long int i = 0; i < moon.size(); i++) {
                 if(moon[i]._x < _x) {
                     _v_x--;
                 } else if(moon[i]._x > _x) {                    
@@ -37,7 +34,6 @@ class Moon {
                 }
             }
         }
-
         void update_positions() {
             _x = _x + _v_x;
             _y = _y + _v_y;
@@ -122,11 +118,11 @@ bool period(std::vector<long long int> values) {
     return true;
 }
 
-unsigned long long int lcm(std::vector<int> v) 
+unsigned long long int lcm(std::vector<long long int> v) 
 { 
     // Find the maximum value in arr[] 
-    int max_num = 0; 
-    for (int i=0; i < v.size(); i++) 
+    long long int max_num = 0; 
+    for (long long int i=0; i < v.size(); i++) 
         if (max_num < v[i]) 
             max_num = v[i]; 
   
@@ -135,7 +131,7 @@ unsigned long long int lcm(std::vector<int> v)
   
     // Find all factors that are present in 
     // two or more array elements. 
-    int x = 2;  // Current factor. 
+    long long int x = 2;  // Current factor. 
     while (x <= max_num) 
     { 
         // To store indexes of all array 
@@ -158,12 +154,11 @@ unsigned long long int lcm(std::vector<int> v)
         } 
         else
             x++; 
-    } 
-  
+    }
     // Then multiply all reduced array elements 
-    for (int i=0; i < v.size(); i++) 
+    for (long long int i=0; i < v.size(); i++) 
         res = res*v[i]; 
-  
+
     return res; 
 } 
 
@@ -174,9 +169,6 @@ int main() {
     get_initial_state(moons[0]);
 
     std::vector<Moon> state = moons[0];
-    for(int i = 0; i < 4; i++)
-    std::printf("<x=%d, y=%d, z=%d>         <v_x=%d, v_y=%d, v_z=%d>\n",
-        state[i]._x, state[i]._y, state[i]._z, state[i]._v_x, state[i]._v_y, state[i]._v_z);
     // calculate for defined number of steps
     for(long long int i = 1; i < NUMBER_OF_STEPS+1; i++) {
         int j = 0;
@@ -190,9 +182,6 @@ int main() {
             moon.update_velocities(help);
             moon.update_positions();
             state.push_back(moon);
-
-            // std::printf("<x=%d, y=%d, z=%d>         <v_x=%d, v_y=%d, v_z=%d>\n",
-            // moon._x, moon._y, moon._z, moon._v_x, moon._v_y, moon._v_z);
         });
 
         moons[i] = state;
@@ -202,13 +191,19 @@ int main() {
     std::cout << "part1 = " << part1 << std::endl;
 
     // part2
-    std::vector<int> periods;
-    std::vector<long long int> x_values, y_values, z_values;
+    std::vector<long long int> periods;
+    // std::vector<long long int> x_values, y_values, z_values;
+
+    // key - planet, value - values (x, y or z)
+    std::map<long long int, std::vector<long long int>> x_values, y_values, z_values;
+
     std::vector<int> periods_flag(12, 0);
-    int i = 1;
+    long long int i = 1;
     moons.clear();
     get_initial_state(moons[0]);
     state = moons[0];
+
+    long long int last_index = 0;
 
     while(periods.size() < 12) {
         int j = 0;
@@ -223,55 +218,55 @@ int main() {
             moon.update_velocities(help);
             moon.update_positions();
             state.push_back(moon);
-
-            // std::printf("<x=%d, y=%d, z=%d>         <v_x=%d, v_y=%d, v_z=%d>\n",
-            // moon._x, moon._y, moon._z, moon._v_x, moon._v_y, moon._v_z);
         });
 
         moons[i] = state;
-        std::cout << "korak = " << i << std::endl;
-        std::cout << "periods size = " << periods.size() << std::endl;
         i++;
 
-        for(int k = 0; k < 4; k++) {
+        if(i%2 == 1) continue;
+
+        for(long long int k = 0; k < 4; k++) {
             if(periods_flag[k * 3 + 0] == 1 && periods_flag[k * 3 + 1] == 1 &&
             periods_flag[k * 3 + 2] == 1) {
                 continue;
             }
-            for(int l = 0; l < moons.size(); l++) {
+            for(long long int l = last_index; l < moons.size(); l++) {
                 // vector of all moons for i-th step
                 std::vector<Moon> tmp = moons[l];
                 
-                x_values.push_back(tmp[k]._x);
-                if(periods_flag[k*3+0] == 0 && period(x_values)) {
-                    periods.push_back(x_values.size()/2);
+                x_values[k].push_back(tmp[k]._x);
+
+                if(periods_flag[k*3+0] == 0 && period(x_values[k])) {
+                    periods.push_back(x_values[k].size()/2);
                     periods_flag[k*3+0] = 1;
                 }
 
-                y_values.push_back(tmp[k]._y);
-                if(periods_flag[k*3+1] == 0 && period(y_values)) {
-                    periods.push_back(y_values.size()/2);
+                y_values[k].push_back(tmp[k]._y);
+                if(periods_flag[k*3+1] == 0 && period(y_values[k])) {
+                    periods.push_back(y_values[k].size()/2);
                     periods_flag[k*3+1] = 1;
                 }
 
-                z_values.push_back(tmp[k]._z);
-                if(periods_flag[k*3+2] == 0 && period(z_values)) {
-                    periods.push_back(z_values.size()/2);
+                z_values[k].push_back(tmp[k]._z);
+                if(periods_flag[k*3+2] == 0 && period(z_values[k])) {
+                    periods.push_back(z_values[k].size()/2);
                     periods_flag[k*3+2] = 1;
                 }
             }
-            x_values.clear();
-            y_values.clear();
-            z_values.clear();
         }
+        last_index = moons.size();
     }
 
-    
-    for(int i = 0; i < periods.size(); i++) {
-        std::printf("period[%d] = %d\n", i, periods[i]);
-    }
+    std::sort(periods.begin(), periods.end());
+    // unique... return pointer at (?)
+    // 10 20 20 20 30 30 20 20 10
+    // 10 20 30 20 10 (?)  ?  ?  ?
+    periods.erase(std::unique(periods.begin(), periods.end()), periods.end());
 
-    std::cout << "period size = " << periods.size() << std::endl;
+    std::vector<long long int> help;
+    help.push_back(periods[periods.size()-1]);
+    help.push_back(periods[periods.size()-2]);
+    help.push_back(periods[periods.size()-3]);
 
-    std::cout << "part2 = " << lcm(periods) << std::endl;
+    std::cout << "part2 = " << lcm(help) << std::endl;
 }
