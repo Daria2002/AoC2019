@@ -88,7 +88,6 @@ int calculate_total_energy(std::vector<Moon> state) {
         potential[i] = std::abs(state[i]._x) + 
                        std::abs(state[i]._y) +
                        std::abs(state[i]._z);
-        std::cout << "potential[" << i << "] = " << potential[i] << std::endl;
     }
 
     std::array<int, 4> kinetic;
@@ -97,41 +96,80 @@ int calculate_total_energy(std::vector<Moon> state) {
         kinetic[i] = std::abs(state[i]._v_x) + 
                      std::abs(state[i]._v_y) +
                      std::abs(state[i]._v_z);
-        std::cout << "kinetic[" << i << "] = " << kinetic[i] << std::endl;
     }
 
     std::array<int, 4> total;
     for(int i = 0; i < 4; i++) {
         total[i] = potential[i] * kinetic[i];
-        std::cout << "total[" << i << "] = " << total[i] << std::endl;
     }
 
     // return sum of total;
     int sum_of_total = total[0] + total[1] + total[2] + total[3];
-    std::cout << "sum of total = " << sum_of_total << std::endl;
     return sum_of_total;
 }
 
-bool period(std::vector<int> values) {
+bool period(std::vector<long long int> values) {
 
     if(values.size() % 2 == 1 || values.size() < 2) {
-        std::cout << "period = false"<< std::endl;
         return false;
     } 
 
-    for(int i = 0; i < values.size()/2; i++) {
+    for(long long int i = 0; i < values.size()/2; i++) {
         if(values[i] != values[values.size()/2 + i]) {
-            std::cout << "razl " << std::endl;
             return false;
         }
     }
-    std::cout << "period = true" << std::endl;
     return true;
 }
 
+unsigned long long int lcm(std::vector<int> v) 
+{ 
+    // Find the maximum value in arr[] 
+    int max_num = 0; 
+    for (int i=0; i < v.size(); i++) 
+        if (max_num < v[i]) 
+            max_num = v[i]; 
+  
+    // Initialize result 
+    unsigned long long int res = 1; 
+  
+    // Find all factors that are present in 
+    // two or more array elements. 
+    int x = 2;  // Current factor. 
+    while (x <= max_num) 
+    { 
+        // To store indexes of all array 
+        // elements that are divisible by x. 
+        std::vector<int> indexes; 
+        for (int j=0; j < v.size(); j++) 
+            if (v[j]%x == 0) 
+                indexes.push_back(j); 
+  
+        // If there are 2 or more array elements 
+        // that are divisible by x. 
+        if (indexes.size() >= 2) 
+        { 
+            // Reduce all array elements divisible 
+            // by x. 
+            for (int j=0; j<indexes.size(); j++) 
+                v[indexes[j]] = v[indexes[j]]/x; 
+  
+            res = res * x; 
+        } 
+        else
+            x++; 
+    } 
+  
+    // Then multiply all reduced array elements 
+    for (int i=0; i < v.size(); i++) 
+        res = res*v[i]; 
+  
+    return res; 
+} 
+
 int main() {
     // key is step, value is vector of four states (for each moon)
-    std::map<int, std::vector<Moon>> moons;
+    std::map<long long int, std::vector<Moon>> moons;
     // get initial position, for step = 0
     get_initial_state(moons[0]);
 
@@ -140,11 +178,41 @@ int main() {
     std::printf("<x=%d, y=%d, z=%d>         <v_x=%d, v_y=%d, v_z=%d>\n",
         state[i]._x, state[i]._y, state[i]._z, state[i]._v_x, state[i]._v_y, state[i]._v_z);
     // calculate for defined number of steps
-    for(int i = 1; i < NUMBER_OF_STEPS+1; i++) {
+    for(long long int i = 1; i < NUMBER_OF_STEPS+1; i++) {
         int j = 0;
         state.clear();
+        std::for_each(moons[i-1].begin(), moons[i-1].end(), [&](Moon moon) {
+            // help contains all moons except moon to update
+            std::vector<Moon> help = moons[i-1];
+            help.erase(help.begin() + j);
+            j++;
 
-        std::cout << "korak = " << i << std::endl;
+            moon.update_velocities(help);
+            moon.update_positions();
+            state.push_back(moon);
+
+            // std::printf("<x=%d, y=%d, z=%d>         <v_x=%d, v_y=%d, v_z=%d>\n",
+            // moon._x, moon._y, moon._z, moon._v_x, moon._v_y, moon._v_z);
+        });
+
+        moons[i] = state;
+    }
+
+    int part1 = calculate_total_energy(state);
+    std::cout << "part1 = " << part1 << std::endl;
+
+    // part2
+    std::vector<int> periods;
+    std::vector<long long int> x_values, y_values, z_values;
+    std::vector<int> periods_flag(12, 0);
+    int i = 1;
+    moons.clear();
+    get_initial_state(moons[0]);
+    state = moons[0];
+
+    while(periods.size() < 12) {
+        int j = 0;
+        state.clear();
 
         std::for_each(moons[i-1].begin(), moons[i-1].end(), [&](Moon moon) {
             // help contains all moons except moon to update
@@ -156,77 +224,54 @@ int main() {
             moon.update_positions();
             state.push_back(moon);
 
-            std::printf("<x=%d, y=%d, z=%d>         <v_x=%d, v_y=%d, v_z=%d>\n",
-             moon._x, moon._y, moon._z, moon._v_x, moon._v_y, moon._v_z);
+            // std::printf("<x=%d, y=%d, z=%d>         <v_x=%d, v_y=%d, v_z=%d>\n",
+            // moon._x, moon._y, moon._z, moon._v_x, moon._v_y, moon._v_z);
         });
 
         moons[i] = state;
-    }
+        std::cout << "korak = " << i << std::endl;
+        std::cout << "periods size = " << periods.size() << std::endl;
+        i++;
 
-    int part1 = calculate_total_energy(state);
-    std::cout << "part1 = " << part1 << std::endl;
+        for(int k = 0; k < 4; k++) {
+            if(periods_flag[k * 3 + 0] == 1 && periods_flag[k * 3 + 1] == 1 &&
+            periods_flag[k * 3 + 2] == 1) {
+                continue;
+            }
+            for(int l = 0; l < moons.size(); l++) {
+                // vector of all moons for i-th step
+                std::vector<Moon> tmp = moons[l];
+                
+                x_values.push_back(tmp[k]._x);
+                if(periods_flag[k*3+0] == 0 && period(x_values)) {
+                    periods.push_back(x_values.size()/2);
+                    periods_flag[k*3+0] = 1;
+                }
 
-    std::vector<int> x_values;
-    std::vector<int> y_values;
-    std::vector<int> z_values;
+                y_values.push_back(tmp[k]._y);
+                if(periods_flag[k*3+1] == 0 && period(y_values)) {
+                    periods.push_back(y_values.size()/2);
+                    periods_flag[k*3+1] = 1;
+                }
 
-    int period_x = 0;
-    int period_y = 0;
-    int period_z = 0;
-
-    int min_x;
-    int min_y;
-    int min_z;
-
-    int first_peek_x;
-    int first_peek_y;
-    int first_peek_z;
-
-    // storing x, y, z values for the first moon
-    for(int i = 0; i < moons.size(); i++) {
-        // vector of all moons for i-th step
-        std::vector<Moon> tmp = moons[i];
-        
-        x_values.push_back(tmp[0]._x);
-        if(period_x == 0 && period(x_values)) {
-            period_x = x_values.size()/2;
-        }
-
-        y_values.push_back(tmp[0]._y);
-        if(period_y == 0 && period(y_values)) {
-            period_y = y_values.size()/2;
-        }
-
-        z_values.push_back(tmp[0]._z);
-        if(period_z == 0 && period(z_values)) {
-            period_z = z_values.size()/2;
+                z_values.push_back(tmp[k]._z);
+                if(periods_flag[k*3+2] == 0 && period(z_values)) {
+                    periods.push_back(z_values.size()/2);
+                    periods_flag[k*3+2] = 1;
+                }
+            }
+            x_values.clear();
+            y_values.clear();
+            z_values.clear();
         }
     }
-
-    std::cout << "period x = " << period_x << std::endl;
-    std::cout << "period y = " << period_y << std::endl;
-    std::cout << "period z = " << period_z << std::endl;
 
     
+    for(int i = 0; i < periods.size(); i++) {
+        std::printf("period[%d] = %d\n", i, periods[i]);
+    }
 
-    // for(int i = 0; i < 1000; i++) {
-    //     for(int j = min_x; j < x_values[i]; j++) {
-    //         std::cout << " ";
-    //     }
-    //     std::cout << "*" << std::endl;
-    // }
+    std::cout << "period size = " << periods.size() << std::endl;
 
-    // for(int i = 0; i < 1000; i++) {
-    //     for(int j = min_y; j < y_values[i]; j++) {
-    //         std::cout << " ";
-    //     }
-    //     std::cout << "*" << std::endl;
-    // }
-
-    // for(int i = 0; i < 1000; i++) {
-    //     for(int j = min_z; j < z_values[i]; j++) {
-    //         std::cout << " ";
-    //     }
-    //     std::cout << "*" << std::endl;
-    // }
+    std::cout << "part2 = " << lcm(periods) << std::endl;
 }
