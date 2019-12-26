@@ -112,6 +112,23 @@ int calculate_total_energy(std::vector<Moon> state) {
     return sum_of_total;
 }
 
+bool period(std::vector<int> values) {
+
+    if(values.size() % 2 == 1 || values.size() < 2) {
+        std::cout << "period = false"<< std::endl;
+        return false;
+    } 
+
+    for(int i = 0; i < values.size()/2; i++) {
+        if(values[i] != values[values.size()/2 + i]) {
+            std::cout << "razl " << std::endl;
+            return false;
+        }
+    }
+    std::cout << "period = true" << std::endl;
+    return true;
+}
+
 int main() {
     // key is step, value is vector of four states (for each moon)
     std::map<int, std::vector<Moon>> moons;
@@ -149,32 +166,40 @@ int main() {
     int part1 = calculate_total_energy(state);
     std::cout << "part1 = " << part1 << std::endl;
 
-    std::array<int, 1000> x_values;
-    std::array<int, 1000> y_values;
-    std::array<int, 1000> z_values;
+    std::vector<int> x_values;
+    std::vector<int> y_values;
+    std::vector<int> z_values;
 
     int period_x = 0;
     int period_y = 0;
     int period_z = 0;
+
+    int min_x;
+    int min_y;
+    int min_z;
+
+    int first_peek_x;
+    int first_peek_y;
+    int first_peek_z;
 
     // storing x, y, z values for the first moon
     for(int i = 0; i < moons.size(); i++) {
         // vector of all moons for i-th step
         std::vector<Moon> tmp = moons[i];
         
-        x_values[i] = tmp[0]._x;
-        if(i != 0 && x_values[0] == x_values[i] && period_x == 0) {
-            period_x = i;
+        x_values.push_back(tmp[0]._x);
+        if(period_x == 0 && period(x_values)) {
+            period_x = x_values.size()/2;
         }
 
-        y_values[i] = tmp[0]._y;
-        if(i != 0 && y_values[0] == y_values[i] && period_y == 0) {
-            period_y = i;
+        y_values.push_back(tmp[0]._y);
+        if(period_y == 0 && period(y_values)) {
+            period_y = y_values.size()/2;
         }
 
-        z_values[i] = tmp[0]._z;
-        if(i != 0 && z_values[0] == z_values[i] && period_z == 0) {
-            period_z = i;
+        z_values.push_back(tmp[0]._z);
+        if(period_z == 0 && period(z_values)) {
+            period_z = z_values.size()/2;
         }
     }
 
