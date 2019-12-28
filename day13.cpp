@@ -54,7 +54,7 @@ class Intcode_calculator {
             functions.emplace(Operations::OUTPUT, [&]() {
                 num_of_params = 1;
                 output = elements[params[0]];
-                std::cout << "output = " << output << std::endl;
+                // std::cout << "output = " << output << std::endl;
                 outputs.push_back(output);
             });
 
@@ -178,6 +178,7 @@ int main() {
     }
    
     Intcode_calculator calc(elements);
+
     std::vector<int> outputs = calc.calculate();
 
     for(int i = 2; i < outputs.size(); i = i + 3) {
@@ -188,5 +189,20 @@ int main() {
 
     std::cout << "part1 = " << counter << std::endl;
 
+    // part2
+
+    // Memory address 0 represents the number of quarters
+    // that have been inserted; set it to 2 to play for free.
+    elements[0] = 2;
+    
     return 0;
 }
+
+
+/*
+empty tile : "."
+wall tile : "|"
+block tile : "#"
+horizontal paddle : "_"
+ball : "o"
+*/
