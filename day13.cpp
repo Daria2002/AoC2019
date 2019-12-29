@@ -12,6 +12,7 @@
 #include <math.h>
 #include <utility>
 #include <array>
+#include <unistd.h>
 
 #define ASCII_ZERO 48
 
@@ -131,7 +132,6 @@ class Intcode_calculator {
             _x_ball = x_ball;
             _x_tile = x_tile;
             for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params + 1) {
-                // std::cout << "i = " << i << std::endl;
                 element = std::to_string(elements[i]);
                 int help = 0;
                 for(int k = 0; k < 3; k++) {
@@ -141,8 +141,6 @@ class Intcode_calculator {
                         indices_mode[2-k] = 0;
                     }
                 }
-                //std::cout << "naredba = " << element[element.size()-1]-ASCII_ZERO << std::endl;
-               
                 for(int j = 0; j < 3; j++) {
                     // last element and it is 99
                     if(i+j+1 >= elements.size()) {
@@ -157,17 +155,14 @@ class Intcode_calculator {
                     } else if(indices_mode[j] == 2) {
                         params[j] = elements[i + j + 1]+relative_base;
                     }
-                   
-                    std::cout << "Prije fill " << std::endl;
                     // if index greater than elements size
                     if(params[j] > elements.size()) {
                         fill_with_zeros(elements, params[j]);
                     }
-                    std::cout << "poslje fill" << std::endl;
                 }
 
-                std::cout << "funkcija = " << element[element.size() - 1] - ASCII_ZERO << std::endl;
-
+                std::cout << " " << std::endl;
+                
                 if(element[element.size() - 1] - ASCII_ZERO == 4) {
                     int result = functions[element[element.size()-1]-ASCII_ZERO]();
                     last_index = i + num_of_params + 1;
@@ -202,7 +197,7 @@ class Intcode_calculator {
         long long int output;
         int i;
         int input;
-       
+
         void fill_with_zeros(std::vector<long long int> &elements, long long int index) {
             int size = elements.size();
             for(int i = size; i <= index; i++) {
@@ -210,6 +205,11 @@ class Intcode_calculator {
             }
         }
 };
+
+void ClearScreen()
+{
+    std::cout << std::string(100, '\n');
+}
 
 void update_matrix(int x, int y, int tile_id, std::vector<std::vector<char>>& matrix, 
 int &x_ball, int &x_tile) {
@@ -243,12 +243,15 @@ int &x_ball, int &x_tile) {
 // zasto kada se salje by ref radi, a kad se šalje by value ne radi nego se pojavi
 // error : corrupted size vs. prev_size
 void draw_matrix(std::vector<std::vector<char>>& matrix) {
+    ClearScreen();
+
     for(int i = 0; i < matrix.size(); i++) {
         for(int j = 0; j < matrix[i].size(); j++) {
             std::cout << matrix[i][j];
         }
         std::cout << " " << std::endl;
     }
+    usleep(10000);
 }
 
 int max_dimension(std::vector<Tile> tiles, int dimension) {
@@ -302,7 +305,6 @@ int main() {
     std::cout << "part1 = " << calc.get_number_of_block_tiles() << std::endl;
 
     // part2
-
     // Memory address 0 represents the number of quarters
     // that have been inserted; set it to 2 to play for free.
     elements[0] = 2;
@@ -313,17 +315,14 @@ int main() {
     int x_tile = 0;
 
     while(calc2.last_index < elements.size() && elements[calc.last_index] != 99) {
-        std::cout << "prije x " << std::endl;
         x = calc2.calculate(x_ball, x_tile);
         if(x == -2) {
             break;
         }
-        std::cout << "poslje x " << std::endl;
         y = calc2.calculate(x_ball, x_tile);
         if(y == -2) {
             break;
         }
-        std::cout << "poslje y " << std::endl;
         value = calc2.calculate(x_ball, x_tile);
         if(value == -2) {
             break;
@@ -331,48 +330,26 @@ int main() {
 
         if(x == -1 && y == 0) {
             score = value;
-            std::cout << "score = " << score << std::endl;
             if(!matrix_initialized) {
                 int width = max_dimension(tiles, 0);
                 int height = max_dimension(tiles, 1);
 
                 initialize_matrix(width, height, matrix);
                 for(int i = 0; i < tiles.size(); i++) {
-                    std::cout << "i = " << i << std::endl;
                     update_matrix(tiles[i]._x, tiles[i]._y, tiles[i]._value, matrix, x_ball, x_tile);
                 }
-                std::cout << "nakon update " << std::endl;
                 matrix_initialized = true;
-                std::cout << "prije crtanja " << std::endl;
                 draw_matrix(matrix);
-                std::cout << "nacrtano" << std::endl;
             }
         } else {
             if(matrix_initialized) {
-                std::cout << "update1 " << std::endl;
-                try
-                {
-                    update_matrix(x, y, value, matrix, x_ball, x_tile);
-                }
-                catch(const std::exception& e) {}
-                
-                std::cout << "draw1" << std::endl;
+                update_matrix(x, y, value, matrix, x_ball, x_tile);
                 draw_matrix(matrix);
-                std::cout << "after draw1"<< std::endl;
             } else {
                 tiles.push_back(Tile(x, y, value));
             }
         }
     }
-    std::cout << "score = " << score << std::endl;
+    std::cout << "part2 = " << score << std::endl;
     return 0;
 }
-
-
-/*
-empty tile : "."
-wall tile : "|"
-block tile : "#"
-horizontal paddle : "_"
-ball : "o"
-*/
