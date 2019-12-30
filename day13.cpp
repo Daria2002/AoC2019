@@ -157,12 +157,11 @@ class Intcode_calculator {
                     }
                     // if index greater than elements size
                     if(params[j] > elements.size()) {
-                        fill_with_zeros(elements, params[j]);
+                        for(int m = elements.size(); m <= params[j]; m++) {
+                            elements.push_back(0);
+                        }
                     }
                 }
-
-                // std::cout << " " << std::endl;
-                
                 if(element[element.size() - 1] - ASCII_ZERO == 4) {
                     int result = functions[element[element.size()-1]-ASCII_ZERO]();
                     last_index = i + num_of_params + 1;
@@ -197,13 +196,6 @@ class Intcode_calculator {
         long long int output;
         int i;
         int input;
-
-        void fill_with_zeros(std::vector<long long int> &elements, long long int index) {
-            int size = elements.size();
-            for(int i = size; i <= index; i++) {
-                elements.push_back(0);
-            }
-        }
 };
 
 void ClearScreen()
@@ -340,7 +332,7 @@ int main() {
                 }
                 matrix_initialized = true;
                 draw_matrix(matrix);
-            }
+            } 
         } else {
             if(matrix_initialized) {
                 update_matrix(x, y, value, matrix, x_ball, x_tile);
