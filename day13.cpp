@@ -161,7 +161,7 @@ class Intcode_calculator {
                     }
                 }
 
-                std::cout << " " << std::endl;
+                // std::cout << " " << std::endl;
                 
                 if(element[element.size() - 1] - ASCII_ZERO == 4) {
                     int result = functions[element[element.size()-1]-ASCII_ZERO]();
