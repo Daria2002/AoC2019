@@ -51,12 +51,40 @@ class Intcode_calculator {
             // capture class members by saying 'this' in the capture list
             functions.emplace(Operations::SUM, [&]() {
                 num_of_params = 3;
+
+                // fill with zeros
+                if(params[0] >= elements.size() && params[0] > 0) {
+                    elements.resize(params[0]+1);
+                }
+
+                if(params[1] >= elements.size() && params[1] > 0) {
+                    elements.resize(params[1]+1);
+                }
+
+                if(params[2] >= elements.size() && params[2] > 0) {
+                    elements.resize(params[2]+1);
+                }
+
                 elements[params[2]] = elements[params[0]] + elements[params[1]];
                 return 0;
             });
 
             functions.emplace(Operations::MUL, [&]() {
                 num_of_params = 3;
+
+                // fill with zeros
+                if(params[0] >= elements.size() && params[0] > 0) {
+                    elements.resize(params[0]+1);
+                }
+
+                if(params[1] >= elements.size() && params[1] > 0) {
+                    elements.resize(params[1]+1);
+                }
+
+                if(params[2] >= elements.size() && params[2] > 0) {
+                    elements.resize(params[2]+1);
+                }
+
                 elements[params[2]] = elements[params[0]] * elements[params[1]];
                 return 0; 
             });
@@ -70,19 +98,43 @@ class Intcode_calculator {
                 } else {
                     input = 0;
                 }
+
+                // fill with zeros
+                if(params[0] >= elements.size() && params[0] > 0) {
+                    elements.resize(params[0]+1);
+                }
+
                 elements[params[0]] = input;
                 return 0;
             });
 
             functions.emplace(Operations::OUTPUT, [&]() {
                 num_of_params = 1;
+
+                // fill with zeros
+                if(params[0] >= elements.size() && params[0] > 0) {
+                    elements.resize(params[0]+1);
+                }
+
                 output = elements[params[0]];
-                outputs.push_back(output);
+                block_tile_id++;
+                if(block_tile_id % 3 == 0 && output == 2)
+                    count_block_tiles++;
                 return output;
             });
 
             functions.emplace(Operations::JUMP_IF_TRUE, [&]() {
                 num_of_params = 2;
+
+                // fill with zeros
+                if(params[0] >= elements.size() && params[0] > 0) {
+                    elements.resize(params[0]+1);
+                }
+
+                if(params[1] >= elements.size() && params[1] > 0) {
+                    elements.resize(params[1]+1);
+                }
+
                 if(elements[params[0]] != 0) {
                     // because there is num_of_params+1 in for loop
                     num_of_params = -1;
@@ -93,6 +145,16 @@ class Intcode_calculator {
 
             functions.emplace(Operations::JUMP_IF_FALSE, [&]() {
                 num_of_params = 2;
+
+                // fill with zeros
+                if(params[0] >= elements.size() && params[0] > 0) {
+                    elements.resize(params[0]+1);
+                }
+
+                if(params[1] >= elements.size() && params[1] > 0) {
+                    elements.resize(params[1]+1);
+                }
+
                 if(elements[params[0]] == 0) {
                     // because there is num_of_params+1 in for loop
                     num_of_params = -1;
@@ -103,6 +165,20 @@ class Intcode_calculator {
 
             functions.emplace(Operations::LESS_THAN, [&]() {
                 num_of_params = 3;
+
+                // fill with zeros
+                if(params[0] >= elements.size() && params[0] > 0) {
+                    elements.resize(params[0]+1);
+                }
+
+                if(params[1] >= elements.size() && params[1] > 0) {
+                    elements.resize(params[1]+1);
+                }
+
+                if(params[2] >= elements.size() && params[2] > 0) {
+                    elements.resize(params[2]+1);
+                }
+
                 if(elements[params[0]] < elements[params[1]]) {
                     elements[params[2]] = 1;
                 } else {
@@ -113,6 +189,20 @@ class Intcode_calculator {
 
             functions.emplace(Operations::EQUALS, [&]() {
                 num_of_params = 3;
+
+                // fill with zeros
+                if(params[0] >= elements.size() && params[0] > 0) {
+                    elements.resize(params[0]+1);
+                }
+
+                if(params[1] >= elements.size() && params[1] > 0) {
+                    elements.resize(params[1]+1);
+                }
+
+                if(params[2] >= elements.size() && params[2] > 0) {
+                    elements.resize(params[2]+1);
+                }
+
                 if(elements[params[0]] == elements[params[1]]) {
                     elements[params[2]] = 1;
                 } else {
@@ -123,6 +213,12 @@ class Intcode_calculator {
        
             functions.emplace(Operations::RELATIVE_BASE, [&]() {
                 num_of_params = 1;
+
+                // fill with zeros
+                if(params[0] >= elements.size() && params[0] > 0) {
+                    elements.resize(params[0]+1);
+                }
+
                 relative_base += elements[params[0]];
                 return 0;
             });
@@ -131,10 +227,11 @@ class Intcode_calculator {
         int calculate(int x_ball, int x_tile) {
             _x_ball = x_ball;
             _x_tile = x_tile;
+
             for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params + 1) {
                 element = std::to_string(elements[i]);
                 int help = 0;
-                for(int k = 0; k < 3; k++) {
+                for(int k = 0; k<3; k++) {
                     if(element.size() > 4-k) {
                         indices_mode[2-k] = element.at(help++)-ASCII_ZERO;
                     } else {
@@ -153,13 +250,7 @@ class Intcode_calculator {
                     } else if(indices_mode[j] == 1) {
                         params[j] = i + j + 1;
                     } else if(indices_mode[j] == 2) {
-                        params[j] = elements[i + j + 1]+relative_base;
-                    }
-                    // if index greater than elements size
-                    if(params[j] > elements.size()) {
-                        for(int m = elements.size(); m <= params[j]; m++) {
-                            elements.push_back(0);
-                        }
+                        params[j] = elements[i + j + 1] + relative_base;
                     }
                 }
                 if(element[element.size() - 1] - ASCII_ZERO == 4) {
@@ -167,6 +258,7 @@ class Intcode_calculator {
                     last_index = i + num_of_params + 1;
                     return result;
                 }
+                
                 functions[element[element.size()-1]-ASCII_ZERO]();
             }
             return -2;
@@ -174,19 +266,14 @@ class Intcode_calculator {
 
         int last_index = 0;
         int get_number_of_block_tiles() {
-            int counter = 0;
-            for(int i = 2; i < outputs.size(); i = i + 3) {
-                if(outputs[i] == 2) {
-                    counter++;
-                }
-            }
-            return counter;
+            return count_block_tiles;
         }
 
     private:
         int _x_ball;
         int _x_tile;
-        std::vector<int> outputs;
+        int count_block_tiles = 0;
+        int block_tile_id = 0;
         std::array<long long int, 3> params;
         int num_of_params = 1;
         int relative_base = 0;
@@ -200,7 +287,7 @@ class Intcode_calculator {
 
 void ClearScreen()
 {
-    std::cout << std::string(100, '\n');
+    std::cout << std::string(10, '\n');
 }
 
 void update_matrix(int x, int y, int tile_id, std::vector<std::vector<char>>& matrix, 
@@ -305,6 +392,7 @@ int main() {
     int x, y, value;
     int x_ball = 0;
     int x_tile = 0;
+    int number_of_drawings = 0;
 
     while(calc2.last_index < elements.size() && elements[calc.last_index] != 99) {
         x = calc2.calculate(x_ball, x_tile);
@@ -337,6 +425,7 @@ int main() {
             if(matrix_initialized) {
                 update_matrix(x, y, value, matrix, x_ball, x_tile);
                 draw_matrix(matrix);
+                number_of_drawings++;
             } else {
                 tiles.push_back(Tile(x, y, value));
             }
