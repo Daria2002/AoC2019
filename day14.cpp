@@ -37,21 +37,26 @@ std::vector<Chemical> fuel_reaction;
 
 bool all_elements_ore(std::vector<Chemical>);
 int sum_ore(std::vector<Chemical>);
-void check_quantity(Chemical, std::vector<Chemical> &);
-void replace_reaction_with_inputs(Chemical, std::vector<Chemical> &);
+int multiply_index(Chemical);
+void replace_reaction_with_inputs(Chemical, int, std::vector<Chemical> &);
 
-int calculate_ore(std::vector<Chemical> &inputs) {
+int calculate_ore(std::vector<Chemical> &inputs, int ore) {
     if(all_elements_ore(inputs)) {
         return sum_ore(inputs);
     }
 
-    int ore;
     // for each input
     for(int i = 0; i < inputs.size(); i++) {
         // i-th input
-        check_quantity(inputs[i], inputs);
-        replace_reaction_with_inputs(inputs[i], inputs);
-        ore = calculate_ore(inputs);
+        int multiply_factor = multiply_index(inputs[i]);
+        replace_reaction_with_inputs(inputs[i], multiply_factor, inputs);
+
+        std::vector<Chemical> next_input;
+        next_input.push_back(inputs[i]);
+        int result = calculate_ore(next_input, ore);
+
+        ore += result;
+        // ore = calculate_ore(inputs);
         inputs[i].name = ORE;
         inputs[i].quantity = ore;
     }
@@ -112,19 +117,24 @@ int main() {
         }
     }
     
-    int part1 = calculate_ore(fuel_reaction);
-    std::cout << "part1 = " << calculate_ore << std::endl;
+    int part1 = calculate_ore(fuel_reaction, 0);
+    std::cout << "part1 = " << part1 << std::endl;
     return 0;
 }
 
 // remove chemical and insert inputs to reaction where chemical is output
-void replace_reaction_with_inputs(Chemical chemical, std::vector<Chemical> &inputs) {
+void replace_reaction_with_inputs(Chemical chemical, int multiply_factor, std::vector<Chemical> &inputs) {
+    if(chemical.name == ORE) {
+        return;
+    }
+
     // insert inputs for chemical
     for(auto it = reactions.begin(); it != reactions.end(); it++) {
         if(it->first == chemical.name) {
             std::for_each(it -> second.begin(), it -> second.end(), [&](Chemical c) {
-                inputs.push_back(c);
+                inputs.push_back(Chemical(c.name, c.quantity * multiply_factor));
             });
+            break;
         }
     }
 
@@ -133,7 +143,6 @@ void replace_reaction_with_inputs(Chemical chemical, std::vector<Chemical> &inpu
     for(i = 0; i < inputs.size(); i++) {
         if(inputs[i].name == chemical.name) break;
     }
-
     inputs.erase(inputs.begin() + i);
 }
 
@@ -153,27 +162,30 @@ int sum_ore(std::vector<Chemical> inputs) {
     return count;
 }
 
-void check_quantity(Chemical chemical, std::vector<Chemical> &inputs) {
-    // find position where 
-    int index;
-    for(index = 0; index < inputs.size(); index++) {
-        if(inputs[index].name == chemical.name) break;
-    }
-
+int multiply_index(Chemical chemical) {
+    int multiply_index = 0;
+    int new_quantity = chemical.quantity;
     for(auto it : reactions) {
         if(it.first == chemical.name) {
             int old_quantity = name_and_quantity[it.first];
-            int new_quantity;
             // check how many reactions need to happen to provide needed amoount of chemical
             if(chemical.quantity / old_quantity == 0) {
-                new_quantity = old_quantity; 
+                multiply_index = 1;
             } else if(chemical.quantity % old_quantity != 0) {
-                new_quantity = (chemical.quantity/old_quantity + 1) * chemical.quantity;
+                multiply_index = (chemical.quantity/old_quantity + 1);
             } else {
-                new_quantity = (chemical.quantity/old_quantity) * chemical.quantity;
+                multiply_index = chemical.quantity/old_quantity;
             }
-            inputs[index].quantity = new_quantity;
             break;
         }
-    }   
+    }
+    return multiply_index;   
 }
+
+
+/**
+ * pr. chemical quantity = 1, old_quantity = 3, new_quantity = 3
+ * pr. chemical quantity = 4, old_quantity = 3, new_quantity = 2 * 4 = 8
+ * 
+ * 
+ * */
