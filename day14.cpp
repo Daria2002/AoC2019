@@ -41,6 +41,7 @@ int multiply_index(Chemical);
 void replace_reaction_with_inputs(Chemical, int, std::vector<Chemical> &);
 
 int calculate_ore(std::vector<Chemical> &inputs, int ore) {
+
     if(all_elements_ore(inputs)) {
         return sum_ore(inputs);
     }
@@ -124,15 +125,25 @@ int main() {
 
 // remove chemical and insert inputs to reaction where chemical is output
 void replace_reaction_with_inputs(Chemical chemical, int multiply_factor, std::vector<Chemical> &inputs) {
-    if(chemical.name == ORE) {
+    if(chemical.name == ORE || (reactions[chemical.name].size() == 1 && reactions[chemical.name].at(0).name == ORE)) {
         return;
     }
 
     // insert inputs for chemical
     for(auto it = reactions.begin(); it != reactions.end(); it++) {
         if(it->first == chemical.name) {
+            // check inputs to reaction where chemical name is output
             std::for_each(it -> second.begin(), it -> second.end(), [&](Chemical c) {
-                inputs.push_back(Chemical(c.name, c.quantity * multiply_factor));
+                bool already_exists = false; 
+                for(int k = 0; k < inputs.size(); k++) {
+                    if(inputs[k].name == c.name) {
+                        already_exists = true;
+                        inputs[k].quantity += c.quantity*multiply_factor;
+                    }
+                }
+                if(!already_exists) {
+                    inputs.push_back(Chemical(c.name, c.quantity * multiply_factor));
+                }
             });
             break;
         }
