@@ -22,14 +22,16 @@
 
 class Chemical {
     public:
-        Chemical(std::string _name, int _quantity) : name(_name), quantity(quantity) {}
+        Chemical(std::string _name, int _quantity) : name(_name), quantity(_quantity) {}
         std::string name;
         int quantity;
+
     private:
 };
 
 // key = inputs, value = outout
-std::unordered_map<Chemical*, std::vector<Chemical>> reactions;
+std::unordered_map<std::string, std::vector<Chemical>> reactions;
+std::unordered_map<std::string, int> name_and_quantity;
 // fuel reaction
 std::vector<Chemical> fuel_reaction;
 
@@ -99,13 +101,14 @@ int main() {
             inputs_and_outputs.push_back(chemical);
         }
 
-        std::vector<Chemical> inputs(inputs_and_outputs.begin(), inputs_and_outputs.begin() + inputs_and_outputs.size() - 2);
+        std::vector<Chemical> inputs(inputs_and_outputs.begin(), inputs_and_outputs.begin() + inputs_and_outputs.size() - 1);
         Chemical output = inputs_and_outputs[inputs_and_outputs.size()-1];
 
         if(fuel_elements) {
             fuel_reaction = inputs;
         } else {
-            reactions[&output] = inputs;
+            reactions[output.name] = inputs;
+            name_and_quantity[output.name] = output.quantity;
         }
     }
     
@@ -118,7 +121,7 @@ int main() {
 void replace_reaction_with_inputs(Chemical chemical, std::vector<Chemical> &inputs) {
     // insert inputs for chemical
     for(auto it = reactions.begin(); it != reactions.end(); it++) {
-        if(it->first->name == chemical.name) {
+        if(it->first == chemical.name) {
             std::for_each(it -> second.begin(), it -> second.end(), [&](Chemical c) {
                 inputs.push_back(c);
             });
@@ -157,16 +160,17 @@ void check_quantity(Chemical chemical, std::vector<Chemical> &inputs) {
         if(inputs[index].name == chemical.name) break;
     }
 
-    for(auto& it : reactions) {
-        if(it.first->name == chemical.name) {
+    for(auto it : reactions) {
+        if(it.first == chemical.name) {
+            int old_quantity = name_and_quantity[it.first];
             int new_quantity;
             // check how many reactions need to happen to provide needed amoount of chemical
-            if(chemical.quantity / it.first->quantity == 0) {
-                new_quantity = it.first->quantity; 
-            } else if(chemical.quantity % it.first->quantity != 0) {
-                new_quantity = (chemical.quantity/it.first->quantity + 1) * chemical.quantity;
+            if(chemical.quantity / old_quantity == 0) {
+                new_quantity = old_quantity; 
+            } else if(chemical.quantity % old_quantity != 0) {
+                new_quantity = (chemical.quantity/old_quantity + 1) * chemical.quantity;
             } else {
-                new_quantity = (chemical.quantity/it.first->quantity) * chemical.quantity;
+                new_quantity = (chemical.quantity/old_quantity) * chemical.quantity;
             }
             inputs[index].quantity = new_quantity;
             break;
