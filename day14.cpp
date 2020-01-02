@@ -12,11 +12,10 @@
 #include <string>
 #include <stdio.h>
 #include <bits/stdc++.h>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
-#include <iterator>
 
 #define FUEL "FUEL"
 #define ORE "ORE"
@@ -30,26 +29,32 @@ class Chemical {
 };
 
 // key = inputs, value = outout
-std::map<Chemical, std::vector<Chemical>> reactions;
+std::unordered_map<Chemical*, std::vector<Chemical>> reactions;
 // fuel reaction
 std::vector<Chemical> fuel_reaction;
 
 bool all_elements_ore(std::vector<Chemical>);
 int sum_ore(std::vector<Chemical>);
 void check_quantity(Chemical, std::vector<Chemical> &);
+void replace_reaction_with_inputs(Chemical, std::vector<Chemical> &);
 
-int calculate_ore(std::vector<Chemical> reaction) {
-    if(all_elements_ore(reaction)) {
-        return sum_ore(reaction);
+int calculate_ore(std::vector<Chemical> &inputs) {
+    if(all_elements_ore(inputs)) {
+        return sum_ore(inputs);
     }
 
+    int ore;
     // for each input
-    for(int i = 0; i < reaction.size(); i++) {
+    for(int i = 0; i < inputs.size(); i++) {
         // i-th input
-        check_quantity(reaction[i], reaction);
-        int ore = calculate_ore();
-        replace_current_with_ore();
+        check_quantity(inputs[i], inputs);
+        replace_reaction_with_inputs(inputs[i], inputs);
+        ore = calculate_ore(inputs);
+        inputs[i].name = ORE;
+        inputs[i].quantity = ore;
     }
+
+    return ore;
 }
 
 int main() {
@@ -94,13 +99,13 @@ int main() {
             inputs_and_outputs.push_back(chemical);
         }
 
-        std::vector<Chemical> inputs(inputs_and_outputs.begin(), inputs_and_outputs.end() - 1);
+        std::vector<Chemical> inputs(inputs_and_outputs.begin(), inputs_and_outputs.begin() + inputs_and_outputs.size() - 2);
         Chemical output = inputs_and_outputs[inputs_and_outputs.size()-1];
 
         if(fuel_elements) {
             fuel_reaction = inputs;
         } else {
-            reactions[output] = inputs;
+            reactions[&output] = inputs;
         }
     }
     
@@ -109,42 +114,61 @@ int main() {
     return 0;
 }
 
-bool all_elements_ore(std::pair<std::vector<Chemical>, Chemical> reaction) {
-    for(int i = 0; i < reaction.first.size(); i++) {
-        if(reaction.first[i].name != ORE) return false;
+// remove chemical and insert inputs to reaction where chemical is output
+void replace_reaction_with_inputs(Chemical chemical, std::vector<Chemical> &inputs) {
+    // insert inputs for chemical
+    for(auto it = reactions.begin(); it != reactions.end(); it++) {
+        if(it->first->name == chemical.name) {
+            std::for_each(it -> second.begin(), it -> second.end(), [&](Chemical c) {
+                inputs.push_back(c);
+            });
+        }
+    }
+
+    // remove chemical
+    int i;
+    for(i = 0; i < inputs.size(); i++) {
+        if(inputs[i].name == chemical.name) break;
+    }
+
+    inputs.erase(inputs.begin() + i);
+}
+
+bool all_elements_ore(std::vector<Chemical> inputs) {
+    for(int i = 0; i < inputs.size(); i++) {
+        if(inputs[i].name != ORE) return false;
     }
     return true;
 }
 
-int sum_ore(std::pair<Chemical, std::vector<Chemical>> reaction) {
+int sum_ore(std::vector<Chemical> inputs) {
     int count = 0;
-    std::for_each(reaction.second.begin(), reaction.second.end(), [&](Chemical chemical) {
+    std::for_each(inputs.begin(), inputs.end(), [&](Chemical chemical) {
         count += chemical.quantity;
     }); 
 
     return count;
 }
 
-void check_quantity(Chemical chemical, std::pair<Chemical, std::vector<Chemical>> &reaction) {
+void check_quantity(Chemical chemical, std::vector<Chemical> &inputs) {
     // find position where 
     int index;
-    for(index = 0; index < reaction.second.size(); index++) {
-        if(reaction.second[index].name == chemical.name) break;
+    for(index = 0; index < inputs.size(); index++) {
+        if(inputs[index].name == chemical.name) break;
     }
 
-    std::map<Chemical, std::vector<Chemical>>::iterator it;
-    for(it = reactions.begin(); it != reactions.end(); it++) {
-        if(it -> first.name == chemical.name) {
+    for(auto& it : reactions) {
+        if(it.first->name == chemical.name) {
             int new_quantity;
             // check how many reactions need to happen to provide needed amoount of chemical
-            if(chemical.quantity / it -> first.quantity == 0) {
-                new_quantity = it -> first.quantity; 
-            } else if(chemical.quantity % it -> first.quantity != 0) {
-                new_quantity = (chemical.quantity/it -> first.quantity + 1) * chemical.quantity;
+            if(chemical.quantity / it.first->quantity == 0) {
+                new_quantity = it.first->quantity; 
+            } else if(chemical.quantity % it.first->quantity != 0) {
+                new_quantity = (chemical.quantity/it.first->quantity + 1) * chemical.quantity;
             } else {
-                new_quantity = (chemical.quantity/it -> first.quantity) * chemical.quantity;
+                new_quantity = (chemical.quantity/it.first->quantity) * chemical.quantity;
             }
-            reaction.second[index].quantity = new_quantity;
+            inputs[index].quantity = new_quantity;
             break;
         }
     }   
