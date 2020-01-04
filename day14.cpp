@@ -173,6 +173,8 @@ int main() {
         } else {
             if(inputs.size() == 1 && inputs[0].name == ORE) {
                 final_elements.push_back(output);
+                reactions[output.name] = inputs;
+                reactions_name_quantity[output.name] = output.quantity;
             } else {
                 reactions[output.name] = inputs;
                 reactions_name_quantity[output.name] = output.quantity;
@@ -198,22 +200,47 @@ int main() {
         solution.erase(solution.begin() + solution_index);
         std::vector<Chemical> inputs = reactions[element.name];
         int multiplier = get_reaction_quantity(element.name);
-        if(multiplier >= element.quantity) {
-            multiplier = 1;
-        } else {
-            multiplier = element.quantity / multiplier + 1;
+        if(multiplier < element.quantity) {
+            if(element.quantity % multiplier == 0) {
+                multiplier = element.quantity / multiplier;
+            } else {
+                multiplier = element.quantity / multiplier + 1;
+            }
         }
 
         for(int i = 0; i < inputs.size(); i++) {
             solution_index = index_in_vector(solution, inputs[i]);
             if(solution_index == -1) {
-                inputs[i].quantity *= multiplier;
-                solution.push_back(inputs[i]);
+                Chemical help_chemical(inputs[i].name, inputs[i].quantity * multiplier);
+                solution.push_back(help_chemical);
             } else {
                 solution[solution_index].quantity += (inputs[i].quantity) * multiplier;
             }
         }
     }
+
+    int count = 0;
+
+    for(int i = 0; i < solution.size(); i++) {
+        Chemical element = solution[i];
+        int multiplier = get_reaction_quantity(element.name);
+        if(multiplier < element.quantity) {
+            if(element.quantity % multiplier == 0) {
+                multiplier = element.quantity / multiplier;
+            } else {
+                multiplier = element.quantity / multiplier + 1;
+            }
+        }
+
+        std::vector<Chemical> inputs = reactions[element.name];
+        for(int i = 0; i < inputs.size(); i++) {
+            int help = inputs[i].quantity;
+            help *= multiplier;
+            count += help;
+        }
+    }
+
+    std::cout << "part1 = " << count << std::endl;
 
     return 0;
 }
