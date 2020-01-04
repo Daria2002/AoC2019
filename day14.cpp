@@ -206,6 +206,8 @@ int main() {
             } else {
                 multiplier = element.quantity / multiplier + 1;
             }
+        } else {
+            multiplier = 1;
         }
 
         for(int i = 0; i < inputs.size(); i++) {
