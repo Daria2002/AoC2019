@@ -51,19 +51,37 @@ struct DataHasher
  *                    straight-forward way of doing this is to specialize the std::hash template for your key-type.
  * A comparison function for equality
 */
-typedef std::unordered_map<Chemical, std::vector<Chemical>, DataHasher> DataHashMap;
+typedef std::unordered_map<std::string, std::vector<Chemical>, DataHasher> DataHashMap;
 DataHashMap reactions;
-DataHashMap final_elements;
 std::vector<Chemical> fuel_inputs;
 typedef std::unordered_map<Chemical, int, DataHasher> OccurrencesMap;
 OccurrencesMap final_elements_occurrences_map;
 
-int count_occurrence(Chemical up, Chemical down, int counter) {
-    return 1;
+int count_occurrence(Chemical output, Chemical input, int counter) {
+
+    if(output.name == input.name) {
+        return output.quantity;
+    }
+
+    std::vector<Chemical> inputs = reactions[output.name];
+
+    for(int i = 0; i < inputs.size(); i++) {
+        counter += count_occurrence(inputs[i], input, 0);
+    }
+
+}
+
+bool is_final_element(Chemical chemical, std::vector<Chemical> final_elements) {
+    for(int i = 0; i < final_elements.size(); i++) {
+        if(chemical.name == final_elements[i].name) {
+            return true;
+        }
+    }
+    return false;
 }
 
 int main() {
-
+    std::vector<Chemical> final_elements;
     std::ifstream file("./day14.txt");
     std::string line;
 
@@ -112,18 +130,39 @@ int main() {
             fuel_inputs = inputs;
         } else {
             if(inputs.size() == 1 && inputs[0].name == ORE) {
-                final_elements[output] = inputs;
+                final_elements.push_back(output);
             } else {
-                reactions[output] = inputs;
+                reactions[output.name] = inputs;
             }
         }
     }
-    
-    for(std::unordered_map<Chemical, std::vector<Chemical>, DataHasher>::iterator iter = final_elements.begin(); iter != final_elements.end(); ++iter) {
-        for(int j = 0; j < fuel_inputs.size(); j++) {
-            final_elements_occurrences_map[iter -> first] += count_occurrence(fuel_inputs[j], iter->first, 0);
-        }
+
+    std::vector<Chemical> solution;
+    for(int i = 0; i < fuel_inputs.size(); i++) {
+        solution.push_back(fuel_inputs[i]);
     }
-    
+
+    while(nisu_svi_direktni) {
+        element = solution[index];
+
+        if(elementi_in_final) {
+            promjeni index
+            continue;
+        }
+
+        if(postoji_već_u_solution) {
+            promjeni količinu spremljenu u solutionu
+            continue;
+        } else {
+             // inače
+            izbaci element iz solution
+            for(inpute za element) {
+                inpute od element dodaj u solution
+            }
+        }
+
+        promjeni index
+    }
+
     return 0;
 }
