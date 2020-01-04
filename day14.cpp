@@ -35,11 +35,23 @@ class Chemical {
 
 struct DataHasher
 {
+  std::size_t operator () (const std::string &key) const 
+  {
+    std::size_t seed = 0;
+    // boost::hash_combine(seed, boost::hash_value(key.name));
+    // boost::hash_combine(seed, boost::hash_value(key.quantity));
+    boost::hash_combine(seed, boost::hash_value(key));
+    return seed;
+  }
+};
+
+struct DataHasher2
+{
   std::size_t operator () (const Chemical &key) const 
   {
     std::size_t seed = 0;
-    boost::hash_combine(seed, boost::hash_value(key.name));
-    boost::hash_combine(seed, boost::hash_value(key.quantity));
+    // // boost::hash_combine(seed, boost::hash_value(key.name));
+    // // boost::hash_combine(seed, boost::hash_value(key.quantity));
     return seed;
   }
 };
@@ -53,8 +65,10 @@ struct DataHasher
 */
 typedef std::unordered_map<std::string, std::vector<Chemical>, DataHasher> DataHashMap;
 DataHashMap reactions;
+std::map<std::string, int> reactions_name_quantity;
 std::vector<Chemical> fuel_inputs;
-typedef std::unordered_map<Chemical, int, DataHasher> OccurrencesMap;
+std::vector<Chemical> final_elements;
+typedef std::unordered_map<Chemical, int, DataHasher2> OccurrencesMap;
 OccurrencesMap final_elements_occurrences_map;
 
 int count_occurrence(Chemical output, Chemical input, int counter) {
@@ -71,17 +85,45 @@ int count_occurrence(Chemical output, Chemical input, int counter) {
 
 }
 
-bool is_final_element(Chemical chemical, std::vector<Chemical> final_elements) {
+bool is_final_element(Chemical element) {
     for(int i = 0; i < final_elements.size(); i++) {
-        if(chemical.name == final_elements[i].name) {
+        if(element.name == final_elements[i].name) {
             return true;
         }
     }
     return false;
 }
 
+bool are_final_elements(std::vector<Chemical> check_elements) {
+    bool element_ok = false;
+    for(int i = 0; i < check_elements.size(); i++) {
+        if(!is_final_element(check_elements[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int index_in_vector(std::vector<Chemical> solution, Chemical element) {
+    for(int i = 0; i < solution.size(); i++) {
+        if(solution[i].name == element.name) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int get_reaction_quantity(std::string element_name) {
+    for(std::unordered_map<std::string, std::vector<Chemical>, DataHasher>::iterator it = reactions.begin();
+     it != reactions.end(); ++it) {
+        if(it->first == element_name) {
+            return reactions_name_quantity[it->first];
+        }
+    }
+    return 0;
+}
+
 int main() {
-    std::vector<Chemical> final_elements;
     std::ifstream file("./day14.txt");
     std::string line;
 
@@ -133,6 +175,7 @@ int main() {
                 final_elements.push_back(output);
             } else {
                 reactions[output.name] = inputs;
+                reactions_name_quantity[output.name] = output.quantity;
             }
         }
     }
@@ -142,26 +185,34 @@ int main() {
         solution.push_back(fuel_inputs[i]);
     }
 
-    while(nisu_svi_direktni) {
-        element = solution[index];
+    int index = 0;
+    while(!are_final_elements(solution)) {
+        Chemical element = solution[index];
 
-        if(elementi_in_final) {
-            promjeni index
+        if(is_final_element(element)) {
+            index++;
             continue;
         }
 
-        if(postoji_već_u_solution) {
-            promjeni količinu spremljenu u solutionu
-            continue;
+        int solution_index = index_in_vector(solution, element);
+        solution.erase(solution.begin() + solution_index);
+        std::vector<Chemical> inputs = reactions[element.name];
+        int multiplier = get_reaction_quantity(element.name);
+        if(multiplier >= element.quantity) {
+            multiplier = 1;
         } else {
-             // inače
-            izbaci element iz solution
-            for(inpute za element) {
-                inpute od element dodaj u solution
+            multiplier = element.quantity / multiplier + 1;
+        }
+
+        for(int i = 0; i < inputs.size(); i++) {
+            solution_index = index_in_vector(solution, inputs[i]);
+            if(solution_index == -1) {
+                inputs[i].quantity *= multiplier;
+                solution.push_back(inputs[i]);
+            } else {
+                solution[solution_index].quantity += (inputs[i].quantity) * multiplier;
             }
         }
-
-        promjeni index
     }
 
     return 0;
