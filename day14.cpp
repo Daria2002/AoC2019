@@ -211,10 +211,7 @@ int main() {
         std::vector<Chemical> inputs = reactions[element.name];
         multiplier = get_reaction_quantity(element.name);
 
-        while(residue_map[element.name] > 0 && multiplier < element.quantity) {
-            multiplier++;
-            residue_map[element.name]--;
-        }
+        element.quantity -= residue_map[element.name];
 
         help = multiplier;
         // multiplier is lower than element.quantity
@@ -229,16 +226,16 @@ int main() {
         } else {
             multiplier = 1;
         }
+
         residue_map[element.name] += (multiplier * help - element.quantity);
 
         for(int i = 0; i < inputs.size(); i++) {
             solution_index = index_in_vector(solution, inputs[i]);
-            int mul = inputs[i].quantity * multiplier;
             if(solution_index == -1) {
-                Chemical help_chemical(inputs[i].name, mul);
+                Chemical help_chemical(inputs[i].name, inputs[i].quantity * multiplier);
                 solution.push_back(help_chemical);
             } else {
-                solution[solution_index].quantity += mul;
+                solution[solution_index].quantity += (inputs[i].quantity * multiplier);
             }
         }
     }
