@@ -170,6 +170,8 @@ int main() {
 
         if(fuel_elements) {
             fuel_inputs = inputs;
+            reactions["FUEL"] = inputs;
+            reactions_name_quantity["FUEL"] = 1;
         } else {
             if(inputs.size() == 1 && inputs[0].name == ORE) {
                 final_elements.push_back(output);
@@ -196,8 +198,9 @@ int main() {
     }
 
     int index = 0;
-    int multiplier;
-    int help;
+    int multiplier = 0;
+    int help = 0;
+    int solution_index = 0;
     while(!are_final_elements(solution)) {
         Chemical element = solution[index];
 
@@ -206,18 +209,25 @@ int main() {
             continue;
         }
 
-        int solution_index = index_in_vector(solution, element);
-        solution.erase(solution.begin() + solution_index);
+        solution.erase(solution.begin() + index);
+
         std::vector<Chemical> inputs = reactions[element.name];
         multiplier = get_reaction_quantity(element.name);
 
-        element.quantity -= residue_map[element.name];
+        while(residue_map[element.name] > 0) {
+            element.quantity--;
+            residue_map[element.name]--;
+        }
+
+        if(element.quantity <= 0) {
+            continue;
+        }
 
         help = multiplier;
         // multiplier is lower than element.quantity
-        if(multiplier < element.quantity) {
+        if(multiplier <= element.quantity) {
             // element.quantity is divided by multiplier 
-            if(element.quantity % multiplier == 0) {
+            if(element.quantity % help == 0) {
                 multiplier = element.quantity / help;
             } else {
                 // there is residue
@@ -226,9 +236,9 @@ int main() {
         } else {
             multiplier = 1;
         }
-
+        
         residue_map[element.name] += (multiplier * help - element.quantity);
-
+        
         for(int i = 0; i < inputs.size(); i++) {
             solution_index = index_in_vector(solution, inputs[i]);
             if(solution_index == -1) {
