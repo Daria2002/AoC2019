@@ -123,6 +123,104 @@ int get_reaction_quantity(std::string element_name) {
     return 0;
 }
 
+long long int number_of_ore(long long int required_number_of_fuel) {
+    long long int count = 0;
+
+    for(long long int p = 0; p < required_number_of_fuel; p++) {
+        
+        std::cout << "index = " << p << std::endl;
+
+        std::vector<Chemical> solution;
+        for(int i = 0; i < fuel_inputs.size(); i++) {
+            solution.push_back(fuel_inputs[i]);
+        }
+
+        // key : chemical name, velue: residue quantity
+        std::unordered_map<std::string, int> residue_map; 
+
+        for(std::unordered_map<std::string, std::vector<Chemical>, DataHasher>::iterator it = reactions.begin();
+        it != reactions.end(); it++) {
+            residue_map[it -> first] = 0;
+        }
+
+        int index = 0;
+        int multiplier = 0;
+        int help = 0;
+        int solution_index = 0;
+        while(!are_final_elements(solution)) {
+            Chemical element = solution[index];
+
+            if(is_final_element(element)) {
+                index++;
+                continue;
+            }
+
+            solution.erase(solution.begin() + index);
+
+            std::vector<Chemical> inputs = reactions[element.name];
+            multiplier = get_reaction_quantity(element.name);
+
+            while(residue_map[element.name] > 0) {
+                element.quantity--;
+                residue_map[element.name]--;
+            }
+
+            if(element.quantity <= 0) {
+                continue;
+            }
+
+            help = multiplier;
+            // multiplier is lower than element.quantity
+            if(multiplier <= element.quantity) {
+                // element.quantity is divided by multiplier 
+                if(element.quantity % help == 0) {
+                    multiplier = element.quantity / help;
+                } else {
+                    // there is residue
+                    multiplier = element.quantity / help + 1;
+                }
+            } else {
+                multiplier = 1;
+            }
+            
+            residue_map[element.name] += (multiplier * help - element.quantity);
+            
+            for(int i = 0; i < inputs.size(); i++) {
+                solution_index = index_in_vector(solution, inputs[i]);
+                if(solution_index == -1) {
+                    Chemical help_chemical(inputs[i].name, inputs[i].quantity * multiplier);
+                    solution.push_back(help_chemical);
+                } else {
+                    solution[solution_index].quantity += (inputs[i].quantity * multiplier);
+                }
+            }
+        }
+
+        for(int i = 0; i < solution.size(); i++) {
+            Chemical element = solution[i];
+            multiplier = get_reaction_quantity(element.name);
+
+            if(multiplier < element.quantity) {
+                help = multiplier;
+                if(element.quantity % multiplier == 0) {
+                    multiplier = element.quantity / help;
+                } else {
+                    multiplier = element.quantity / help + 1;
+                }
+            } else {
+                multiplier = 1;
+            }
+
+            std::vector<Chemical> inputs = reactions[element.name];
+
+            // inputs[0] = 0RE
+            count += (inputs[0].quantity * multiplier);
+        }
+    }
+
+    return count;
+}
+
 int main() {
     std::ifstream file("./day14.txt");
     std::string line;
@@ -184,96 +282,12 @@ int main() {
         }
     }
 
-    std::vector<Chemical> solution;
-    for(int i = 0; i < fuel_inputs.size(); i++) {
-        solution.push_back(fuel_inputs[i]);
-    }
+    long long int part1 = number_of_ore(1);
 
-    // key : chemical name, velue: residue quantity
-    std::unordered_map<std::string, int> residue_map; 
+    long long int part2 = number_of_ore(460664);
 
-    for(std::unordered_map<std::string, std::vector<Chemical>, DataHasher>::iterator it = reactions.begin();
-     it != reactions.end(); it++) {
-        residue_map[it -> first] = 0;
-    }
-
-    int index = 0;
-    int multiplier = 0;
-    int help = 0;
-    int solution_index = 0;
-    while(!are_final_elements(solution)) {
-        Chemical element = solution[index];
-
-        if(is_final_element(element)) {
-            index++;
-            continue;
-        }
-
-        solution.erase(solution.begin() + index);
-
-        std::vector<Chemical> inputs = reactions[element.name];
-        multiplier = get_reaction_quantity(element.name);
-
-        while(residue_map[element.name] > 0) {
-            element.quantity--;
-            residue_map[element.name]--;
-        }
-
-        if(element.quantity <= 0) {
-            continue;
-        }
-
-        help = multiplier;
-        // multiplier is lower than element.quantity
-        if(multiplier <= element.quantity) {
-            // element.quantity is divided by multiplier 
-            if(element.quantity % help == 0) {
-                multiplier = element.quantity / help;
-            } else {
-                // there is residue
-                multiplier = element.quantity / help + 1;
-            }
-        } else {
-            multiplier = 1;
-        }
-        
-        residue_map[element.name] += (multiplier * help - element.quantity);
-        
-        for(int i = 0; i < inputs.size(); i++) {
-            solution_index = index_in_vector(solution, inputs[i]);
-            if(solution_index == -1) {
-                Chemical help_chemical(inputs[i].name, inputs[i].quantity * multiplier);
-                solution.push_back(help_chemical);
-            } else {
-                solution[solution_index].quantity += (inputs[i].quantity * multiplier);
-            }
-        }
-    }
-
-    long long int count = 0;
-
-    for(int i = 0; i < solution.size(); i++) {
-        Chemical element = solution[i];
-        multiplier = get_reaction_quantity(element.name);
-
-        if(multiplier < element.quantity) {
-            help = multiplier;
-            if(element.quantity % multiplier == 0) {
-                multiplier = element.quantity / help;
-            } else {
-                multiplier = element.quantity / help + 1;
-            }
-        } else {
-            multiplier = 1;
-        }
-
-        std::vector<Chemical> inputs = reactions[element.name];
-
-        // inputs[0] = 0RE
-        count += (inputs[0].quantity * multiplier);
-    }
-
-    std::cout << "part1 = " << count << std::endl;
+    std::cout << "part1 = " << part1 << std::endl;
+    std::cout << "part2 = " << part2 << std::endl;
 
     return 0;
 }
