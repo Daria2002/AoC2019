@@ -19,6 +19,8 @@
 
 #define FUEL "FUEL"
 #define ORE "ORE"
+#define MAX_ORE 999999999
+#define GOAL 1000000000000
 
 class Chemical {
     public:
@@ -38,8 +40,6 @@ struct DataHasher
   std::size_t operator () (const std::string &key) const 
   {
     std::size_t seed = 0;
-    // boost::hash_combine(seed, boost::hash_value(key.name));
-    // boost::hash_combine(seed, boost::hash_value(key.quantity));
     boost::hash_combine(seed, boost::hash_value(key));
     return seed;
   }
@@ -50,8 +50,6 @@ struct DataHasher2
   std::size_t operator () (const Chemical &key) const 
   {
     std::size_t seed = 0;
-    // // boost::hash_combine(seed, boost::hash_value(key.name));
-    // // boost::hash_combine(seed, boost::hash_value(key.quantity));
     return seed;
   }
 };
@@ -213,8 +211,23 @@ long long int number_of_ore(long long int required_number_of_fuel) {
         // inputs[0] = 0RE
         count += (inputs[0].quantity * multiplier);
     }
-
     return count;
+}
+
+long long int binarySearch(int l, int r) 
+{ 
+    while (r >= l)
+    {
+        long long index = (r + l) / 2;
+        long long ore_quantity = number_of_ore(index);
+        if (index == r || index == l)
+            break;
+        if (ore_quantity >= GOAL)
+            r = index;
+        else
+            l = index;
+    } 
+    return l;
 }
 
 int main() {
@@ -279,8 +292,7 @@ int main() {
     }
 
     long long int part1 = number_of_ore(1);
-
-    long long int part2 = number_of_ore(460664);
+    long long int part2 =  binarySearch(0, MAX_ORE);
 
     std::cout << "part1 = " << part1 << std::endl;
     std::cout << "part2 = " << part2 << std::endl;
