@@ -183,11 +183,8 @@ int main() {
     while(std::getline(ss, element, ',')) {
         elements.push_back(std::stoll(element));
     }
-   
-    Intcode_calculator calc(elements, input);
-    long long int result = calc.calculate();
 
-    std::cout << "result = " << result << std::endl;
+    
 
     return 0;
 }
