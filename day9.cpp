@@ -42,7 +42,6 @@ class Intcode_calculator {
    
     public:
         std::map<int, std::function<void()>> functions;
-
         Intcode_calculator(std::vector<long long int> _elements, int _input) : elements(_elements), input(_input)
         {
             // capture class members by saying 'this' in the capture list
@@ -108,8 +107,8 @@ class Intcode_calculator {
             });
         }
 
-        long long int calculate() {
-            for(i = 0; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
+        long long int calculate(int &last_index) {
+            for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
                 int help = 0;
                 for(int k = 0; k < 3; k++) {
@@ -143,6 +142,7 @@ class Intcode_calculator {
 
                 functions[element[element.size()-1]-ASCII_ZERO]();
                 if(element[element.size()-1]-ASCII_ZERO == 4) {
+                    last_index = i + num_of_params + 1;
                     return output;
                 }
             }
@@ -185,9 +185,13 @@ int main() {
     }
    
     Intcode_calculator calc(elements, input);
-    long long int result = calc.calculate();
-
-    std::cout << "result = " << result << std::endl;
+    long long int result = 0;
+    int last_index = 0;
+    while (result != -1)
+    {
+        result = calc.calculate(last_index);
+        std::cout << "result = " << result << std::endl;
+    }
 
     return 0;
 }
