@@ -19,6 +19,12 @@
 #define WEST 3
 #define EAST 4
 
+struct Intcode_state {
+    int last_index;
+    std::vector<long long int> elements;
+    int output;
+};
+
 class Intcode_calculator {
 
     enum Operations {
@@ -107,7 +113,11 @@ class Intcode_calculator {
             });
         }
 
-        long long int calculate(int &last_index, int input_direction, std::vector<long long int> &elements) {
+        Intcode_state calculate(
+            int last_index,
+            int input_direction,
+            std::vector<long long int> elements) {
+
             input = input_direction;
             for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
@@ -144,10 +154,12 @@ class Intcode_calculator {
                 functions[element[element.size()-1]-ASCII_ZERO](elements);
                 if(element[element.size()-1]-ASCII_ZERO == 4) {
                     last_index = i + num_of_params + 1;
-                    return output;
+                    struct Intcode_state state = {last_index, elements, output};
+                    return state;
                 }
-            }
-            return -1;
+            }                    
+            struct Intcode_state state = {-1, elements, output};
+            return state;
         }
 
     private:
@@ -156,7 +168,7 @@ class Intcode_calculator {
         int relative_base = 0;
         std::array<int, 3> indices_mode = {0};
         std::string element;
-        long long int output;
+        int output;
         int i;
         int input;
        
@@ -168,14 +180,87 @@ class Intcode_calculator {
         }
 };
 
-long long int search_for_oxygen_system(std::pair<long long int, long long int> start_position,
- long long int direction, int last_index) {
-    
-     
+// key is coordinate (x, y), value is 0 if wall, otherwise 1 
+std::unordered_map<std::pair<long long int, long long int>, int> explored_space;
 
-    
-    return -1;
+long long int search_for_oxygen_system(
+    std::pair<long long int, long long int> start_coordinate,
+    Intcode_calculator calc,
+    std::vector<long long int> elements,
+    int last_index,
+    int steps) {
 
+    Intcode_state result;
+    std::pair<long long int, long long int> new_coordinate;
+
+    // next coordinate - north move
+    new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second+1);
+    result = calc.calculate(last_index, NORTH, elements);
+    
+    if(result.output == 0) {
+        explored_space[new_coordinate] = 0;
+        return 0;
+    } 
+    // not wall, not oxygen system
+    else if(result.output == 1) {
+        explored_space[new_coordinate] = 1;
+        search_for_oxygen_system(new_coordinate, calc, result.elements, result.last_index, steps);
+    } 
+    // oxygen system
+    else if(result.output == 2) {
+        return steps + 1;
+    }
+
+    // next coordinate - south move
+    new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second-1);
+    result = calc.calculate(last_index, SOUTH, elements);
+    if(result.output == 0) {
+        explored_space[new_coordinate] = 0;
+        return 0;
+    } 
+    // not wall, not oxygen system
+    else if(result.output == 1) {
+        explored_space[new_coordinate] = 1;
+        search_for_oxygen_system(new_coordinate, calc, result.elements, result.last_index, steps);
+        } 
+    // oxygen system
+    else if(result.output == 2) {
+        return steps + 1;
+    }
+
+    // next coordinate - west move
+    new_coordinate = std::make_pair(start_coordinate.first-1, start_coordinate.second);
+    result = calc.calculate(last_index, WEST, elements);
+    if(result.output == 0) {
+        explored_space[new_coordinate] = 0;
+        return 0;
+    } 
+    // not wall, not oxygen system
+    else if(result.output == 1) {
+        explored_space[new_coordinate] = 1;
+        search_for_oxygen_system(new_coordinate, calc, result.elements, result.last_index, steps);
+    } 
+    // oxygen system
+    else if(result.output == 2) {
+        return steps + 1;
+    }
+
+    // next coordinate - east move
+    new_coordinate = std::make_pair(start_coordinate.first+1, start_coordinate.second);
+    result = calc.calculate(last_index, EAST, elements);
+    if(result.output == 0) {
+        explored_space[new_coordinate] = 0;
+        return 0;
+    } 
+    // not wall, not oxygen system
+    else if(result.output == 1) {
+        explored_space[new_coordinate] = 1;
+        search_for_oxygen_system(new_coordinate, calc, result.elements, result.last_index, steps);
+    } 
+    // oxygen system
+    else if(result.output == 2) {
+        return steps + 1;
+    }
 }
 
 int main() {
@@ -195,11 +280,8 @@ int main() {
     }
 
     std::pair<long long int, long long int> start_position = std::make_pair(0, 0);
-    int initial_direction = 0; 
-
-    Intcode_calculator calc();
-
-    long long int number_of_steps = search_for_oxygen_system(start_position, initial_direction, -1);
+    Intcode_calculator calc;
+    long long int number_of_steps = search_for_oxygen_system(start_position, calc, 0, 0);
 
     std::cout << "part1 = " << number_of_steps << std::endl;
 
