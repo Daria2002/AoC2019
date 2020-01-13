@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <math.h>
 #include <utility>
+#include <unordered_map>
 #include <array>
 
 #define ASCII_ZERO 48
@@ -18,6 +19,18 @@
 #define SOUTH 2
 #define WEST 3
 #define EAST 4
+
+struct pair_hash {
+    template <class T1, class T2>
+    std::size_t operator () (const std::pair<T1,T2> &p) const {
+        auto h1 = std::hash<T1>{}(p.first);
+        auto h2 = std::hash<T2>{}(p.second);
+
+        // Mainly for demonstration purposes, i.e. works but is overly simple
+        // In the real world, use sth. like boost.hash_combine
+        return h1 ^ h2;  
+    }
+};
 
 class Intcode_calculator {
 
@@ -41,31 +54,32 @@ class Intcode_calculator {
     };
    
     public:
-        std::map<int, std::function<void(std::vector<long long int>&)>> functions;
-        Intcode_calculator(std::vector<long long int>& _elements) : elements(_elements)
+        std::map<int, std::function<void()>> functions;
+        Intcode_calculator(std::vector<long long int> _elements) : elements(_elements)
         {
+            last_index = 0;
             // capture class members by saying 'this' in the capture list
-            functions.emplace(Operations::SUM, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::SUM, [&]() {
                 num_of_params = 3;
                 elements[params[2]] = elements[params[0]] + elements[params[1]];
             });
 
-            functions.emplace(Operations::MUL, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::MUL, [&]() {
                 num_of_params = 3;
                 elements[params[2]] = elements[params[0]] * elements[params[1]];    
             });
 
-            functions.emplace(Operations::SAVE_INPUT, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::SAVE_INPUT, [&]() {
                 num_of_params = 1;
                 elements[params[0]] = input;
             });
 
-            functions.emplace(Operations::OUTPUT, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::OUTPUT, [&]() {
                 num_of_params = 1;
                 output = elements[params[0]];
             });
 
-            functions.emplace(Operations::JUMP_IF_TRUE, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::JUMP_IF_TRUE, [&]() {
                 num_of_params = 2;
                 if(elements[params[0]] != 0) {
                     // because there is num_of_params+1 in for loop
@@ -74,7 +88,7 @@ class Intcode_calculator {
                 }
             });
 
-            functions.emplace(Operations::JUMP_IF_FALSE, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::JUMP_IF_FALSE, [&]() {
                 num_of_params = 2;
                 if(elements[params[0]] == 0) {
                     // because there is num_of_params+1 in for loop
@@ -83,7 +97,7 @@ class Intcode_calculator {
                 }
             });
 
-            functions.emplace(Operations::LESS_THAN, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::LESS_THAN, [&]() {
                 num_of_params = 3;
                 if(elements[params[0]] < elements[params[1]]) {
                     elements[params[2]] = 1;
@@ -92,7 +106,7 @@ class Intcode_calculator {
                 }
             });
 
-            functions.emplace(Operations::EQUALS, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::EQUALS, [&]() {
                 num_of_params = 3;
                 if(elements[params[0]] == elements[params[1]]) {
                     elements[params[2]] = 1;
@@ -101,15 +115,14 @@ class Intcode_calculator {
                 }
             });
        
-            functions.emplace(Operations::RELATIVE_BASE, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::RELATIVE_BASE, [&]() {
                 num_of_params = 1;
                 relative_base += elements[params[0]];
             });
         }
 
-        int calculate(int input_direction) {
-
-            input = input_direction;
+        long long int calculate(int _input) {
+            input = _input;
             for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
                 int help = 0;
@@ -142,24 +155,24 @@ class Intcode_calculator {
                     }
                 }
 
-                functions[element[element.size()-1]-ASCII_ZERO](elements);
+                functions[element[element.size()-1]-ASCII_ZERO]();
                 if(element[element.size()-1]-ASCII_ZERO == 4) {
                     last_index = i + num_of_params + 1;
                     return output;
                 }
-            }            
+            }
             return -1;
         }
 
     private:
+        int last_index;
+        std::vector<long long int> elements;
         std::array<long long int, 3> params;
         int num_of_params = 1;
-        std::vector<long long int> elements;
         int relative_base = 0;
         std::array<int, 3> indices_mode = {0};
         std::string element;
-        int output;
-        int last_index;
+        long long int output;
         int i;
         int input;
        
@@ -172,20 +185,22 @@ class Intcode_calculator {
 };
 
 // key is coordinate (x, y), value is 0 if wall, otherwise 1 
-std::unordered_map<std::pair<long long int, long long int>, int> explored_space;
-
+std::unordered_map<std::pair<long long int, long long int>, int, pair_hash> explored_space;
+long long int c = 0;
 long long int search_for_oxygen_system(
     std::pair<long long int, long long int> start_coordinate,
-    Intcode_calculator calc,
+    Intcode_calculator &calc,
     int steps) {
     
+    std::cout << "hej = " << c << std::endl;
+    c++;
     int result;
     std::pair<long long int, long long int> new_coordinate;
+    int path_result = 0;
 
     // next coordinate - north move
     new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second+1);
     result = calc.calculate(NORTH);
-    
     // hit a wall
     if(result == 0) {
         explored_space[new_coordinate] = 0;
@@ -195,10 +210,14 @@ long long int search_for_oxygen_system(
     // not wall, not oxygen system
     else if(result == 1) {
         explored_space[new_coordinate] = 1;
-        search_for_oxygen_system(new_coordinate, calc, steps);
+        path_result = search_for_oxygen_system(new_coordinate, calc, steps);
+        if(path_result > 0) {
+            return steps + 1;
+        }
     } 
     // oxygen system
     else if(result == 2) {
+        std::cout << " :)))) " << std::endl;
         return 1;
     }
 
@@ -212,10 +231,14 @@ long long int search_for_oxygen_system(
     // not wall, not oxygen system
     else if(result == 1) {
         explored_space[new_coordinate] = 1;
-        search_for_oxygen_system(new_coordinate, calc, steps);
+        path_result = search_for_oxygen_system(new_coordinate, calc, steps);
+        if(path_result > 0) {
+            return steps + 1;
+        }
     } 
     // oxygen system
     else if(result == 2) {
+        std::cout << " :)))) " << std::endl;
         return steps + 1;
     }
 
@@ -230,10 +253,14 @@ long long int search_for_oxygen_system(
     // not wall, not oxygen system
     else if(result == 1) {
         explored_space[new_coordinate] = 1;
-        search_for_oxygen_system(new_coordinate, calc, steps);
+        path_result = search_for_oxygen_system(new_coordinate, calc, steps);
+        if(path_result > 0) {
+            return steps + 1;
+        }
     } 
     // oxygen system
     else if(result == 2) {
+        std::cout << " :)))) " << std::endl;
         return 1;
     }
 
@@ -247,20 +274,20 @@ long long int search_for_oxygen_system(
     // not wall, not oxygen system
     else if(result == 1) {
         explored_space[new_coordinate] = 1;
-        search_for_oxygen_system(new_coordinate, calc, steps);
+        path_result = search_for_oxygen_system(new_coordinate, calc, steps);
+        if(path_result > 0) {
+            return steps + 1;
+        }
     } 
     // oxygen system
     else if(result == 2) {
-        return steps + 1;
+        std::cout << " :)))) " << std::endl;
+        return 1;
     }
-
     return steps;
 }
 
 int main() {
-    int input;
-    std::cin >> input;
-   
     std::ifstream file("./day15.txt");
     std::string line;
     getline(file, line);

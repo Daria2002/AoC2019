@@ -41,31 +41,32 @@ class Intcode_calculator {
     };
    
     public:
-        std::map<int, std::function<void(std::vector<long long int>&)>> functions;
-        Intcode_calculator(int _input) : input(_input)
+        std::map<int, std::function<void()>> functions;
+        Intcode_calculator(std::vector<long long int> _elements) : elements(_elements)
         {
+            last_index = 0;
             // capture class members by saying 'this' in the capture list
-            functions.emplace(Operations::SUM, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::SUM, [&]() {
                 num_of_params = 3;
                 elements[params[2]] = elements[params[0]] + elements[params[1]];
             });
 
-            functions.emplace(Operations::MUL, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::MUL, [&]() {
                 num_of_params = 3;
                 elements[params[2]] = elements[params[0]] * elements[params[1]];    
             });
 
-            functions.emplace(Operations::SAVE_INPUT, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::SAVE_INPUT, [&]() {
                 num_of_params = 1;
                 elements[params[0]] = input;
             });
 
-            functions.emplace(Operations::OUTPUT, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::OUTPUT, [&]() {
                 num_of_params = 1;
                 output = elements[params[0]];
             });
 
-            functions.emplace(Operations::JUMP_IF_TRUE, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::JUMP_IF_TRUE, [&]() {
                 num_of_params = 2;
                 if(elements[params[0]] != 0) {
                     // because there is num_of_params+1 in for loop
@@ -74,7 +75,7 @@ class Intcode_calculator {
                 }
             });
 
-            functions.emplace(Operations::JUMP_IF_FALSE, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::JUMP_IF_FALSE, [&]() {
                 num_of_params = 2;
                 if(elements[params[0]] == 0) {
                     // because there is num_of_params+1 in for loop
@@ -83,7 +84,7 @@ class Intcode_calculator {
                 }
             });
 
-            functions.emplace(Operations::LESS_THAN, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::LESS_THAN, [&]() {
                 num_of_params = 3;
                 if(elements[params[0]] < elements[params[1]]) {
                     elements[params[2]] = 1;
@@ -92,7 +93,7 @@ class Intcode_calculator {
                 }
             });
 
-            functions.emplace(Operations::EQUALS, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::EQUALS, [&]() {
                 num_of_params = 3;
                 if(elements[params[0]] == elements[params[1]]) {
                     elements[params[2]] = 1;
@@ -101,13 +102,14 @@ class Intcode_calculator {
                 }
             });
        
-            functions.emplace(Operations::RELATIVE_BASE, [&](std::vector<long long int>& elements) {
+            functions.emplace(Operations::RELATIVE_BASE, [&]() {
                 num_of_params = 1;
                 relative_base += elements[params[0]];
             });
         }
 
-        long long int calculate(int &last_index, std::vector<long long int> &elements) {
+        long long int calculate(int _input) {
+            input = _input;
             for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
                 int help = 0;
@@ -140,7 +142,7 @@ class Intcode_calculator {
                     }
                 }
 
-                functions[element[element.size()-1]-ASCII_ZERO](elements);
+                functions[element[element.size()-1]-ASCII_ZERO]();
                 if(element[element.size()-1]-ASCII_ZERO == 4) {
                     last_index = i + num_of_params + 1;
                     return output;
@@ -150,6 +152,8 @@ class Intcode_calculator {
         }
 
     private:
+        int last_index;
+        std::vector<long long int> elements;
         std::array<long long int, 3> params;
         int num_of_params = 1;
         int relative_base = 0;
@@ -183,12 +187,12 @@ int main() {
         elements.push_back(std::stoll(element));
     }
    
-    Intcode_calculator calc(input);
+    Intcode_calculator calc(elements);
     long long int result = 0;
     int last_index = 0;
     while (result != -1)
     {
-        result = calc.calculate(last_index, elements);
+        result = calc.calculate(input);
         std::cout << "result = " << result << std::endl;
     }
 
