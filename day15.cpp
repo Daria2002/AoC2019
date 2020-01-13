@@ -70,6 +70,15 @@ class Intcode_calculator {
             });
 
             functions.emplace(Operations::SAVE_INPUT, [&]() {
+                // zašto je params bilo smeće kada se calc u search funk slao by value?
+                // zato što se ova kao i druge funkcije kopirala, koristio se copy constructor
+                // ali budući da funkcije imaju [&], onda su se u funkcijama by reference
+                // koristile vrijednosti svih varijabli od onog objekta koji je stvoren u main
+                // kad se ušlo u search desilo se to da je npr. params varijabla inicijalizirana, ali
+                // u ovim funkcijama se koristi referenca na params od objekta calc iz maina gdje 
+                // params nije inicijaliziran, već po defautu ima smeće
+                // ako se npr umjesto [&] stavi [=] to će davat inicijalizirane (očekivane) vrijednosti
+                // za params jer lambda funkcije neće kopirat reference na varijable 
                 num_of_params = 1;
                 elements[params[0]] = input;
             });
@@ -165,9 +174,9 @@ class Intcode_calculator {
         }
 
     private:
+        std::array<long long int, 3> params;
         int last_index;
         std::vector<long long int> elements;
-        std::array<long long int, 3> params;
         int num_of_params = 1;
         int relative_base = 0;
         std::array<int, 3> indices_mode = {0};
@@ -187,12 +196,12 @@ class Intcode_calculator {
 // key is coordinate (x, y), value is 0 if wall, otherwise 1 
 std::unordered_map<std::pair<long long int, long long int>, int, pair_hash> explored_space;
 long long int c = 0;
+
 long long int search_for_oxygen_system(
     std::pair<long long int, long long int> start_coordinate,
     Intcode_calculator &calc,
     int steps) {
-    
-    std::cout << "hej = " << c << std::endl;
+
     c++;
     int result;
     std::pair<long long int, long long int> new_coordinate;
@@ -200,89 +209,97 @@ long long int search_for_oxygen_system(
 
     // next coordinate - north move
     new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second+1);
-    result = calc.calculate(NORTH);
-    // hit a wall
-    if(result == 0) {
-        explored_space[new_coordinate] = 0;
-        // go back
-        calc.calculate(SOUTH);
-    } 
-    // not wall, not oxygen system
-    else if(result == 1) {
-        explored_space[new_coordinate] = 1;
-        path_result = search_for_oxygen_system(new_coordinate, calc, steps);
-        if(path_result > 0) {
-            return steps + 1;
+    if(explored_space.find(new_coordinate) == explored_space.end()) {
+        result = calc.calculate(NORTH);
+        // hit a wall
+        if(result == 0) {
+            explored_space[new_coordinate] = 0;
+            // go back
+            calc.calculate(SOUTH);
+        } 
+        // not wall, not oxygen system
+        else if(result == 1) {
+            explored_space[new_coordinate] = 1;
+            path_result = search_for_oxygen_system(new_coordinate, calc, steps);
+            if(path_result > 0) {
+                return steps + 1;
+            }
+        } 
+        // oxygen system
+        else if(result == 2) {
+            std::cout << " :)))) " << std::endl;
+            return 1;
         }
-    } 
-    // oxygen system
-    else if(result == 2) {
-        std::cout << " :)))) " << std::endl;
-        return 1;
     }
 
     // next coordinate - east move
     new_coordinate = std::make_pair(start_coordinate.first+1, start_coordinate.second);
-    result = calc.calculate(EAST);
-    if(result == 0) {
-        explored_space[new_coordinate] = 0;
-        calc.calculate(WEST);
-    } 
-    // not wall, not oxygen system
-    else if(result == 1) {
-        explored_space[new_coordinate] = 1;
-        path_result = search_for_oxygen_system(new_coordinate, calc, steps);
-        if(path_result > 0) {
+    if(explored_space.find(new_coordinate) == explored_space.end()) {
+        result = calc.calculate(EAST);
+        if(result == 0) {
+            explored_space[new_coordinate] = 0;
+            calc.calculate(WEST);
+        } 
+        // not wall, not oxygen system
+        else if(result == 1) {
+            explored_space[new_coordinate] = 1;
+            path_result = search_for_oxygen_system(new_coordinate, calc, steps);
+            if(path_result > 0) {
+                return steps + 1;
+            }
+        } 
+        // oxygen system
+        else if(result == 2) {
+            std::cout << " :)))) " << std::endl;
             return steps + 1;
         }
-    } 
-    // oxygen system
-    else if(result == 2) {
-        std::cout << " :)))) " << std::endl;
-        return steps + 1;
     }
 
     // next coordinate - south move
     new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second-1);
-    result = calc.calculate(SOUTH);
-    // hit a wall
-    if(result == 0) {
-        explored_space[new_coordinate] = 0;
-        calc.calculate(NORTH);
-    } 
-    // not wall, not oxygen system
-    else if(result == 1) {
-        explored_space[new_coordinate] = 1;
-        path_result = search_for_oxygen_system(new_coordinate, calc, steps);
-        if(path_result > 0) {
-            return steps + 1;
+    if(explored_space.find(new_coordinate) == explored_space.end()) {
+        result = calc.calculate(SOUTH);
+        // hit a wall
+        if(result == 0) {
+            explored_space[new_coordinate] = 0;
+            calc.calculate(NORTH);
+        } 
+        // not wall, not oxygen system
+        else if(result == 1) {
+            explored_space[new_coordinate] = 1;
+            path_result = search_for_oxygen_system(new_coordinate, calc, steps);
+            if(path_result > 0) {
+                return steps + 1;
+            }
+        } 
+        // oxygen system
+        else if(result == 2) {
+            std::cout << " :)))) " << std::endl;
+            return 1;
         }
-    } 
-    // oxygen system
-    else if(result == 2) {
-        std::cout << " :)))) " << std::endl;
-        return 1;
     }
 
     // next coordinate - west move
     new_coordinate = std::make_pair(start_coordinate.first-1, start_coordinate.second);
-    result = calc.calculate(WEST);
-    if(result == 0) {
-        explored_space[new_coordinate] = 0;
-        calc.calculate(EAST);
-    } 
-    // not wall, not oxygen system
-    else if(result == 1) {
-        explored_space[new_coordinate] = 1;
-        path_result = search_for_oxygen_system(new_coordinate, calc, steps);
-        if(path_result > 0) {
-            return steps + 1;
+    if(explored_space.find(new_coordinate) == explored_space.end()) {
+        result = calc.calculate(WEST);
+        if(result == 0) {
+            explored_space[new_coordinate] = 0;
+            calc.calculate(EAST);
+        } 
+        // not wall, not oxygen system
+        else if(result == 1) {
+            explored_space[new_coordinate] = 1;
+            path_result = search_for_oxygen_system(new_coordinate, calc, steps);
+            if(path_result > 0) {
+                return steps + 1;
+            }
+        } 
+        // oxygen system
+        else if(result == 2) {
+            std::cout << " :)))) " << std::endl;
+            return 1;
         }
-    } 
-    // oxygen system
-    else if(result == 2) {
-        std::cout << " :)))) " << std::endl;
-        return 1;
     }
     return steps;
 }
@@ -302,8 +319,8 @@ int main() {
 
     std::pair<long long int, long long int> start_position = std::make_pair(0, 0);
     Intcode_calculator calc(elements);
-    long long int number_of_steps = search_for_oxygen_system(start_position, calc, 0);
 
+    long long int number_of_steps = search_for_oxygen_system(start_position, calc, 0);
     std::cout << "part1 = " << number_of_steps << std::endl;
 
     return 0;
