@@ -70,15 +70,6 @@ class Intcode_calculator {
             });
 
             functions.emplace(Operations::SAVE_INPUT, [&]() {
-                // zašto je params bilo smeće kada se calc u search funk slao by value?
-                // zato što se ova kao i druge funkcije kopirala, koristio se copy constructor
-                // ali budući da funkcije imaju [&], onda su se u funkcijama by reference
-                // koristile vrijednosti svih varijabli od onog objekta koji je stvoren u main
-                // kad se ušlo u search desilo se to da je npr. params varijabla inicijalizirana, ali
-                // u ovim funkcijama se koristi referenca na params od objekta calc iz maina gdje 
-                // params nije inicijaliziran, već po defautu ima smeće
-                // ako se npr umjesto [&] stavi [=] to će davat inicijalizirane (očekivane) vrijednosti
-                // za params jer lambda funkcije neće kopirat reference na varijable 
                 num_of_params = 1;
                 elements[params[0]] = input;
             });
@@ -216,6 +207,7 @@ long long int search_for_oxygen_system(
             explored_space[new_coordinate] = 0;
             // go back
             calc.calculate(SOUTH);
+            new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second-1);
         } 
         // not wall, not oxygen system
         else if(result == 1) {
@@ -239,6 +231,7 @@ long long int search_for_oxygen_system(
         if(result == 0) {
             explored_space[new_coordinate] = 0;
             calc.calculate(WEST);
+            new_coordinate = std::make_pair(new_coordinate.first-1, new_coordinate.second);
         } 
         // not wall, not oxygen system
         else if(result == 1) {
@@ -251,7 +244,7 @@ long long int search_for_oxygen_system(
         // oxygen system
         else if(result == 2) {
             std::cout << " :)))) " << std::endl;
-            return steps + 1;
+            return 1;
         }
     }
 
@@ -263,6 +256,7 @@ long long int search_for_oxygen_system(
         if(result == 0) {
             explored_space[new_coordinate] = 0;
             calc.calculate(NORTH);
+            new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second+1);
         } 
         // not wall, not oxygen system
         else if(result == 1) {
@@ -286,6 +280,7 @@ long long int search_for_oxygen_system(
         if(result == 0) {
             explored_space[new_coordinate] = 0;
             calc.calculate(EAST);
+            new_coordinate = std::make_pair(new_coordinate.first+1, new_coordinate.second);
         } 
         // not wall, not oxygen system
         else if(result == 1) {
@@ -301,7 +296,6 @@ long long int search_for_oxygen_system(
             return 1;
         }
     }
-    return steps;
 }
 
 int main() {
