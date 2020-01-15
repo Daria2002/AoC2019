@@ -206,12 +206,14 @@ long long int search_for_oxygen_system(
     if(std::find(walls.begin(), walls.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == walls.end()
     && std::find(path.begin(), path.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == path.end()) {
         result = calc.calculate(NORTH);
+
+        std::cout << "za y = " << new_coordinate.first << ", x = " << new_coordinate.second << ", result = " << result << std::endl;
+
         // hit a wall
         if(result == 0) {
             walls.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
             // go back
             calc.calculate(SOUTH);
-            new_coordinate = std::make_pair(new_coordinate.first-1, new_coordinate.second);
         } 
         // not wall, not oxygen system
         else if(result == 1) {
@@ -230,16 +232,19 @@ long long int search_for_oxygen_system(
             std::cout << "something's wrong" << std::endl;
         }
     }
+    new_coordinate = std::make_pair(new_coordinate.first-1, new_coordinate.second);
 
     // next coordinate - east move
     new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second+1);
     if(std::find(walls.begin(), walls.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == walls.end()
     && std::find(path.begin(), path.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == path.end()) {
         result = calc.calculate(EAST);
+
+        std::cout << "za y = " << new_coordinate.first << ", x = " << new_coordinate.second << ", result = " << result << std::endl;
+
         if(result == 0) {
             walls.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
             calc.calculate(WEST);
-            new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second-1);
         } 
         // not wall, not oxygen system
         else if(result == 1) {
@@ -258,17 +263,20 @@ long long int search_for_oxygen_system(
             std::cout << "something's wrong" << std::endl;
         }
     }
+    new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second-1);
 
     // next coordinate - south move
     new_coordinate = std::make_pair(start_coordinate.first-1, start_coordinate.second);
     if(std::find(walls.begin(), walls.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == walls.end()
     && std::find(path.begin(), path.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == path.end()) {
         result = calc.calculate(SOUTH);
+
+        std::cout << "za y = " << new_coordinate.first << ", x = " << new_coordinate.second << ", result = " << result << std::endl;
+
         // hit a wall
         if(result == 0) {
             walls.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
             calc.calculate(NORTH);
-            new_coordinate = std::make_pair(new_coordinate.first+1, new_coordinate.second);
         } 
         // not wall, not oxygen system
         else if(result == 1) {
@@ -287,16 +295,19 @@ long long int search_for_oxygen_system(
             std::cout << "something's wrong" << std::endl;
         }
     }
+    new_coordinate = std::make_pair(new_coordinate.first+1, new_coordinate.second);
 
     // next coordinate - west move
     new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second-1);
     if(std::find(walls.begin(), walls.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == walls.end()
     && std::find(path.begin(), path.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == path.end()) {
         result = calc.calculate(WEST);
+
+        std::cout << "za y = " << new_coordinate.first << ", x = " << new_coordinate.second << ", result = " << result << std::endl;
+
         if(result == 0) {
             walls.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
             calc.calculate(EAST);
-            new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second+1);
         } 
         // not wall, not oxygen system
         else if(result == 1) {
@@ -315,6 +326,7 @@ long long int search_for_oxygen_system(
             std::cout << "something's wrong" << std::endl;
         }
     }
+    new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second+1);
 }
 
 int main() {
