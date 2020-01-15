@@ -229,10 +229,10 @@ long long int search_for_oxygen_system(
         else {
             std::cout << "something's wrong" << std::endl;
         }
+        calc.calculate(SOUTH);
     }
     // go back
     new_coordinate = std::make_pair(new_coordinate.first-1, new_coordinate.second);
-    calc.calculate(SOUTH);
 
     // next coordinate - east move
     new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second+1);
@@ -261,10 +261,10 @@ long long int search_for_oxygen_system(
         else {
             std::cout << "something's wrong" << std::endl;
         }
+        calc.calculate(WEST);
     }
     // go back
     new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second-1);
-    calc.calculate(WEST);
 
     // next coordinate - south move
     new_coordinate = std::make_pair(start_coordinate.first-1, start_coordinate.second);
@@ -294,10 +294,10 @@ long long int search_for_oxygen_system(
         else {
             std::cout << "something's wrong" << std::endl;
         }
+        calc.calculate(NORTH);
     }
     // go back
     new_coordinate = std::make_pair(new_coordinate.first+1, new_coordinate.second);
-    calc.calculate(NORTH);
 
     // next coordinate - west move
     new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second-1);
@@ -326,10 +326,10 @@ long long int search_for_oxygen_system(
         else {
             std::cout << "something's wrong" << std::endl;
         }
+        calc.calculate(EAST);
     }
     // go back
     new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second+1);
-    calc.calculate(EAST);
 
     return steps;
 }
