@@ -122,7 +122,6 @@ class Intcode_calculator {
         }
 
         long long int calculate(int _input) {
-            std::cout << "Idemo: " << _input << std::endl;
             input = _input; 
             for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
@@ -188,16 +187,10 @@ class Intcode_calculator {
 std::vector<std::pair<long long, long long>> walls;
 std::vector<std::pair<long long, long long>> path;
 
-long long int c = 0;
-
 long long int search_for_oxygen_system(
     std::pair<long long int, long long int> start_coordinate,
     Intcode_calculator &calc,
     int steps) {
-
-    std::cout << "ovo je " << c << "-ti ulazak" << std::endl;
-
-    c++;
     int result;
     std::pair<long long int, long long int> new_coordinate;
     int path_result = 0;
@@ -207,10 +200,6 @@ long long int search_for_oxygen_system(
     if(std::find(walls.begin(), walls.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == walls.end()
     && std::find(path.begin(), path.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == path.end()) {
         result = calc.calculate(NORTH);
-
-        std::cout << "north: za y = " << new_coordinate.first << ", x = " << new_coordinate.second << ", result = " << result 
-        << ", start_coordinate_y = " << start_coordinate.first << ", start_coordinate_x = " << start_coordinate.second << std::endl;
-
         // hit a wall
         if(result == 0) {
             walls.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
@@ -219,20 +208,16 @@ long long int search_for_oxygen_system(
         else if(result == 1) {
             path.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
             path_result = search_for_oxygen_system(new_coordinate, calc, steps);
-            std::cout << "dosao je natrag" << std::endl;
             if(path_result > 0) {
-                return steps + 1;
+                steps = path_result + 1;
+                return steps;
             }
+            calc.calculate(SOUTH);
         } 
         // oxygen system
         else if(result == 2) {
-            std::cout << " :)))) " << std::endl;
             return 1;
         }
-        else {
-            std::cout << "something's wrong" << std::endl;
-        }
-        calc.calculate(SOUTH);
     }
     // go back
     new_coordinate = std::make_pair(new_coordinate.first-1, new_coordinate.second);
@@ -243,9 +228,6 @@ long long int search_for_oxygen_system(
     && std::find(path.begin(), path.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == path.end()) {
         result = calc.calculate(EAST);
 
-        std::cout << "east: za y = " << new_coordinate.first << ", x = " << new_coordinate.second << ", result = " << result 
-        << ", start_coordinate_y = " << start_coordinate.first << ", start_coordinate_x = " << start_coordinate.second << std::endl;
-
         if(result == 0) {
             walls.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
         } 
@@ -253,20 +235,16 @@ long long int search_for_oxygen_system(
         else if(result == 1) {
             path.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
             path_result = search_for_oxygen_system(new_coordinate, calc, steps);
-            std::cout << "dosao je natrag" << std::endl;
             if(path_result > 0) {
-                return steps + 1;
+                steps = path_result + 1;
+                return steps;
             }
+            calc.calculate(WEST);
         } 
         // oxygen system
         else if(result == 2) {
-            std::cout << " :)))) " << std::endl;
             return 1;
         }
-        else {
-            std::cout << "something's wrong" << std::endl;
-        }
-        calc.calculate(WEST);
     }
     // go back
     new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second-1);
@@ -277,9 +255,6 @@ long long int search_for_oxygen_system(
     && std::find(path.begin(), path.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == path.end()) {
         result = calc.calculate(SOUTH);
 
-        std::cout << "south: za y = " << new_coordinate.first << ", x = " << new_coordinate.second << ", result = " << result 
-        << ", start_coordinate_y = " << start_coordinate.first << ", start_coordinate_x = " << start_coordinate.second << std::endl;
-
         // hit a wall
         if(result == 0) {
             walls.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
@@ -288,20 +263,16 @@ long long int search_for_oxygen_system(
         else if(result == 1) {
             path.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
             path_result = search_for_oxygen_system(new_coordinate, calc, steps);
-            std::cout << "dosao je natrag" << std::endl;
             if(path_result > 0) {
-                return steps + 1;
+                steps = path_result + 1;
+                return steps;
             }
+            calc.calculate(NORTH);
         } 
         // oxygen system
         else if(result == 2) {
-            std::cout << " :)))) " << std::endl;
             return 1;
         }
-        else {
-            std::cout << "something's wrong" << std::endl;
-        }
-        calc.calculate(NORTH);
     }
     // go back
     new_coordinate = std::make_pair(new_coordinate.first+1, new_coordinate.second);
@@ -312,9 +283,6 @@ long long int search_for_oxygen_system(
     && std::find(path.begin(), path.end(), std::make_pair(new_coordinate.first, new_coordinate.second)) == path.end()) {
         result = calc.calculate(WEST);
 
-        std::cout << "west: za y = " << new_coordinate.first << ", x = " << new_coordinate.second << ", result = " << result 
-        << ", start_coordinate_y = " << start_coordinate.first << ", start_coordinate_x = " << start_coordinate.second << std::endl;
-
         if(result == 0) {
             walls.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
         } 
@@ -322,20 +290,16 @@ long long int search_for_oxygen_system(
         else if(result == 1) {
             path.push_back(std::make_pair(new_coordinate.first, new_coordinate.second));
             path_result = search_for_oxygen_system(new_coordinate, calc, steps);
-            std::cout << "dosao je natrag" << std::endl;
             if(path_result > 0) {
-                return steps + 1;
+                steps = path_result + 1;
+                return steps;
             }
+            calc.calculate(EAST);
         } 
         // oxygen system
         else if(result == 2) {
-            std::cout << " :)))) " << std::endl;
             return 1;
         }
-        else {
-            std::cout << "something's wrong" << std::endl;
-        }
-        calc.calculate(EAST);
     }
     // go back
     new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second+1);
