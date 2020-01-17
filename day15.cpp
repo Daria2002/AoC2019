@@ -412,20 +412,22 @@ void search_space(std::pair<long long int, long long int> start_coordinate, Intc
 }
 
 std::vector<std::pair<long long int, long long int>> spreaders;
-int count = 0;
 
-int spread_oxygen() {
-    count++;
+long long int spread_oxygen() {
     std::vector<std::pair<long long int, long long int>> neighbours;
     std::pair<long long int, long long int> neighbour;
     std::vector<std::pair<long long int, long long int>>::iterator it;
     int index;
 
+    if(spreaders.empty()) {
+        return 1;
+    }
+
     std::for_each(spreaders.begin(), spreaders.end(), [&](std::pair<long long int, long long int> pair) {
         neighbour = std::make_pair(pair.first + 1, pair.second);
         it = std::find(path.begin(), path.end(), neighbour);
         if(it != path.end()) {
-            neighbours.push_back(neighbour);
+            neighbours.push_back(neighbour); 
             index = std::distance(path.begin(), it);
             path.erase(path.begin() + index);
         }
@@ -438,7 +440,7 @@ int spread_oxygen() {
             path.erase(path.begin() + index);
         }
 
-        neighbour = std::make_pair(pair.first-1, pair.second);
+        neighbour = std::make_pair(pair.first - 1, pair.second);
         it = std::find(path.begin(), path.end(), neighbour);
         if(it != path.end()) {
             neighbours.push_back(neighbour);
@@ -446,7 +448,7 @@ int spread_oxygen() {
             path.erase(path.begin() + index);
         }
 
-        neighbour = std::make_pair(pair.first, pair.second-1);
+        neighbour = std::make_pair(pair.first, pair.second - 1);
         it = std::find(path.begin(), path.end(), neighbour);
         if(it != path.end()) {
             neighbours.push_back(neighbour);
@@ -458,10 +460,8 @@ int spread_oxygen() {
     spreaders.clear();
     spreaders.insert(spreaders.end(), neighbours.begin(), neighbours.end());
 
-    if(spreaders.empty()) {
-        return count;
-    }
-    spread_oxygen();
+    long long int result = spread_oxygen();
+    return result + 1;
 }
 
 int main() {
@@ -487,6 +487,7 @@ int main() {
     path.clear();
 
     Intcode_calculator calc2(elements);
+    path.push_back(start_position);
     search_space(start_position, calc2);
 
     spreaders.push_back(oxygen_station);
