@@ -420,8 +420,8 @@ long long int spread_oxygen() {
     std::vector<std::pair<long long int, long long int>>::iterator it;
     int index;
 
-    if(spreaders.empty()) {
-        return 1;
+    if(path.empty()) {
+        return 0;
     }
 
     std::for_each(spreaders.begin(), spreaders.end(), [&](std::pair<long long int, long long int> pair) {
@@ -503,20 +503,20 @@ int main() {
 
         if(y != pair.first) {
             y = pair.first;
-            std::cout << "" << std::endl;
+            std::cout << std::endl;
         }
 
         if(y == oxygen_station.first && pair.second == oxygen_station.second + 1) {
-            std::cout << "*";
+            std::cout << "*" << std::flush;
         }
 
         if(std::find(walls.begin(), walls.end(), pair) != walls.end()) {
-            std::cout << "#";
+            std::cout << "#" << std::flush;
         } else if (std::find(path.begin(), path.end(), pair) != path.end()) {
-            std::cout << ".";
+            std::cout << "." << std::flush;
         }
     });
-
+    std::cout << std::endl;
 
     long long int number_of_minutes = spread_oxygen();
     std::cout << "part2 = " << number_of_minutes << std::endl;
