@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include <stdio.h>
+#include <set>
 #include <string.h>
 #include <bits/stdc++.h>
 #include <functional>
@@ -333,10 +334,10 @@ void search_space(std::pair<long long int, long long int> start_coordinate, Intc
         // oxygen system
         else if(result == 2) {
             oxygen_station = new_coordinate;
+            search_space(new_coordinate, calc);
+            calc.calculate(SOUTH);
         }
     }
-    // go back
-    new_coordinate = std::make_pair(new_coordinate.first-1, new_coordinate.second);
 
     // next coordinate - east move
     new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second+1);
@@ -356,10 +357,10 @@ void search_space(std::pair<long long int, long long int> start_coordinate, Intc
         // oxygen system
         else if(result == 2) {
             oxygen_station = new_coordinate;
+            search_space(new_coordinate, calc);
+            calc.calculate(WEST);
         }
     }
-    // go back
-    new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second-1);
 
     // next coordinate - south move
     new_coordinate = std::make_pair(start_coordinate.first-1, start_coordinate.second);
@@ -380,10 +381,10 @@ void search_space(std::pair<long long int, long long int> start_coordinate, Intc
         // oxygen system
         else if(result == 2) {
             oxygen_station = new_coordinate;
+            search_space(new_coordinate, calc);
+            calc.calculate(NORTH);
         }
     }
-    // go back
-    new_coordinate = std::make_pair(new_coordinate.first+1, new_coordinate.second);
 
     // next coordinate - west move
     new_coordinate = std::make_pair(start_coordinate.first, start_coordinate.second-1);
@@ -403,10 +404,10 @@ void search_space(std::pair<long long int, long long int> start_coordinate, Intc
         // oxygen system
         else if(result == 2) {
             oxygen_station = new_coordinate;
+            search_space(new_coordinate, calc);
+            calc.calculate(EAST);
         }
     }
-    // go back
-    new_coordinate = std::make_pair(new_coordinate.first, new_coordinate.second+1);
 
     return;
 }
@@ -491,8 +492,33 @@ int main() {
     search_space(start_position, calc2);
 
     spreaders.push_back(oxygen_station);
-    long long int number_of_minutes = spread_oxygen();
 
+    std::set<std::pair<long long int, long long int>> help;
+    help.insert(walls.begin(), walls.end());
+    help.insert(path.begin(), path.end());
+
+    long long int y = 100;
+
+    std::for_each(help.begin(), help.end(), [&y](const auto& pair) {
+
+        if(y != pair.first) {
+            y = pair.first;
+            std::cout << "" << std::endl;
+        }
+
+        if(y == oxygen_station.first && pair.second == oxygen_station.second + 1) {
+            std::cout << "*";
+        }
+
+        if(std::find(walls.begin(), walls.end(), pair) != walls.end()) {
+            std::cout << "#";
+        } else if (std::find(path.begin(), path.end(), pair) != path.end()) {
+            std::cout << ".";
+        }
+    });
+
+
+    long long int number_of_minutes = spread_oxygen();
     std::cout << "part2 = " << number_of_minutes << std::endl;
 
     return 0;
