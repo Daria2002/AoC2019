@@ -58,20 +58,19 @@ std::vector<int> adapt_base(std::vector<int> base_pattern, int num_of_replicatio
 
 std::vector<int> get_new_input(std::vector<int> input, std::vector<int> base_pattern) {
     std::vector<int> output;
+    std::vector<int> new_base_pattern;
     for(int i = 0; i < input.size(); i++) {
         long long int sum = 0;
-        base_pattern = adapt_base(base_pattern, i);
+        new_base_pattern = adapt_base(base_pattern, i);
         
         for(int j = 0; j < input.size(); j++) {
-            std::cout << "index = " << j%base_pattern.size() << std::endl;
-            std::cout << "bp = " << base_pattern[j%base_pattern.size()] << std::endl;
-            std::cout << "input = " << input[j] << std::endl;
-            sum += input[j] * base_pattern[j % base_pattern.size()];
+            long long int index = j == 0 ? 1 : j % new_base_pattern.size() + 1;
+            sum += input[j] * new_base_pattern[index];
         }
-
-        int last_digit = sum % 10;
+        int last_digit = abs(sum) % 10;
         output.push_back(last_digit);
     }
+
     return output;
 }
 
@@ -81,6 +80,7 @@ int main() {
 
     for(int i = 0; i < NUM_OF_ITER; i++) {
         input_elements = get_new_input(input_elements, base_pattern);
+        std::cout << input_elements << std::endl;
     }
 
     std::cout << input_elements << std::endl;
