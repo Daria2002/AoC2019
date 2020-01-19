@@ -64,7 +64,13 @@ std::vector<int> get_new_input(std::vector<int> input, std::vector<int> base_pat
         new_base_pattern = adapt_base(base_pattern, i);
         
         for(int j = 0; j < input.size(); j++) {
-            long long int index = j == 0 ? 1 : j % new_base_pattern.size() + 1;
+            // long long int index = j == 0 ? 1 : j % new_base_pattern.size() + 1;
+            long long int index;
+            if(j < base_pattern.size()-1) {
+                index = j % new_base_pattern.size() + 1;
+            } else {
+                index = (j+1) % new_base_pattern.size();
+            }
             sum += input[j] * new_base_pattern[index];
         }
         int last_digit = abs(sum) % 10;
@@ -78,10 +84,13 @@ int main() {
     std::vector<int> base_pattern = {0, 1, 0, -1};
     std::vector<int> input_elements = get_input_elements("./day16.txt");
 
+    // std::cout << input_elements << std::endl;
     for(int i = 0; i < NUM_OF_ITER; i++) {
         input_elements = get_new_input(input_elements, base_pattern);
-        std::cout << input_elements << std::endl;
+        // std::cout << input_elements << std::endl;
     }
 
-    std::cout << input_elements << std::endl;
+    std::cout << "part1:" << std::endl;
+    std::vector<int> result1(input_elements.begin(), input_elements.begin()+8);
+    std::cout << result1 << std::endl;
 }
