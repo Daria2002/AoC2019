@@ -7,6 +7,7 @@
 #include <istream>
 #include <fstream>
 #include <algorithm>
+#include <math.h>
 
 #define NUM_OF_ITER 100
 
@@ -93,4 +94,24 @@ int main() {
     std::cout << "part1:" << std::endl;
     std::vector<int> result1(input_elements.begin(), input_elements.begin()+8);
     std::cout << result1 << std::endl;
+
+    std::cout << "part2:" << std::endl;
+    input_elements = get_input_elements("./day16.txt");
+    std::vector<int> input_elements2;
+    for(int i = 0; i < 1000; i++) {
+        input_elements2.insert(input_elements2.end(), input_elements.begin(), input_elements.end());
+    }
+    std::vector<int> offset_values(input_elements.begin(), input_elements.begin()+7);
+    long long int offset = 0;
+    for(int k = 0; k < 7; k++) {
+        offset += offset_values[k] * pow(10, 7-k-1);
+    }
+
+    for(int i = 0; i < NUM_OF_ITER; i++) {
+        std::cout << "i = " << i << std::endl;
+        input_elements2 = get_new_input(input_elements2, base_pattern);
+    }
+    
+    std::vector<int> result2(input_elements.begin()+offset, input_elements.begin()+offset+8);
+    std::cout << result2 << std::endl;    
 }
