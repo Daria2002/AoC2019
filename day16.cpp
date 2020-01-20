@@ -60,6 +60,7 @@ std::vector<int> adapt_base(std::vector<int> base_pattern, int num_of_replicatio
 std::vector<int> get_new_input(std::vector<int> input, std::vector<int> base_pattern) {
     std::vector<int> output;
     std::vector<int> new_base_pattern;
+    std::cout << "input size = " << input.size() << std::endl;
     for(int i = 0; i < input.size(); i++) {
         long long int sum = 0;
         new_base_pattern = adapt_base(base_pattern, i);
@@ -67,11 +68,7 @@ std::vector<int> get_new_input(std::vector<int> input, std::vector<int> base_pat
         for(int j = 0; j < input.size(); j++) {
             // long long int index = j == 0 ? 1 : j % new_base_pattern.size() + 1;
             long long int index;
-            if(j < base_pattern.size()-1) {
-                index = j % new_base_pattern.size() + 1;
-            } else {
-                index = (j+1) % new_base_pattern.size();
-            }
+            index = j < base_pattern.size() - 1 ? j % new_base_pattern.size() + 1 : (j+1) % new_base_pattern.size();
             sum += input[j] * new_base_pattern[index];
         }
         int last_digit = abs(sum) % 10;
@@ -79,6 +76,36 @@ std::vector<int> get_new_input(std::vector<int> input, std::vector<int> base_pat
     }
 
     return output;
+}
+
+std::vector<int> get_new_input_part2(std::vector<int> input, std::vector<int> base_pattern, 
+int original_input_size) {
+    std::vector<int> output;
+    std::vector<int> new_base_pattern;
+    for(int i = 0; i < input.size(); i++) {
+        long long int sum = 0;
+        new_base_pattern = adapt_base(base_pattern, i);
+        
+        for(int j = i; j < input.size(); j++) {
+            long long int index;
+            index = j < base_pattern.size() - 1 ?
+             j % new_base_pattern.size() + 1 : (j+1) % new_base_pattern.size();
+            sum += input[j] * new_base_pattern[index];
+        }
+        int last_digit = abs(sum) % 10;
+        output.push_back(last_digit);
+    }
+
+    return output;
+}
+
+long long int calculate_offset(std::vector<int> input_elements) {
+    std::vector<int> offset_values(input_elements.begin(), input_elements.begin()+7);
+    long long int offset = 0;
+    for(int k = 0; k < 7; k++) {
+        offset += offset_values[k] * pow(10, 7-k-1);
+    }
+    return offset;
 }
 
 int main() {
@@ -98,18 +125,14 @@ int main() {
     std::cout << "part2:" << std::endl;
     input_elements = get_input_elements("./day16.txt");
     std::vector<int> input_elements2;
-    for(int i = 0; i < 1000; i++) {
+    for(int i = 0; i < 10000; i++) {
         input_elements2.insert(input_elements2.end(), input_elements.begin(), input_elements.end());
     }
-    std::vector<int> offset_values(input_elements.begin(), input_elements.begin()+7);
-    long long int offset = 0;
-    for(int k = 0; k < 7; k++) {
-        offset += offset_values[k] * pow(10, 7-k-1);
-    }
+    long long int offset = calculate_offset(input_elements);
 
     for(int i = 0; i < NUM_OF_ITER; i++) {
         std::cout << "i = " << i << std::endl;
-        input_elements2 = get_new_input(input_elements2, base_pattern);
+        input_elements2 = get_new_input_part2(input_elements2, base_pattern, input_elements.size());
     }
     
     std::vector<int> result2(input_elements.begin()+offset, input_elements.begin()+offset+8);
