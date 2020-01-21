@@ -78,14 +78,15 @@ std::vector<int> get_new_input(std::vector<int> input, std::vector<int> base_pat
     return output;
 }
 
-std::vector<int> get_new_input_part2(std::vector<int> input, std::vector<int> base_pattern, 
-int original_input_size) {
+std::vector<int> get_new_input_part2(long long int offset, std::vector<int> input, 
+std::vector<int> base_pattern, int original_input_size) {
     std::vector<int> output;
     std::vector<int> new_base_pattern;
-    for(int i = 0; i < input.size(); i++) {
+    std::cout << "input size = " << input.size() << std::endl;
+    for(int i = offset; i < input.size(); i++) {
+        std::cout << "_i_ = " << i << std::endl;
         long long int sum = 0;
         new_base_pattern = adapt_base(base_pattern, i);
-        
         for(int j = i; j < input.size(); j++) {
             long long int index;
             index = j < base_pattern.size() - 1 ?
@@ -132,7 +133,7 @@ int main() {
 
     for(int i = 0; i < NUM_OF_ITER; i++) {
         std::cout << "i = " << i << std::endl;
-        input_elements2 = get_new_input_part2(input_elements2, base_pattern, input_elements.size());
+        input_elements2 = get_new_input_part2(offset, input_elements2, base_pattern, input_elements.size());
     }
     
     std::vector<int> result2(input_elements.begin()+offset, input_elements.begin()+offset+8);
