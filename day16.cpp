@@ -60,7 +60,7 @@ std::vector<int> adapt_base(std::vector<int> base_pattern, int num_of_replicatio
 std::vector<int> get_new_input(std::vector<int> input, std::vector<int> base_pattern) {
     std::vector<int> output;
     std::vector<int> new_base_pattern;
-    std::cout << "input size = " << input.size() << std::endl;
+    // std::cout << "input size = " << input.size() << std::endl;
     for(int i = 0; i < input.size(); i++) {
         long long int sum = 0;
         new_base_pattern = adapt_base(base_pattern, i);
@@ -82,7 +82,7 @@ std::vector<int> get_new_input_part2(long long int offset, std::vector<int> inpu
 std::vector<int> base_pattern, int original_input_size) {
     std::vector<int> output;
     std::vector<int> new_base_pattern;
-    std::cout << "input size = " << input.size() << std::endl;
+    // std::cout << "input size = " << input.size() << std::endl;
     for(int i = offset; i < input.size(); i++) {
         // std::cout << "_i_ = " << i << std::endl;
         long long int sum = 0;
