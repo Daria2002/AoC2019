@@ -60,13 +60,11 @@ std::vector<int> adapt_base(std::vector<int> base_pattern, int num_of_replicatio
 std::vector<int> get_new_input(std::vector<int> input, std::vector<int> base_pattern) {
     std::vector<int> output;
     std::vector<int> new_base_pattern;
-    // std::cout << "input size = " << input.size() << std::endl;
     for(int i = 0; i < input.size(); i++) {
         long long int sum = 0;
         new_base_pattern = adapt_base(base_pattern, i);
         
         for(int j = 0; j < input.size(); j++) {
-            // long long int index = j == 0 ? 1 : j % new_base_pattern.size() + 1;
             long long int index;
             index = j < base_pattern.size() - 1 ? j % new_base_pattern.size() + 1 : (j+1) % new_base_pattern.size();
             sum += input[j] * new_base_pattern[index];
@@ -79,12 +77,10 @@ std::vector<int> get_new_input(std::vector<int> input, std::vector<int> base_pat
 }
 
 std::vector<int> get_new_input_part2(long long int offset, std::vector<int> input, 
-std::vector<int> base_pattern, int original_input_size) {
+std::vector<int> base_pattern) {
     std::vector<int> output;
     std::vector<int> new_base_pattern;
-    // std::cout << "input size = " << input.size() << std::endl;
     for(int i = offset; i < input.size(); i++) {
-        // std::cout << "_i_ = " << i << std::endl;
         long long int sum = 0;
         new_base_pattern = adapt_base(base_pattern, i);
         for(int j = i; j < input.size(); j++) {
@@ -113,10 +109,8 @@ int main() {
     std::vector<int> base_pattern = {0, 1, 0, -1};
     std::vector<int> input_elements = get_input_elements("./day16.txt");
 
-    // std::cout << input_elements << std::endl;
     for(int i = 0; i < NUM_OF_ITER; i++) {
         input_elements = get_new_input(input_elements, base_pattern);
-        // std::cout << input_elements << std::endl;
     }
 
     std::cout << "part1:" << std::endl;
@@ -132,8 +126,7 @@ int main() {
     long long int offset = calculate_offset(input_elements);
 
     for(int i = 0; i < NUM_OF_ITER; i++) {
-        std::cout << "i = " << i << std::endl;
-        input_elements2 = get_new_input_part2(offset, input_elements2, base_pattern, input_elements.size());
+        input_elements2 = get_new_input_part2(offset, input_elements2, base_pattern);
     }
     
     std::vector<int> result2(input_elements.begin()+offset, input_elements.begin()+offset+8);
