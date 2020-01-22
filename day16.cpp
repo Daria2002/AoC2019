@@ -84,7 +84,7 @@ std::vector<int> base_pattern, int original_input_size) {
     std::vector<int> new_base_pattern;
     std::cout << "input size = " << input.size() << std::endl;
     for(int i = offset; i < input.size(); i++) {
-        std::cout << "_i_ = " << i << std::endl;
+        // std::cout << "_i_ = " << i << std::endl;
         long long int sum = 0;
         new_base_pattern = adapt_base(base_pattern, i);
         for(int j = i; j < input.size(); j++) {
