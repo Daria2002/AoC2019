@@ -25,9 +25,9 @@ std::ostream& operator<<(std::ostream& stream, const std::vector<T>& values) {
     if(count == 0) {
         count++;
     } else {
-        std::cout << ", ";
+        stream << ", ";
     }
-    std::cout << element;
+    stream << element;
   }
   stream << " ]";
   return stream;
