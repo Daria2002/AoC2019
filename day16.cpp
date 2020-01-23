@@ -80,22 +80,15 @@ std::vector<int> get_new_input_part2(long long int offset, std::vector<int> inpu
 std::vector<int> base_pattern) {
     std::vector<int> output;
     std::vector<int> new_base_pattern;
-    for(int i = 0; i < offset; i++) output.push_back(0);
-    for(int i = offset; i < input.size(); i++) {
-        long long int sum = 0;
-        new_base_pattern = adapt_base(base_pattern, i);
-        for(int j = i; j < input.size(); j++) {
-            if(input[j] == 0) continue;
-            long long int index;
-            index = j < base_pattern.size() - 1 ?
-             j % new_base_pattern.size() + 1 : (j+1) % new_base_pattern.size();
-            if(new_base_pattern[index] == 0) continue;
-            sum += input[j] * new_base_pattern[index];
-        }
-        int last_digit = abs(sum) % 10;
-        output.push_back(last_digit);
+    long long int sum = 0, compute_help = 0;
+    for(long long int i = input.size() - 1; i >= offset; i--) {
+        sum += input[i];
+        output.push_back(sum % 10);
     }
-
+    for(int i = offset-1; i >= 0; i--) {
+        output.push_back(0);
+    }
+    std::reverse(output.begin(), output.end());
     return output;
 }
 
@@ -127,13 +120,9 @@ int main() {
         input_elements2.insert(input_elements2.end(), input_elements.begin(), input_elements.end());
     }
     long long int offset = calculate_offset(input_elements);
-
     for(int i = 0; i < NUM_OF_ITER; i++) {
-        std::cout << "i = " << i << std::endl;
         input_elements2 = get_new_input_part2(offset, input_elements2, base_pattern);
-        std::cout << input_elements2 << std::endl;
     }
-    
-    std::vector<int> result2(input_elements2.begin(), input_elements2.begin()+8);
+    std::vector<int> result2(input_elements2.begin() + offset, input_elements2.begin() + offset + 8);
     std::cout << result2 << std::endl;    
 }
