@@ -23,12 +23,18 @@ template<class T>
 std::ostream& operator<<(std::ostream& stream, const std::vector<T>& v) {
     stream << "[";
     for(int i = 0; i < v.size(); i++) {
-        if(i != 0) stream << ", ";
         stream << v[i];
     }
     stream << "]";
     return stream;
 } 
+
+template<class T>
+std::ostream& operator<<(std::ostream& stream, const std::vector<std::vector<T>>& v) {
+    for(int i = 0; i < v.size(); i++) {
+        std::cout << v[i] << std::endl;
+    }
+}
 
 class Intcode_calculator {
 
@@ -200,21 +206,29 @@ int main() {
     std::vector<int> elements = get_input_elements("./day17.txt");
     Intcode_calculator calc(elements);
     int intcode_result = 0;
+
+    std::vector<std::vector<std::string>> matrix;
+    std::vector<std::string> tmp_vector;
+
     while(intcode_result != -1) {
         intcode_result = calc.calculate(DEFAULT_INPUT);
-        switch (intcode_result)
-        {
+        switch (intcode_result){
         case 35:
-            std::cout << "#";
+            tmp_vector.push_back("#");
             break;
         case 46:
-            std::cout << ".";
+            tmp_vector.push_back(".");
             break;
         case 10:
-            std::cout << "" << std::endl;
+            if(tmp_vector.empty()) break;
+            matrix.push_back(tmp_vector);
+            tmp_vector.clear();
             break;
         default:
             break;
         }
     }
+
+    std::cout << matrix;
+
 }
