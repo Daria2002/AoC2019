@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <fstream>
 
+// default input is zero, in part1 input is not used
+#define DEFAULT_INPUT 0
 #define ASCII_ZERO 48
 
 template<class T>
@@ -197,9 +199,22 @@ std::vector<int> get_input_elements(std::string file_name) {
 int main() {
     std::vector<int> elements = get_input_elements("./day17.txt");
     Intcode_calculator calc(elements);
-    int i = 0;
-    while(i < 100) {
-        calc.calculate(0);
-        i++;
+    int intcode_result = 0;
+    while(intcode_result != -1) {
+        intcode_result = calc.calculate(DEFAULT_INPUT);
+        switch (intcode_result)
+        {
+        case 35:
+            std::cout << "#";
+            break;
+        case 46:
+            std::cout << ".";
+            break;
+        case 10:
+            std::cout << "" << std::endl;
+            break;
+        default:
+            break;
+        }
     }
 }
