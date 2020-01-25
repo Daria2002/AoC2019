@@ -32,8 +32,9 @@ std::ostream& operator<<(std::ostream& stream, const std::vector<T>& v) {
 template<class T>
 std::ostream& operator<<(std::ostream& stream, const std::vector<std::vector<T>>& v) {
     for(int i = 0; i < v.size(); i++) {
-        std::cout << v[i] << std::endl;
+        stream << v[i] << std::endl;
     }
+    return stream;
 }
 
 class Intcode_calculator {
