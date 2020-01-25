@@ -203,14 +203,10 @@ std::vector<int> get_input_elements(std::string file_name) {
     return elements;
 }
 
-int main() {
-    std::vector<int> elements = get_input_elements("./day17.txt");
-    Intcode_calculator calc(elements);
+std::vector<std::vector<std::string>> build_map(Intcode_calculator &calc, std::vector<int> elements) {
     int intcode_result = 0;
-
     std::vector<std::vector<std::string>> matrix;
     std::vector<std::string> tmp_vector;
-
     while(intcode_result != -1) {
         intcode_result = calc.calculate(DEFAULT_INPUT);
         switch (intcode_result){
@@ -229,7 +225,41 @@ int main() {
             break;
         }
     }
+    return matrix;
+}
 
+std::vector<std::pair<int, int>> get_intersections(std::vector<std::vector<std::string>> matrix) {
+    std::vector<std::pair<int, int>> intersections;
+    for(int i = 0; i < matrix.size(); i++) {
+        for(int j = 0; j < matrix[i].size(); j++) {
+            if(matrix[i][j] == "#" && j-1 >= 0 && j+1 < matrix[i].size() && i-1 >= 0 && i+1 < matrix.size()) {
+                if(matrix[i-1][j] == "#" && matrix[i+1][j] == "#" && matrix[i][j+1] == "#" && matrix[i][j-1] == "#") {
+                    intersections.push_back(std::make_pair(i, j));
+                }
+            }
+        }
+    }
+    return intersections;
+}
+
+inline long long int get_alignment_parameter(std::pair<int, int> element) {
+    return element.first * element.second;
+}
+
+long long int get_sum_of_alignment_params(std::vector<std::pair<int, int>> intersections) {
+    long long int sum = 0;
+    std::for_each(intersections.begin(), intersections.end(), [&sum](const auto& el) {
+        sum += get_alignment_parameter(el);
+    });
+    return sum;
+}
+
+int main() {
+    std::vector<int> elements = get_input_elements("./day17.txt");
+    Intcode_calculator calc(elements);
+    std::vector<std::vector<std::string>> matrix = build_map(calc, elements);
     std::cout << matrix;
-
+    std::vector<std::pair<int, int>> intersections = get_intersections(matrix);
+    long long int sum_of_alignment_params = get_sum_of_alignment_params(intersections);
+    std::cout << "part1 = " << sum_of_alignment_params << std::endl;
 }
