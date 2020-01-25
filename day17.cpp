@@ -4,6 +4,10 @@
 #include <iostream>
 #include <map>
 #include <functional>
+#include <string>
+#include <sstream>
+#include <algorithm>
+#include <fstream>
 
 #define ASCII_ZERO 48
 
@@ -47,7 +51,7 @@ class Intcode_calculator {
    
     public:
         std::map<int, std::function<void()>> functions;
-        Intcode_calculator(std::vector<long long int> _elements) : elements(_elements)
+        Intcode_calculator(std::vector<int> _elements) : elements(_elements)
         {
             last_index = 0;
             // capture class members by saying 'this' in the capture list
@@ -62,6 +66,7 @@ class Intcode_calculator {
             });
 
             functions.emplace(Operations::SAVE_INPUT, [&]() {
+                std::cout << "input is used" << std::endl;
                 num_of_params = 1;
                 elements[params[0]] = input;
             });
@@ -113,7 +118,7 @@ class Intcode_calculator {
             });
         }
 
-        long long int calculate(int _input) {
+        int calculate(int _input) {
             input = _input;
             for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
@@ -158,17 +163,17 @@ class Intcode_calculator {
 
     private:
         int last_index;
-        std::vector<long long int> elements;
-        std::array<long long int, 3> params;
+        std::vector<int> elements;
+        std::array<int, 3> params;
         int num_of_params = 1;
         int relative_base = 0;
         std::array<int, 3> indices_mode = {0};
         std::string element;
-        long long int output;
+        int output;
         int i;
         int input;
        
-        void fill_with_zeros(std::vector<long long int> &elements, long long int index) {
+        void fill_with_zeros(std::vector<int> &elements, int index) {
             int size = elements.size();
             for(int i = size; i <= index; i++) {
                 elements.push_back(0);
@@ -176,6 +181,25 @@ class Intcode_calculator {
         }
 };
 
+std::vector<int> get_input_elements(std::string file_name) {
+    std::ifstream file(file_name);
+    std::string file_content;
+    getline(file, file_content);
+    std::stringstream ss(file_content);
+    std::vector<int> elements;
+    std::string tmp;
+    while (getline(ss, tmp, ',')) {
+        elements.push_back(std::stoi(tmp));
+    }
+    return elements;
+}
+
 int main() {
-    
+    std::vector<int> elements = get_input_elements("./day17.txt");
+    Intcode_calculator calc(elements);
+    int i = 0;
+    while(i < 100) {
+        calc.calculate(0);
+        i++;
+    }
 }
