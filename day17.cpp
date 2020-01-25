@@ -228,14 +228,21 @@ std::vector<std::vector<std::string>> build_map(Intcode_calculator &calc, std::v
     return matrix;
 }
 
+bool check_neighbours(int i, int j, std::vector<std::vector<std::string>> matrix) {
+    if(j-1 >= 0 && j+1 < matrix[i].size() && i-1 >= 0 && i+1 < matrix.size()) {
+        if(matrix[i-1][j] == "#" && matrix[i+1][j] == "#" && matrix[i][j+1] == "#" && matrix[i][j-1] == "#") {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::vector<std::pair<int, int>> get_intersections(std::vector<std::vector<std::string>> matrix) {
     std::vector<std::pair<int, int>> intersections;
     for(int i = 0; i < matrix.size(); i++) {
         for(int j = 0; j < matrix[i].size(); j++) {
-            if(matrix[i][j] == "#" && j-1 >= 0 && j+1 < matrix[i].size() && i-1 >= 0 && i+1 < matrix.size()) {
-                if(matrix[i-1][j] == "#" && matrix[i+1][j] == "#" && matrix[i][j+1] == "#" && matrix[i][j-1] == "#") {
-                    intersections.push_back(std::make_pair(i, j));
-                }
+            if(matrix[i][j] == "#" && check_neighbours(i, j, matrix)) {
+                intersections.push_back(std::make_pair(i, j));
             }
         }
     }
