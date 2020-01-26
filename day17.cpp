@@ -77,6 +77,7 @@ class Intcode_calculator {
             functions.emplace(Operations::SAVE_INPUT, [&]() {
                 std::cout << "input is used" << std::endl;
                 num_of_params = 1;
+                std::cin >> input;
                 elements[params[0]] = input;
             });
 
@@ -203,45 +204,46 @@ std::vector<int> get_input_elements(std::string file_name) {
     return elements;
 }
 
-std::vector<std::vector<std::string>> build_map(Intcode_calculator &calc, std::vector<int> elements) {
+std::vector<std::vector<char>> build_map(Intcode_calculator &calc, std::vector<int> elements) {
     int intcode_result = 0;
-    std::vector<std::vector<std::string>> matrix;
-    std::vector<std::string> tmp_vector;
+    std::vector<std::vector<char>> matrix;
+    std::vector<char> tmp_vector;
     while(intcode_result != -1) {
         intcode_result = calc.calculate(DEFAULT_INPUT);
         switch (intcode_result){
-        case 35:
-            tmp_vector.push_back("#");
-            break;
-        case 46:
-            tmp_vector.push_back(".");
-            break;
+        // case 35:
+        //     tmp_vector.push_back("#");
+        //     break;
+        // case 46:
+        //     tmp_vector.push_back(".");
+        //     break;
         case 10:
             if(tmp_vector.empty()) break;
             matrix.push_back(tmp_vector);
             tmp_vector.clear();
             break;
         default:
+            tmp_vector.push_back(static_cast<char>(intcode_result));
             break;
         }
     }
     return matrix;
 }
 
-bool check_neighbours(int i, int j, std::vector<std::vector<std::string>> matrix) {
+bool check_neighbours(int i, int j, std::vector<std::vector<char>> matrix) {
     if(j-1 >= 0 && j+1 < matrix[i].size() && i-1 >= 0 && i+1 < matrix.size()) {
-        if(matrix[i-1][j] == "#" && matrix[i+1][j] == "#" && matrix[i][j+1] == "#" && matrix[i][j-1] == "#") {
+        if(matrix[i-1][j] == '#' && matrix[i+1][j] == '#' && matrix[i][j+1] == '#' && matrix[i][j-1] == '#') {
             return true;
         }
     }
     return false;
 }
 
-std::vector<std::pair<int, int>> get_intersections(std::vector<std::vector<std::string>> matrix) {
+std::vector<std::pair<int, int>> get_intersections(std::vector<std::vector<char>> matrix) {
     std::vector<std::pair<int, int>> intersections;
     for(int i = 0; i < matrix.size(); i++) {
         for(int j = 0; j < matrix[i].size(); j++) {
-            if(matrix[i][j] == "#" && check_neighbours(i, j, matrix)) {
+            if(matrix[i][j] == '#' && check_neighbours(i, j, matrix)) {
                 intersections.push_back(std::make_pair(i, j));
             }
         }
@@ -264,9 +266,20 @@ long long int get_sum_of_alignment_params(std::vector<std::pair<int, int>> inter
 int main() {
     std::vector<int> elements = get_input_elements("./day17.txt");
     Intcode_calculator calc(elements);
-    std::vector<std::vector<std::string>> matrix = build_map(calc, elements);
+    std::vector<std::vector<char>> matrix = build_map(calc, elements);
     std::cout << matrix;
     std::vector<std::pair<int, int>> intersections = get_intersections(matrix);
     long long int sum_of_alignment_params = get_sum_of_alignment_params(intersections);
     std::cout << "part1 = " << sum_of_alignment_params << std::endl;
+
+    // part2: change value at position 0 from 1 to 2
+    elements[0] = 2;
+    Intcode_calculator calc2(elements);
+    int count = 0;
+    // while(count < 3000) {
+    //     count++;
+    //     std::cout << calc2.calculate(1) << std::endl;
+    // }
+    matrix = build_map(calc2, elements);
+    std::cout << matrix;
 }
