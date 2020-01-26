@@ -75,7 +75,6 @@ class Intcode_calculator {
             });
 
             functions.emplace(Operations::SAVE_INPUT, [&]() {
-                std::cout << "input is used" << std::endl;
                 num_of_params = 1;
                 std::cin >> input;
                 elements[params[0]] = input;
@@ -210,20 +209,16 @@ std::vector<std::vector<char>> build_map(Intcode_calculator &calc, std::vector<i
     std::vector<char> tmp_vector;
     while(intcode_result != -1) {
         intcode_result = calc.calculate(DEFAULT_INPUT);
+        char intcode_result_char = static_cast<char>(intcode_result);
+        std::cout << intcode_result_char;
         switch (intcode_result){
-        // case 35:
-        //     tmp_vector.push_back("#");
-        //     break;
-        // case 46:
-        //     tmp_vector.push_back(".");
-        //     break;
         case 10:
             if(tmp_vector.empty()) break;
             matrix.push_back(tmp_vector);
             tmp_vector.clear();
             break;
         default:
-            tmp_vector.push_back(static_cast<char>(intcode_result));
+            tmp_vector.push_back(intcode_result_char);
             break;
         }
     }
@@ -275,11 +270,6 @@ int main() {
     // part2: change value at position 0 from 1 to 2
     elements[0] = 2;
     Intcode_calculator calc2(elements);
-    int count = 0;
-    // while(count < 3000) {
-    //     count++;
-    //     std::cout << calc2.calculate(1) << std::endl;
-    // }
     matrix = build_map(calc2, elements);
     std::cout << matrix;
 }
