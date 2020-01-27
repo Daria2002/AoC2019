@@ -8,6 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include <fstream>
+#include <unordered_map>
 
 // default input is zero, in part1 input is not used
 #define DEFAULT_INPUT 0
@@ -57,7 +58,7 @@ class Intcode_calculator {
         IMMIDIATE  = 1,  
         RELATIVE = 2
     };
-   
+
     public:
         std::map<int, std::function<void()>> functions;
         Intcode_calculator(std::vector<int> _elements) : elements(_elements)
@@ -75,8 +76,14 @@ class Intcode_calculator {
             });
 
             functions.emplace(Operations::SAVE_INPUT, [&]() {
+                if(not_processed) {
+                    inputs = get_routine(matrix);
+                    not_processed = true;
+                }
+                input = inputs[num_of_input];
+                num_of_input++;
+                std::cout << "input funkcija " << std::endl;
                 num_of_params = 1;
-                std::cin >> input;
                 elements[params[0]] = input;
             });
 
@@ -127,7 +134,8 @@ class Intcode_calculator {
             });
         }
 
-        int calculate(int _input) {
+        int calculate(int _input, std::vector<std::vector<char>> _matrix) {
+            matrix = _matrix;
             input = _input;
             for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
                 element = std::to_string(elements[i]);
@@ -171,6 +179,9 @@ class Intcode_calculator {
         }
 
     private:
+        bool not_processed = false;
+        int num_of_input = 0;
+        std::vector<std::vector<char>> matrix;
         int last_index;
         std::vector<int> elements;
         std::array<int, 3> params;
@@ -181,7 +192,16 @@ class Intcode_calculator {
         int output;
         int i;
         int input;
+        std::vector<int> inputs;
        
+        std::vector<int> get_routine(std::vector<std::vector<char>> matrix) {
+            std::vector<int> routine;
+
+            // TODO:process
+
+            return routine;
+        }
+
         void fill_with_zeros(std::vector<int> &elements, int index) {
             int size = elements.size();
             for(int i = size; i <= index; i++) {
@@ -208,7 +228,7 @@ std::vector<std::vector<char>> build_map(Intcode_calculator &calc, std::vector<i
     std::vector<std::vector<char>> matrix;
     std::vector<char> tmp_vector;
     while(intcode_result != -1) {
-        intcode_result = calc.calculate(DEFAULT_INPUT);
+        intcode_result = calc.calculate(DEFAULT_INPUT, matrix);
         char intcode_result_char = static_cast<char>(intcode_result);
         std::cout << intcode_result_char;
         switch (intcode_result){
@@ -262,7 +282,6 @@ int main() {
     std::vector<int> elements = get_input_elements("./day17.txt");
     Intcode_calculator calc(elements);
     std::vector<std::vector<char>> matrix = build_map(calc, elements);
-    std::cout << matrix;
     std::vector<std::pair<int, int>> intersections = get_intersections(matrix);
     long long int sum_of_alignment_params = get_sum_of_alignment_params(intersections);
     std::cout << "part1 = " << sum_of_alignment_params << std::endl;
@@ -271,5 +290,4 @@ int main() {
     elements[0] = 2;
     Intcode_calculator calc2(elements);
     matrix = build_map(calc2, elements);
-    std::cout << matrix;
 }
