@@ -194,10 +194,23 @@ class Intcode_calculator {
         int input;
         std::vector<int> inputs;
        
+        // make something like this : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
+        std::vector<std::string> get_movements(std::vector<std::vector<char>> matrix) {
+            for(int j = 0; j < matrix.size(); j++) {
+                for(int k = 0; k < matrix[j].size(); k++) {
+
+                }
+            }
+        }
+
+        // return inputs
         std::vector<int> get_routine(std::vector<std::vector<char>> matrix) {
             std::vector<int> routine;
+            std::vector<std::string> moves = get_movements(matrix);
 
-            // TODO:process
+            for(int k = 0; k < moves.size(); k++) {
+                
+            }
 
             return routine;
         }
