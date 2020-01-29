@@ -61,7 +61,8 @@ class Intcode_calculator {
 
     public:
         std::map<int, std::function<void()>> functions;
-        Intcode_calculator(std::vector<int> _elements) : elements(_elements)
+        Intcode_calculator(std::vector<int> _elements, std::pair<int, int> &_start_coordinate)
+         : elements(_elements), start_coordinate(_start_coordinate)
         {
             last_index = 0;
             // capture class members by saying 'this' in the capture list
@@ -193,16 +194,120 @@ class Intcode_calculator {
         int i;
         int input;
         std::vector<int> inputs;
-       
+        std::pair<int, int> start_coordinate;
+        
         // make something like this : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
         std::vector<std::string> get_movements(std::vector<std::vector<char>> matrix) {
-            // mode (horizontal = 1 or vertical = 2)
-            int mode = 1;
-            for(int j = 0; j < matrix.size(); j++) {
-                for(int k = 0; k < matrix[j].size(); k++) {
+            int mode = 1; // mode (horizontal = 1 or vertical = 2)
+            int turn = 1; // turn (right = 1 or left = 2)
+            int direction = 1; // direction (to right side = 1, to left side = 2, up = 3, down = 4)
+            bool end = false;
+            int count_steps = 0;
+            std::size_t j = 0;
+            std::size_t i = 0;
+            // while end of whole line
+            while(!end) {
+                if(mode == 1) { // horizontal walk
+                    // while end of straight movement
+                    while (true) {
+                        if(direction == 1 && i < matrix[j].size()-1 && matrix[j][i++] != '#') {
+                            break;
+                        } else if(direction == 2 && i > 0 && matrix[j][i--] != '#') {
+                            break;
+                        } else if(direction == 3 && j > 0 && matrix[j--][i] != '#') {
+                            break;
+                        } else if(direction == 4 && j < matrix.size()-1 && matrix[j++][i] != '#') {
+                            break;
+                        } else {
+                            count_steps++;
+                        }
+                    }
+                } else { // vertical walk
+                    
+                }   
+                inputs.push_back(turn == 1 ? 'R' : 'L');
+                inputs.push_back(',');
+                inputs.push_back(count_steps);
+                count_steps = 0;
 
+                if(mode == 1) { // horizontal
+                    if(direction == 1) { // to right
+                        if(j < matrix.size()-1 && matrix[j+1][i] == '#') { // check right
+                            j++;
+                            mode = 2;
+                            direction = 4;
+                            continue;    
+                        } else if(j > 0 && matrix[j-1][i] == '#') { // check left
+                            j--;
+                            mode = 2;
+                            direction = 3;
+                            continue;
+                        } else {
+                            break;
+                        }
+                    } else { // to left
+                        if(j > 0 && matrix[j-1][i] == '#') { // check right
+                            j--;
+                            mode = 2;
+                            direction = 3;
+                            continue;
+                        } else if(j < matrix.size()-1 && matrix[j+1][i] == '#') { // check left
+                            j++;
+                            mode = 2;
+                            direction = 4;
+                        } else {
+                            break;
+                        }
+                    }
+                } else { // vertical
+                    if(direction == 3) { // up
+                        if(i > ) { // check left
+
+                        } else if() { // check right
+
+                        } else {
+                            break;
+                        }
+                    } else { // down
+                        if() { // check left
+
+                        } else if() { // check right
+
+                        } else {
+                            break;
+                        }
+                    }
                 }
             }
+
+            std::for_each(matrix.begin() + start_coordinate.first, matrix.end(), [&] (const auto &row) {
+                std::for_each(row.begin() + start_coordinate.second, row.end(), [&] (const auto &el) {
+                    if(mode == 1) {
+                        if(matrix[j][k+1] == '#') {
+                            // while can go straight
+                            int count_moves = 0;
+                            while(count_moves < 10) {
+                                count_moves++;
+                            }
+                            // push back direction
+                            inputs.push_back('R');
+                            // push back comma
+                            inputs.push_back(',');
+                            // push back number of steps
+                            inputs.push_back(count_moves + '0');
+                        } else if(matrix[j][k+1] != '#' && matrix[j][k-1] == '#') {
+                            
+                        } else {    
+                            // end
+
+                        }
+                        k++;
+                    }
+                });
+                if(mode == 1) {
+                    j++;
+                }
+            });
         }
 
         // return inputs
@@ -219,7 +324,7 @@ class Intcode_calculator {
 
         void fill_with_zeros(std::vector<int> &elements, int index) {
             int size = elements.size();
-            for(int i = size; i <= index; i++) {
+            for(std::size_t i = size; i <= index; i++) {
                 elements.push_back(0);
             }
         }
@@ -304,11 +409,12 @@ long long int get_sum_of_alignment_params(std::vector<std::pair<int, int>> inter
 
 int main() {
     std::vector<int> elements = get_input_elements("./day17.txt");
-    Intcode_calculator calc(elements);
+    Intcode_calculator calc(elements, start_coordinate);
     std::vector<std::vector<char>> matrix = build_map(calc, elements);
     std::vector<std::pair<int, int>> intersections = get_intersections(matrix);
     long long int sum_of_alignment_params = get_sum_of_alignment_params(intersections);
     std::cout << "part1 = " << sum_of_alignment_params << std::endl;
+
 
     // part2: change value at position 0 from 1 to 2
     // elements[0] = 2;
