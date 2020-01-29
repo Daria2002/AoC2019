@@ -196,6 +196,8 @@ class Intcode_calculator {
        
         // make something like this : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
         std::vector<std::string> get_movements(std::vector<std::vector<char>> matrix) {
+            // mode (horizontal = 1 or vertical = 2)
+            int mode = 1;
             for(int j = 0; j < matrix.size(); j++) {
                 for(int k = 0; k < matrix[j].size(); k++) {
 
@@ -205,14 +207,14 @@ class Intcode_calculator {
 
         // return inputs
         std::vector<int> get_routine(std::vector<std::vector<char>> matrix) {
-            std::vector<int> routine;
+            std::vector<int> inputs;
             std::vector<std::string> moves = get_movements(matrix);
 
             for(int k = 0; k < moves.size(); k++) {
                 
             }
 
-            return routine;
+            return inputs;
         }
 
         void fill_with_zeros(std::vector<int> &elements, int index) {
@@ -236,22 +238,31 @@ std::vector<int> get_input_elements(std::string file_name) {
     return elements;
 }
 
+std::pair<int, int> start_coordinate;
+
 std::vector<std::vector<char>> build_map(Intcode_calculator &calc, std::vector<int> elements) {
     int intcode_result = 0;
     std::vector<std::vector<char>> matrix;
     std::vector<char> tmp_vector;
+    int j = 0, i = 0;
     while(intcode_result != -1) {
         intcode_result = calc.calculate(DEFAULT_INPUT, matrix);
         char intcode_result_char = static_cast<char>(intcode_result);
+        if(intcode_result_char == '^') {
+            start_coordinate = std::make_pair(j, i);
+        }
         std::cout << intcode_result_char;
         switch (intcode_result){
         case 10:
             if(tmp_vector.empty()) break;
             matrix.push_back(tmp_vector);
+            j++;
+            i = 0;
             tmp_vector.clear();
             break;
         default:
             tmp_vector.push_back(intcode_result_char);
+            i++;
             break;
         }
     }
@@ -300,7 +311,7 @@ int main() {
     std::cout << "part1 = " << sum_of_alignment_params << std::endl;
 
     // part2: change value at position 0 from 1 to 2
-    elements[0] = 2;
-    Intcode_calculator calc2(elements);
-    matrix = build_map(calc2, elements);
+    // elements[0] = 2;
+    // Intcode_calculator calc2(elements);
+    // matrix = build_map(calc2, elements);
 }
