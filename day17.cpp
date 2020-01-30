@@ -261,18 +261,30 @@ class Intcode_calculator {
                     }
                 } else { // vertical
                     if(direction == 3) { // up
-                        if(i > ) { // check left
-
-                        } else if() { // check right
-
+                        if(i > 0 && matrix[j][i-1] == '#') { // check left
+                            i--;
+                            mode = 1;
+                            direction = 2;
+                            continue;
+                        } else if(i < matrix[j].size()-1 && matrix[j][i+1] == '#') { // check right
+                            i++;
+                            mode = 1;
+                            direction = 1; 
+                            continue;
                         } else {
                             break;
                         }
                     } else { // down
-                        if() { // check left
-
-                        } else if() { // check right
-
+                        if(i < matrix[j].size()-1 && matrix[j][i+1] == '#') { // check left
+                            i++;
+                            mode = 1;
+                            direction = 1; 
+                            continue;
+                        } else if(i > 0 && matrix[j][i-1] == '#') { // check right
+                            i--;
+                            mode = 1;
+                            direction = 2;
+                            continue;
                         } else {
                             break;
                         }
