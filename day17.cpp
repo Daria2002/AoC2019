@@ -196,141 +196,20 @@ class Intcode_calculator {
         std::vector<int> inputs;
         std::pair<int, int> start_coordinate;
         
-        // make something like this : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
+        // input : map with # and .
+        // output : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
         std::vector<std::string> get_movements(std::vector<std::vector<char>> matrix) {
-            int mode = 1; // mode (horizontal = 1 or vertical = 2)
-            int turn = 1; // turn (right = 1 or left = 2)
-            int direction = 1; // direction (to right side = 1, to left side = 2, up = 3, down = 4)
-            bool end = false;
-            int count_steps = 0;
-            std::size_t j = 0;
-            std::size_t i = 0;
-            // while end of whole line
-            while(!end) {
-                if(mode == 1) { // horizontal walk
-                    // while end of straight movement
-                    while (true) {
-                        if(direction == 1 && i < matrix[j].size()-1 && matrix[j][i++] != '#') {
-                            break;
-                        } else if(direction == 2 && i > 0 && matrix[j][i--] != '#') {
-                            break;
-                        } else if(direction == 3 && j > 0 && matrix[j--][i] != '#') {
-                            break;
-                        } else if(direction == 4 && j < matrix.size()-1 && matrix[j++][i] != '#') {
-                            break;
-                        } else {
-                            count_steps++;
-                        }
-                    }
-                } else { // vertical walk
-                    
-                }   
-                inputs.push_back(turn == 1 ? 'R' : 'L');
-                inputs.push_back(',');
-                inputs.push_back(count_steps);
-                count_steps = 0;
+            
+        }
 
-                if(mode == 1) { // horizontal
-                    if(direction == 1) { // to right
-                        if(j < matrix.size()-1 && matrix[j+1][i] == '#') { // check right
-                            j++;
-                            mode = 2;
-                            direction = 4;
-                            continue;    
-                        } else if(j > 0 && matrix[j-1][i] == '#') { // check left
-                            j--;
-                            mode = 2;
-                            direction = 3;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    } else { // to left
-                        if(j > 0 && matrix[j-1][i] == '#') { // check right
-                            j--;
-                            mode = 2;
-                            direction = 3;
-                            continue;
-                        } else if(j < matrix.size()-1 && matrix[j+1][i] == '#') { // check left
-                            j++;
-                            mode = 2;
-                            direction = 4;
-                        } else {
-                            break;
-                        }
-                    }
-                } else { // vertical
-                    if(direction == 3) { // up
-                        if(i > 0 && matrix[j][i-1] == '#') { // check left
-                            i--;
-                            mode = 1;
-                            direction = 2;
-                            continue;
-                        } else if(i < matrix[j].size()-1 && matrix[j][i+1] == '#') { // check right
-                            i++;
-                            mode = 1;
-                            direction = 1; 
-                            continue;
-                        } else {
-                            break;
-                        }
-                    } else { // down
-                        if(i < matrix[j].size()-1 && matrix[j][i+1] == '#') { // check left
-                            i++;
-                            mode = 1;
-                            direction = 1; 
-                            continue;
-                        } else if(i > 0 && matrix[j][i-1] == '#') { // check right
-                            i--;
-                            mode = 1;
-                            direction = 2;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-                }
-            }
+        std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves) {
 
-            std::for_each(matrix.begin() + start_coordinate.first, matrix.end(), [&] (const auto &row) {
-                std::for_each(row.begin() + start_coordinate.second, row.end(), [&] (const auto &el) {
-                    if(mode == 1) {
-                        if(matrix[j][k+1] == '#') {
-                            // while can go straight
-                            int count_moves = 0;
-                            while(count_moves < 10) {
-                                count_moves++;
-                            }
-                            // push back direction
-                            inputs.push_back('R');
-                            // push back comma
-                            inputs.push_back(',');
-                            // push back number of steps
-                            inputs.push_back(count_moves + '0');
-                        } else if(matrix[j][k+1] != '#' && matrix[j][k-1] == '#') {
-                            
-                        } else {    
-                            // end
-
-                        }
-                        k++;
-                    }
-                });
-                if(mode == 1) {
-                    j++;
-                }
-            });
         }
 
         // return inputs
         std::vector<int> get_routine(std::vector<std::vector<char>> matrix) {
-            std::vector<int> inputs;
-            std::vector<std::string> moves = get_movements(matrix);
-
-            for(int k = 0; k < moves.size(); k++) {
-                
-            }
-
+            std::vector<std::string> moves = get_movements(matrix); // i.e moves =  R,8,R,8,R,4
+            std::vector<int> inputs = convert_movements_to_inputs(moves);
             return inputs;
         }
 
