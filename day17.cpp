@@ -179,6 +179,35 @@ class Intcode_calculator {
             }
             return 0;
         }
+        
+        // input : map with # and .
+        // output : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
+        std::vector<char> get_movements(std::vector<std::vector<char>> matrix) {
+            std::vector<char> movements;
+            int direction = 0;
+            int i, j, counter;
+
+            while(true) {
+                while(can_go_straight(matrix, i, j, direction)) {
+                    counter++;
+                }
+
+                movements.push_back(static_cast<char>(counter));
+                counter = 0;
+
+                if(go_left(matrix, i, j, direction)) {
+                     direction = abs(direction - 1) % 4;
+                     movements.push_back('R');
+                     movements.push_back(',');
+                } else if(go_right(matrix, i, j, direction)) {
+                    direction = (direction + 1) % 4;
+                     movements.push_back('L');
+                     movements.push_back(',');
+                } else {
+                    break;
+                }
+            }
+        }
 
     private:
         bool not_processed = false;
@@ -238,35 +267,6 @@ class Intcode_calculator {
                 return true;
             }
             return false;
-        }
-
-        // input : map with # and .
-        // output : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
-        std::vector<char> get_movements(std::vector<std::vector<char>> matrix) {
-            std::vector<char> movements;
-            int direction = 0;
-            int i, j, counter;
-
-            while(true) {
-                while(can_go_straight(matrix, i, j, direction)) {
-                    counter++;
-                }
-
-                movements.push_back(static_cast<char>(counter));
-                counter = 0;
-
-                if(go_left(matrix, i, j, direction)) {
-                     direction = abs(direction - 1) % 4;
-                     movements.push_back('R');
-                     movements.push_back(',');
-                } else if(go_right(matrix, i, j, direction)) {
-                    direction = (direction + 1) % 4;
-                     movements.push_back('L');
-                     movements.push_back(',');
-                } else {
-                    break;
-                }
-            }
         }
 
         // input : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
@@ -379,7 +379,9 @@ int main() {
 
 
     // part2: change value at position 0 from 1 to 2
-    // elements[0] = 2;
-    // Intcode_calculator calc2(elements);
-    // matrix = build_map(calc2, elements);
+    elements[0] = 2;
+    Intcode_calculator calc2(elements, start_coordinate);
+    matrix = build_map(calc2, elements);
+    std::vector<char> v = calc2.get_movements(matrix);
+    std::cout << v << std::endl;
 }
