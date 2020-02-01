@@ -185,7 +185,7 @@ class Intcode_calculator {
         std::vector<char> get_movements(std::vector<std::vector<char>> matrix) {
             std::vector<char> movements;
             int direction = 0;
-            int i, j, counter;
+            int i = 0, j = 0, counter = 0;
 
             while(true) {
                 while(can_go_straight(matrix, i, j, direction)) {
