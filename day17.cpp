@@ -8,6 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include <fstream>
+#include <stdlib.h>
 #include <unordered_map>
 
 // default input is zero, in part1 input is not used
@@ -176,7 +177,7 @@ class Intcode_calculator {
                     return output;
                 }
             }
-            return -1;
+            return 0;
         }
 
     private:
@@ -195,27 +196,97 @@ class Intcode_calculator {
         int input;
         std::vector<int> inputs;
         std::pair<int, int> start_coordinate;
-        
-        // input : map with # and .
-        // output : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
-        std::vector<std::string> get_movements(std::vector<std::vector<char>> matrix) {
-            
+
+        bool go_left(std::vector<std::vector<char>> matrix, int i, int j, int dir) {
+            if(dir == 0 && i > 0) {
+                return matrix[j][i-1] == '#';
+            } else if(dir == 1 && j > 0) {
+                return matrix[j-1][i] == '#';
+            } else if(dir == 2 && i+1 < matrix[j].size()-1) {
+                return matrix[j][i+1] == '#';
+            } else if(dir == 3 && j < matrix.size()-1) {
+                return matrix[j+1][i] == '#';
+            }
+            return false;
         }
 
-        std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves) {
+        bool go_right(std::vector<std::vector<char>> matrix, int i, int j, int dir) {
+            if(dir == 0 && i > 0) {
+                return matrix[j][i+1] == '#';
+            } else if(dir == 1 && j > 0) {
+                return matrix[j+1][i] == '#';
+            } else if(dir == 2 && i+1 < matrix[j].size()-1) {
+                return matrix[j][i-1] == '#';
+            } else if(dir == 3 && j < matrix.size()-1) {
+                return matrix[j-1][i] == '#';
+            }
+            return false;
+        }
 
+        bool can_go_straight(std::vector<std::vector<char>> matrix, int &i, int &j, int direction) {
+            if(direction == 0 && j > 0 && matrix[j-1][i] == '#') {
+                j--;
+                return true;
+            } else if(direction == 1 && i < matrix[j].size()-1 && matrix[j][i+1] == '#') {
+                i++;
+                return true;
+            } else if(direction == 2 && j < matrix.size()-1 && matrix[j+1][i] == '#') {
+                j++;
+                return true;
+            } else if(direction == 3 && i > 0 && matrix[j][i-1] == '#') {    
+                i--;
+                return true;
+            }
+            return false;
+        }
+
+        // input : map with # and .
+        // output : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
+        std::vector<char> get_movements(std::vector<std::vector<char>> matrix) {
+            std::vector<char> movements;
+            int direction = 0;
+            int i, j, counter;
+
+            while(true) {
+                while(can_go_straight(matrix, i, j, direction)) {
+                    counter++;
+                }
+
+                movements.push_back(static_cast<char>(counter));
+                counter = 0;
+
+                if(go_left(matrix, i, j, direction)) {
+                     direction = abs(direction - 1) % 4;
+                     movements.push_back('R');
+                     movements.push_back(',');
+                } else if(go_right(matrix, i, j, direction)) {
+                    direction = (direction + 1) % 4;
+                     movements.push_back('L');
+                     movements.push_back(',');
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // input : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
+        // output : ascii table value of(a, b, c, a, r, 2, l, 5, r, 6, l, 3)
+        std::vector<int> convert_movements_to_inputs(std::vector<char> moves, 
+        std::vector<std::vector<char>> matrix) {
+            std::vector<int> inputs;
+            return inputs;
         }
 
         // return inputs
         std::vector<int> get_routine(std::vector<std::vector<char>> matrix) {
-            std::vector<std::string> moves = get_movements(matrix); // i.e moves =  R,8,R,8,R,4
-            std::vector<int> inputs = convert_movements_to_inputs(moves);
+            std::vector<char> moves = get_movements(matrix); // i.e moves =  R,8,R,8,R,4
+            std::vector<int> inputs = convert_movements_to_inputs(moves, matrix);
             return inputs;
         }
 
         void fill_with_zeros(std::vector<int> &elements, int index) {
             int size = elements.size();
-            for(std::size_t i = size; i <= index; i++) {
+            for(int i = size; i <= index; i++) {
                 elements.push_back(0);
             }
         }
@@ -237,11 +308,11 @@ std::vector<int> get_input_elements(std::string file_name) {
 std::pair<int, int> start_coordinate;
 
 std::vector<std::vector<char>> build_map(Intcode_calculator &calc, std::vector<int> elements) {
-    int intcode_result = 0;
+    int intcode_result = 10;
     std::vector<std::vector<char>> matrix;
     std::vector<char> tmp_vector;
     int j = 0, i = 0;
-    while(intcode_result != -1) {
+    while(intcode_result == 35 || intcode_result == 46 || intcode_result == 10 || intcode_result == 94) {
         intcode_result = calc.calculate(DEFAULT_INPUT, matrix);
         char intcode_result_char = static_cast<char>(intcode_result);
         if(intcode_result_char == '^') {
