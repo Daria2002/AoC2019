@@ -184,29 +184,34 @@ class Intcode_calculator {
         // output : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
         std::vector<char> get_movements(std::vector<std::vector<char>> matrix) {
             std::vector<char> movements;
-            int direction = 0;
-            int i = 0, j = 0, counter = 0;
+            int direction = 0; // 0-up, 1-right, 2-down, 3-left
+            int j = start_coordinate.first, i = start_coordinate.second, counter = 0;
 
             while(true) {
                 while(can_go_straight(matrix, i, j, direction)) {
                     counter++;
                 }
-
-                movements.push_back(static_cast<char>(counter));
-                counter = 0;
+                if(counter > 0) {
+                    std::cout << "counter = " << counter << std::endl;
+                    movements.push_back(counter + '0');
+                    counter = 0;
+                }
 
                 if(go_left(matrix, i, j, direction)) {
                      direction = abs(direction - 1) % 4;
-                     movements.push_back('R');
+                     movements.push_back('L');
+                     std::cout << "skrece lijevo" << std::endl;
                      movements.push_back(',');
                 } else if(go_right(matrix, i, j, direction)) {
-                    direction = (direction + 1) % 4;
-                     movements.push_back('L');
+                     direction = (direction + 1) % 4;
+                     movements.push_back('R');
+                     std::cout << "skrece desno" << std::endl;
                      movements.push_back(',');
                 } else {
                     break;
                 }
             }
+            return movements;
         }
 
     private:
@@ -246,7 +251,7 @@ class Intcode_calculator {
                 return matrix[j+1][i] == '#';
             } else if(dir == 2 && i+1 < matrix[j].size()-1) {
                 return matrix[j][i-1] == '#';
-            } else if(dir == 3 && j < matrix.size()-1) {
+            } else if(dir == 3 && j > 0) {
                 return matrix[j-1][i] == '#';
             }
             return false;
@@ -307,18 +312,22 @@ std::vector<int> get_input_elements(std::string file_name) {
 
 std::pair<int, int> start_coordinate;
 
+inline bool is_intcode_result_ok(int intcode_result) {
+    return (intcode_result == 35 || intcode_result == 46 || intcode_result == 10 || intcode_result == 94);
+}
+
 std::vector<std::vector<char>> build_map(Intcode_calculator &calc, std::vector<int> elements) {
     int intcode_result = 10;
     std::vector<std::vector<char>> matrix;
     std::vector<char> tmp_vector;
     int j = 0, i = 0;
-    while(intcode_result == 35 || intcode_result == 46 || intcode_result == 10 || intcode_result == 94) {
+    while(is_intcode_result_ok(intcode_result)) {
         intcode_result = calc.calculate(DEFAULT_INPUT, matrix);
         char intcode_result_char = static_cast<char>(intcode_result);
         if(intcode_result_char == '^') {
             start_coordinate = std::make_pair(j, i);
         }
-        std::cout << intcode_result_char;
+        if(is_intcode_result_ok(intcode_result)) std::cout << intcode_result_char;
         switch (intcode_result){
         case 10:
             if(tmp_vector.empty()) break;
