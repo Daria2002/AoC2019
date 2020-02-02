@@ -192,25 +192,27 @@ class Intcode_calculator {
                     counter++;
                 }
                 if(counter > 0) {
-                    std::cout << "counter = " << counter << std::endl;
-                    movements.push_back(counter + '0');
+                    if(counter < 10) {
+                        movements.push_back(counter + '0');
+                    } else {
+                        movements.push_back(counter/10 + '0');
+                        movements.push_back(counter%10 + '0');
+                    } 
+                    movements.push_back(',');
                     counter = 0;
                 }
 
                 if(go_left(matrix, i, j, direction)) {
-                     direction = abs(direction - 1) % 4;
+                     direction = (direction - 1) < 0 ? 3: (direction - 1);
                      movements.push_back('L');
-                     std::cout << "skrece lijevo" << std::endl;
-                     movements.push_back(',');
                 } else if(go_right(matrix, i, j, direction)) {
-                     direction = (direction + 1) % 4;
+                     direction = (direction + 1) > 3 ? 0 : (direction + 1);
                      movements.push_back('R');
-                     std::cout << "skrece desno" << std::endl;
-                     movements.push_back(',');
                 } else {
                     break;
                 }
             }
+            movements.erase(movements.end()-1); // erase last ,
             return movements;
         }
 
