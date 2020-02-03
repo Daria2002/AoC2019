@@ -181,8 +181,8 @@ class Intcode_calculator {
         
         // input : map with # and .
         // output : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
-        std::vector<char> get_movements(std::vector<std::vector<char>> matrix) {
-            std::vector<char> movements;
+        std::vector<std::string> get_movements(std::vector<std::vector<char>> matrix) {
+            std::vector<std::string> movements;
             int direction = 0; // 0-up, 1-right, 2-down, 3-left
             int j = start_coordinate.first, i = start_coordinate.second, counter = 0;
 
@@ -192,23 +192,23 @@ class Intcode_calculator {
                 }
                 if(counter > 0) {
                     if(counter < 10) {
-                        movements.push_back(counter + '0');
+                        movements.push_back(std::to_string(counter));
                     } else {
-                        movements.push_back(counter/10 + '0');
-                        movements.push_back(counter%10 + '0');
+                        movements.push_back(std::to_string(counter/10));
+                        movements.push_back(std::to_string(counter%10));
                     } 
-                    movements.push_back(',');
+                    movements.push_back(",");
                     counter = 0;
                 }
 
                 if(go_left(matrix, i, j, direction)) {
                      direction = (direction - 1) < 0 ? 3: (direction - 1);
-                     movements.push_back('L');
-                     movements.push_back(',');
+                     movements.push_back("L");
+                     movements.push_back(",");
                 } else if(go_right(matrix, i, j, direction)) {
                      direction = (direction + 1) > 3 ? 0 : (direction + 1);
-                     movements.push_back('R');
-                     movements.push_back(',');
+                     movements.push_back("R");
+                     movements.push_back(",");
                 } else {
                     break;
                 }
@@ -277,20 +277,37 @@ class Intcode_calculator {
             return false;
         }
 
+        struct Move {
+            std::string direction;
+            int number_of_steps;
+            Move(std::string _direction, int _number_of_steps) : direction(_direction), number_of_steps(_number_of_steps) {}
+        };
+
+        std::unordered_map<std::string, Move> simplified_moves(std::string& simplified_moves, std::vector<std::string> moves) {
+            std::unordered_map<std::string, Move> map;
+            int letter_counter = 0;
+
+            for(int i = 0; i < moves.size(); i = i + 4) {
+                Move move()
+            }
+
+            return map;
+        }
+
         // input : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
         // output : ascii table value of(a, b, c, a, r, 2, l, 5, r, 6, l, 3)
-        std::vector<int> convert_movements_to_inputs(std::vector<char> moves, 
+        std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves, 
         std::vector<std::vector<char>> matrix) {
+            std::string movements_string = "";
+            std::unordered_map<std::string, Move> mapping = simplified_moves(movements_string, moves);
+
             std::vector<int> inputs;
-
-
-
             return inputs;
         }
 
         // return inputs
         std::vector<int> get_routine(std::vector<std::vector<char>> matrix) {
-            std::vector<char> moves = get_movements(matrix); // i.e moves =  R,8,R,8,R,4
+            std::vector<std::string> moves = get_movements(matrix); // i.e moves =  R,8,R,8,R,4
             std::vector<int> inputs = convert_movements_to_inputs(moves, matrix);
             return inputs;
         }
