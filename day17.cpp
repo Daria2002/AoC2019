@@ -78,13 +78,12 @@ class Intcode_calculator {
             });
 
             functions.emplace(Operations::SAVE_INPUT, [&]() {
-                if(not_processed) {
+                if(processed) {
                     inputs = get_routine(matrix);
-                    not_processed = true;
+                    processed = true;
                 }
                 input = inputs[num_of_input];
                 num_of_input++;
-                std::cout << "input funkcija " << std::endl;
                 num_of_params = 1;
                 elements[params[0]] = input;
             });
@@ -205,9 +204,11 @@ class Intcode_calculator {
                 if(go_left(matrix, i, j, direction)) {
                      direction = (direction - 1) < 0 ? 3: (direction - 1);
                      movements.push_back('L');
+                     movements.push_back(',');
                 } else if(go_right(matrix, i, j, direction)) {
                      direction = (direction + 1) > 3 ? 0 : (direction + 1);
                      movements.push_back('R');
+                     movements.push_back(',');
                 } else {
                     break;
                 }
@@ -217,7 +218,7 @@ class Intcode_calculator {
         }
 
     private:
-        bool not_processed = false;
+        bool processed = false;
         int num_of_input = 0;
         std::vector<std::vector<char>> matrix;
         int last_index;
@@ -281,6 +282,9 @@ class Intcode_calculator {
         std::vector<int> convert_movements_to_inputs(std::vector<char> moves, 
         std::vector<std::vector<char>> matrix) {
             std::vector<int> inputs;
+
+
+
             return inputs;
         }
 
@@ -323,13 +327,13 @@ std::vector<std::vector<char>> build_map(Intcode_calculator &calc, std::vector<i
     std::vector<std::vector<char>> matrix;
     std::vector<char> tmp_vector;
     int j = 0, i = 0;
-    while(is_intcode_result_ok(intcode_result)) {
+    while(intcode_result != 0) {
         intcode_result = calc.calculate(DEFAULT_INPUT, matrix);
         char intcode_result_char = static_cast<char>(intcode_result);
         if(intcode_result_char == '^') {
             start_coordinate = std::make_pair(j, i);
         }
-        if(is_intcode_result_ok(intcode_result)) std::cout << intcode_result_char;
+        std::cout << intcode_result_char;
         switch (intcode_result){
         case 10:
             if(tmp_vector.empty()) break;
@@ -388,11 +392,8 @@ int main() {
     long long int sum_of_alignment_params = get_sum_of_alignment_params(intersections);
     std::cout << "part1 = " << sum_of_alignment_params << std::endl;
 
-
     // part2: change value at position 0 from 1 to 2
     elements[0] = 2;
     Intcode_calculator calc2(elements, start_coordinate);
     matrix = build_map(calc2, elements);
-    std::vector<char> v = calc2.get_movements(matrix);
-    std::cout << v << std::endl;
 }
