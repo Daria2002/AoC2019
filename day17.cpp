@@ -78,7 +78,7 @@ class Intcode_calculator {
             });
 
             functions.emplace(Operations::SAVE_INPUT, [&]() {
-                if(processed) {
+                if(!processed) {
                     inputs = get_routine(matrix);
                     processed = true;
                 }
@@ -291,7 +291,7 @@ class Intcode_calculator {
             std::size_t operator() (const Move & move) const {
                 std::size_t h1 = std::hash<std::string>()(move.direction);
                 std::size_t h2 = std::hash<int>()(move.number_of_steps);
-                return h1^h2;
+                return h1 ^ h2;
             }
         };
 
@@ -299,19 +299,28 @@ class Intcode_calculator {
             return map_moves.find(move) != map_moves.end();
         }
 
+        inline int get_number_of_steps(std::vector<std::string> moves, const int i, int& extra_digit) {
+            if(moves.size()-1 < i+3 || moves[i+3]  == ",") return std::stoi(moves[i+2]);
+            extra_digit = 1;
+            return std::stoi(moves[i+2])*10 + std::stoi(moves[i+3]);
+        }
+
         // returns letter and move that it presents
         // this function changes simplified_moves so it looks like: abadabd
-        std::unordered_map<Move, char> simplify_moves(std::string& simplified_moves, std::vector<std::string> moves) {
+        std::unordered_map<Move, char, hash_fn> simplify_moves(std::string& simplified_moves, std::vector<std::string> moves) {
             std::unordered_map<Move, char, hash_fn> map_moves;
             int letter_counter = 0;
+            int extra_digit = 0;
 
-            for(int i = 0; i < moves.size(); i = i + 4) {
-                Move move(moves[i], std::stoi(moves[i]));
+            for(int i = 0; i < moves.size(); i = i + 4 + extra_digit) {
+                extra_digit = 0;
+                int number_of_steps = get_number_of_steps(moves, i, extra_digit);
+                Move move(moves[i], number_of_steps);
                 if(!(map_moves_constains_move(map_moves, move))) {
                     map_moves[move] = 'a' + letter_counter;
                     letter_counter++;
                 }
-                simplified_moves.append('a' + letter_counter - 1);
+                simplified_moves += map_moves[move];
             }
 
             return map_moves;
@@ -322,7 +331,7 @@ class Intcode_calculator {
         std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves, 
         std::vector<std::vector<char>> matrix) {
             std::string movements_string = "";
-            std::unordered_map<Move, char> mapping = simplify_moves(movements_string, moves);
+            std::unordered_map<Move, char, hash_fn> mapping = simplify_moves(movements_string, moves);
 
             std::vector<int> inputs;
             return inputs;
