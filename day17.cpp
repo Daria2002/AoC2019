@@ -281,17 +281,40 @@ class Intcode_calculator {
             std::string direction;
             int number_of_steps;
             Move(std::string _direction, int _number_of_steps) : direction(_direction), number_of_steps(_number_of_steps) {}
+
+            bool operator==(const Move& move) const {
+                return direction == move.direction && number_of_steps == move.number_of_steps;
+            }
         };
 
-        std::unordered_map<std::string, Move> simplified_moves(std::string& simplified_moves, std::vector<std::string> moves) {
-            std::unordered_map<std::string, Move> map;
+        struct hash_fn {
+            std::size_t operator() (const Move & move) const {
+                std::size_t h1 = std::hash<std::string>()(move.direction);
+                std::size_t h2 = std::hash<int>()(move.number_of_steps);
+                return h1^h2;
+            }
+        };
+
+        inline bool map_moves_constains_move(std::unordered_map<Move, char, hash_fn> map_moves, Move move) {
+            return map_moves.find(move) != map_moves.end();
+        }
+
+        // returns letter and move that it presents
+        // this function changes simplified_moves so it looks like: abadabd
+        std::unordered_map<Move, char> simplify_moves(std::string& simplified_moves, std::vector<std::string> moves) {
+            std::unordered_map<Move, char, hash_fn> map_moves;
             int letter_counter = 0;
 
             for(int i = 0; i < moves.size(); i = i + 4) {
-                Move move()
+                Move move(moves[i], std::stoi(moves[i]));
+                if(!(map_moves_constains_move(map_moves, move))) {
+                    map_moves[move] = 'a' + letter_counter;
+                    letter_counter++;
+                }
+                simplified_moves.append('a' + letter_counter - 1);
             }
 
-            return map;
+            return map_moves;
         }
 
         // input : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
@@ -299,7 +322,7 @@ class Intcode_calculator {
         std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves, 
         std::vector<std::vector<char>> matrix) {
             std::string movements_string = "";
-            std::unordered_map<std::string, Move> mapping = simplified_moves(movements_string, moves);
+            std::unordered_map<Move, char> mapping = simplify_moves(movements_string, moves);
 
             std::vector<int> inputs;
             return inputs;
