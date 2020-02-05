@@ -10,6 +10,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <unordered_map>
+#include <array>
 
 // default input is zero, in part1 input is not used
 #define DEFAULT_INPUT 0
@@ -24,16 +25,16 @@ std::ostream& operator<<(std::ostream& stream, const std::pair<T, T>& pair) {
 template<class T>
 std::ostream& operator<<(std::ostream& stream, const std::vector<T>& v) {
     stream << "[";
-    for(int i = 0; i < v.size(); i++) {
+    for (int i = 0; i < v.size(); i++) {
         stream << v[i];
     }
     stream << "]";
     return stream;
-} 
+}
 
 template<class T>
 std::ostream& operator<<(std::ostream& stream, const std::vector<std::vector<T>>& v) {
-    for(int i = 0; i < v.size(); i++) {
+    for (int i = 0; i < v.size(); i++) {
         stream << v[i] << std::endl;
     }
     return stream;
@@ -56,14 +57,14 @@ class Intcode_calculator {
 
     enum Modes {
         POSITION = 0,
-        IMMIDIATE  = 1,  
+        IMMIDIATE = 1,
         RELATIVE = 2
     };
 
     public:
         std::map<int, std::function<void()>> functions;
         Intcode_calculator(std::vector<int> _elements, std::pair<int, int> &_start_coordinate)
-         : elements(_elements), start_coordinate(_start_coordinate)
+        : elements(_elements), start_coordinate(_start_coordinate)
         {
             last_index = 0;
             // capture class members by saying 'this' in the capture list
@@ -74,11 +75,11 @@ class Intcode_calculator {
 
             functions.emplace(Operations::MUL, [&]() {
                 num_of_params = 3;
-                elements[params[2]] = elements[params[0]] * elements[params[1]];    
+                elements[params[2]] = elements[params[0]] * elements[params[1]];
             });
 
             functions.emplace(Operations::SAVE_INPUT, [&]() {
-                if(!processed) {
+                if (!processed) {
                     inputs = get_routine(matrix);
                     processed = true;
                 }
@@ -95,7 +96,7 @@ class Intcode_calculator {
 
             functions.emplace(Operations::JUMP_IF_TRUE, [&]() {
                 num_of_params = 2;
-                if(elements[params[0]] != 0) {
+                if (elements[params[0]] != 0) {
                     // because there is num_of_params+1 in for loop
                     num_of_params = -1;
                     i = elements[params[1]];
@@ -104,7 +105,7 @@ class Intcode_calculator {
 
             functions.emplace(Operations::JUMP_IF_FALSE, [&]() {
                 num_of_params = 2;
-                if(elements[params[0]] == 0) {
+                if (elements[params[0]] == 0) {
                     // because there is num_of_params+1 in for loop
                     num_of_params = -1;
                     i = elements[params[1]];
@@ -113,22 +114,24 @@ class Intcode_calculator {
 
             functions.emplace(Operations::LESS_THAN, [&]() {
                 num_of_params = 3;
-                if(elements[params[0]] < elements[params[1]]) {
+                if (elements[params[0]] < elements[params[1]]) {
                     elements[params[2]] = 1;
-                } else {
+                }
+                else {
                     elements[params[2]] = 0;
                 }
             });
 
             functions.emplace(Operations::EQUALS, [&]() {
                 num_of_params = 3;
-                if(elements[params[0]] == elements[params[1]]) {
+                if (elements[params[0]] == elements[params[1]]) {
                     elements[params[2]] = 1;
-                } else {
+                }
+                else {
                     elements[params[2]] = 0;
                 }
             });
-       
+
             functions.emplace(Operations::RELATIVE_BASE, [&]() {
                 num_of_params = 1;
                 relative_base += elements[params[0]];
@@ -138,47 +141,49 @@ class Intcode_calculator {
         int calculate(int _input, std::vector<std::vector<char>> _matrix) {
             matrix = _matrix;
             input = _input;
-            for(i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params+1) {
+            for (i = last_index; i < elements.size() && elements[i] != Operations::HALT; i += num_of_params + 1) {
                 element = std::to_string(elements[i]);
                 int help = 0;
-                for(int k = 0; k < 3; k++) {
-                    if(element.size() > 4-k) {
-                        indices_mode[2-k] = element.at(help++)-ASCII_ZERO;
-                    } else {
-                        indices_mode[2-k] = 0;
+                for (int k = 0; k < 3; k++) {
+                    if (element.size() > 4 - k) {
+                        indices_mode[2 - k] = element.at(help++) - ASCII_ZERO;
+                    }
+                    else {
+                        indices_mode[2 - k] = 0;
                     }
                 }
 
-                for(int j = 0; j < 3; j++) {
+                for (int j = 0; j < 3; j++) {
                     // last element and it is 99
-                    if(i+j+1 >= elements.size()) {
+                    if (i + j + 1 >= elements.size()) {
                         params[j] = 0;
                         continue;
                     }
-                   
-                    if(indices_mode[j] == 0) {
-                        params[j] = elements[i+j+1];
-                    } else if(indices_mode[j] == 1) {
-                        params[j] = i+j+1;
-                    } else if(indices_mode[j] == 2) {
-                        params[j] = elements[i+j+1]+relative_base;
+                    if (indices_mode[j] == 0) {
+                        params[j] = elements[i + j + 1];
                     }
-                   
+                    else if (indices_mode[j] == 1) {
+                        params[j] = i + j + 1;
+                    }
+                    else if (indices_mode[j] == 2) {
+                        params[j] = elements[i + j + 1] + relative_base;
+                    }
+
                     // if index greater than elements size
-                    if(params[j] > elements.size()) {
+                    if (params[j] > elements.size()) {
                         fill_with_zeros(elements, params[j]);
                     }
                 }
 
-                functions[element[element.size()-1]-ASCII_ZERO]();
-                if(element[element.size()-1]-ASCII_ZERO == 4) {
+                functions[element[element.size() - 1] - ASCII_ZERO]();
+                if (element[element.size() - 1] - ASCII_ZERO == 4) {
                     last_index = i + num_of_params + 1;
                     return output;
                 }
             }
             return 0;
         }
-        
+
         // input : map with # and .
         // output : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
         std::vector<std::string> get_movements(std::vector<std::vector<char>> matrix) {
@@ -186,170 +191,209 @@ class Intcode_calculator {
             int direction = 0; // 0-up, 1-right, 2-down, 3-left
             int j = start_coordinate.first, i = start_coordinate.second, counter = 0;
 
-            while(true) {
-                while(can_go_straight(matrix, i, j, direction)) {
+            while (true) {
+                while (can_go_straight(matrix, i, j, direction)) {
                     counter++;
                 }
-                if(counter > 0) {
-                    if(counter < 10) {
+                if (counter > 0) {
+                    if (counter < 10) {
                         movements.push_back(std::to_string(counter));
                     } else {
-                        movements.push_back(std::to_string(counter/10));
-                        movements.push_back(std::to_string(counter%10));
-                    } 
+                        movements.push_back(std::to_string(counter / 10));
+                        movements.push_back(std::to_string(counter % 10));
+                    }
                     movements.push_back(",");
                     counter = 0;
                 }
 
-                if(go_left(matrix, i, j, direction)) {
-                     direction = (direction - 1) < 0 ? 3: (direction - 1);
-                     movements.push_back("L");
-                     movements.push_back(",");
-                } else if(go_right(matrix, i, j, direction)) {
-                     direction = (direction + 1) > 3 ? 0 : (direction + 1);
-                     movements.push_back("R");
-                     movements.push_back(",");
-                } else {
+                if (go_left(matrix, i, j, direction)) {
+                    direction = (direction - 1) < 0 ? 3 : (direction - 1);
+                    movements.push_back("L");
+                    movements.push_back(",");
+                }
+                else if (go_right(matrix, i, j, direction)) {
+                    direction = (direction + 1) > 3 ? 0 : (direction + 1);
+                    movements.push_back("R");
+                    movements.push_back(",");
+                }
+                else {
                     break;
                 }
             }
-            movements.erase(movements.end()-1); // erase last ,
+            movements.erase(movements.end() - 1); // erase last ,
             return movements;
         }
 
     private:
-        bool processed = false;
-        int num_of_input = 0;
-        std::vector<std::vector<char>> matrix;
-        int last_index;
-        std::vector<int> elements;
-        std::array<int, 3> params;
-        int num_of_params = 1;
-        int relative_base = 0;
-        std::array<int, 3> indices_mode = {0};
-        std::string element;
-        int output;
-        int i;
-        int input;
-        std::vector<int> inputs;
-        std::pair<int, int> start_coordinate;
+    bool processed = false;
+    int num_of_input = 0;
+    std::vector<std::vector<char>> matrix;
+    int last_index;
+    std::vector<int> elements;
+    std::array<int, 3> params;
+    int num_of_params = 1;
+    int relative_base = 0;
+    std::array<int, 3> indices_mode;
+    std::string element;
+    int output;
+    int i;
+    int input;
+    std::vector<int> inputs;
+    std::pair<int, int> start_coordinate;
 
-        bool go_left(std::vector<std::vector<char>> matrix, int i, int j, int dir) {
-            if(dir == 0 && i > 0) {
-                return matrix[j][i-1] == '#';
-            } else if(dir == 1 && j > 0) {
-                return matrix[j-1][i] == '#';
-            } else if(dir == 2 && i+1 < matrix[j].size()-1) {
-                return matrix[j][i+1] == '#';
-            } else if(dir == 3 && j < matrix.size()-1) {
-                return matrix[j+1][i] == '#';
+    bool go_left(std::vector<std::vector<char>> matrix, int i, int j, int dir) {
+    if (dir == 0 && i > 0) {
+    return matrix[j][i - 1] == '#';
+    }
+    else if (dir == 1 && j > 0) {
+    return matrix[j - 1][i] == '#';
+    }
+    else if (dir == 2 && i + 1 < matrix[j].size() - 1) {
+    return matrix[j][i + 1] == '#';
+    }
+    else if (dir == 3 && j < matrix.size() - 1) {
+    return matrix[j + 1][i] == '#';
+    }
+    return false;
+    }
+
+    bool go_right(std::vector<std::vector<char>> matrix, int i, int j, int dir) {
+        if (dir == 0 && i > 0) {
+            return matrix[j][i + 1] == '#';
+        }
+        else if (dir == 1 && j > 0) {
+            return matrix[j + 1][i] == '#';
+        }
+        else if (dir == 2 && i + 1 < matrix[j].size() - 1) {
+            return matrix[j][i - 1] == '#';
+        }
+        else if (dir == 3 && j > 0) {
+            return matrix[j - 1][i] == '#';
+        }
+        return false;
+    }
+
+    bool can_go_straight(std::vector<std::vector<char>> matrix, int &i, int &j, int direction) {
+        if (direction == 0 && j > 0 && matrix[j - 1][i] == '#') {
+            j--;
+            return true;
+        }
+        else if (direction == 1 && i < matrix[j].size() - 1 && matrix[j][i + 1] == '#') {
+            i++;
+            return true;
+        }
+        else if (direction == 2 && j < matrix.size() - 1 && matrix[j + 1][i] == '#') {
+            j++;
+            return true;
+        }
+        else if (direction == 3 && i > 0 && matrix[j][i - 1] == '#') {
+            i--;
+            return true;
+        }
+        return false;
+    }
+
+    struct Move {
+        std::string direction;
+        int number_of_steps;
+        Move(std::string _direction, int _number_of_steps) : direction(_direction), number_of_steps(_number_of_steps) {}
+
+        bool operator==(const Move& move) const {
+            return direction == move.direction && number_of_steps == move.number_of_steps;
+        }
+    };
+
+    struct hash_fn {
+        std::size_t operator() (const Move & move) const {
+            std::size_t h1 = std::hash<std::string>()(move.direction);
+            std::size_t h2 = std::hash<int>()(move.number_of_steps);
+            return h1 ^ h2;
+        }
+    };
+
+    inline bool map_moves_constains_move(std::unordered_map<Move, char, hash_fn> map_moves, Move move) {
+        return map_moves.find(move) != map_moves.end();
+    }
+
+    inline int get_number_of_steps(std::vector<std::string> moves, const int i, int& extra_digit) {
+        if (moves.size() - 1 < i + 3 || moves[i + 3] == ",") return std::stoi(moves[i + 2]);
+        extra_digit = 1;
+        return std::stoi(moves[i + 2]) * 10 + std::stoi(moves[i + 3]);
+    }
+
+    // returns letter and move that it presents
+    // this function changes simplified_moves so it looks like: abadabd
+    std::unordered_map<Move, char, hash_fn> simplify_moves(std::string& simplified_moves, std::vector<std::string> moves) {
+        std::unordered_map<Move, char, hash_fn> map_moves;
+        int letter_counter = 0;
+        int extra_digit = 0;
+
+        for (int i = 0; i < moves.size(); i = i + 4 + extra_digit) {
+            extra_digit = 0;
+            int number_of_steps = get_number_of_steps(moves, i, extra_digit);
+            Move move(moves[i], number_of_steps);
+            if (!(map_moves_constains_move(map_moves, move))) {
+                map_moves[move] = 'a' + letter_counter;
+                letter_counter++;
             }
-            return false;
+            simplified_moves += map_moves[move];
         }
 
-        bool go_right(std::vector<std::vector<char>> matrix, int i, int j, int dir) {
-            if(dir == 0 && i > 0) {
-                return matrix[j][i+1] == '#';
-            } else if(dir == 1 && j > 0) {
-                return matrix[j+1][i] == '#';
-            } else if(dir == 2 && i+1 < matrix[j].size()-1) {
-                return matrix[j][i-1] == '#';
-            } else if(dir == 3 && j > 0) {
-                return matrix[j-1][i] == '#';
+        return map_moves;
+    }
+
+    std::vector<int> get_indexes(std::vector<char> v, int begin) {
+        std::vector<int> v1;
+        return v1;
+    }
+
+    void modify_string_and_map(std::vector<int> indexes, std::string& str, char letter, std::unordered_map<std::string, char> map) {
+    // izbaci slova koja se nalaze na mjestima di i indeksi i stavi na ta mjesta letter, to update u map
+    }
+
+    // big letter, small letter
+    std::unordered_map<std::string, char> get_pattern(std::string& str) {
+        std::unordered_map<std::string, char> map;
+        std::vector<char> tmp;
+        int letter_counter;
+        for (int i = 0; i < str.size();) {
+            std::vector<int> indexes = {i, i+1}, tmp_indexes;
+            tmp.push_back(str[i]);
+            tmp.push_back(str[i+1]);
+            while ((tmp_indexes = get_indexes(tmp, i + 1)).size() > indexes.size()) {
+                indexes = tmp_indexes; // get indexes where analyzed part of str occured
+                tmp.push_back(str[++i]);
             }
-            return false;
+            modify_string_and_map(indexes, str, 'A' + letter_counter, map);
+            ++letter_counter;
         }
+    }
 
-        bool can_go_straight(std::vector<std::vector<char>> matrix, int &i, int &j, int direction) {
-            if(direction == 0 && j > 0 && matrix[j-1][i] == '#') {
-                j--;
-                return true;
-            } else if(direction == 1 && i < matrix[j].size()-1 && matrix[j][i+1] == '#') {
-                i++;
-                return true;
-            } else if(direction == 2 && j < matrix.size()-1 && matrix[j+1][i] == '#') {
-                j++;
-                return true;
-            } else if(direction == 3 && i > 0 && matrix[j][i-1] == '#') {    
-                i--;
-                return true;
-            }
-            return false;
+    // input : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
+    // output : ascii table value of(a, b, c, a, r, 2, l, 5, r, 6, l, 3)
+    std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves,
+    std::vector<std::vector<char>> matrix) {
+        std::string movements_string = "";
+        std::unordered_map<Move, char, hash_fn> mapping = simplify_moves(movements_string, moves);
+        // i.e. movements_string = aabccdab
+        // make big letters
+        std::unordered_map<std::string, char> pattern = get_pattern(movements_string);
+        std::vector<std::vector<int>> functions = get_functions();
+        return inputs;
+    }
+
+    // return inputs
+    std::vector<int> get_routine(std::vector<std::vector<char>> matrix) {
+        std::vector<std::string> moves = get_movements(matrix); // i.e moves =  R,8,R,8,R,4
+        return convert_movements_to_inputs(moves, matrix);
+    }
+
+    void fill_with_zeros(std::vector<int> &elements, int index) {
+        int size = elements.size();
+        for (int i = size; i <= index; i++) {
+            elements.push_back(0);
         }
-
-        struct Move {
-            std::string direction;
-            int number_of_steps;
-            Move(std::string _direction, int _number_of_steps) : direction(_direction), number_of_steps(_number_of_steps) {}
-
-            bool operator==(const Move& move) const {
-                return direction == move.direction && number_of_steps == move.number_of_steps;
-            }
-        };
-
-        struct hash_fn {
-            std::size_t operator() (const Move & move) const {
-                std::size_t h1 = std::hash<std::string>()(move.direction);
-                std::size_t h2 = std::hash<int>()(move.number_of_steps);
-                return h1 ^ h2;
-            }
-        };
-
-        inline bool map_moves_constains_move(std::unordered_map<Move, char, hash_fn> map_moves, Move move) {
-            return map_moves.find(move) != map_moves.end();
-        }
-
-        inline int get_number_of_steps(std::vector<std::string> moves, const int i, int& extra_digit) {
-            if(moves.size()-1 < i+3 || moves[i+3]  == ",") return std::stoi(moves[i+2]);
-            extra_digit = 1;
-            return std::stoi(moves[i+2])*10 + std::stoi(moves[i+3]);
-        }
-
-        // returns letter and move that it presents
-        // this function changes simplified_moves so it looks like: abadabd
-        std::unordered_map<Move, char, hash_fn> simplify_moves(std::string& simplified_moves, std::vector<std::string> moves) {
-            std::unordered_map<Move, char, hash_fn> map_moves;
-            int letter_counter = 0;
-            int extra_digit = 0;
-
-            for(int i = 0; i < moves.size(); i = i + 4 + extra_digit) {
-                extra_digit = 0;
-                int number_of_steps = get_number_of_steps(moves, i, extra_digit);
-                Move move(moves[i], number_of_steps);
-                if(!(map_moves_constains_move(map_moves, move))) {
-                    map_moves[move] = 'a' + letter_counter;
-                    letter_counter++;
-                }
-                simplified_moves += map_moves[move];
-            }
-
-            return map_moves;
-        }
-
-        // input : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
-        // output : ascii table value of(a, b, c, a, r, 2, l, 5, r, 6, l, 3)
-        std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves, 
-        std::vector<std::vector<char>> matrix) {
-            std::string movements_string = "";
-            std::unordered_map<Move, char, hash_fn> mapping = simplify_moves(movements_string, moves);
-
-            std::vector<int> inputs;
-            return inputs;
-        }
-
-        // return inputs
-        std::vector<int> get_routine(std::vector<std::vector<char>> matrix) {
-            std::vector<std::string> moves = get_movements(matrix); // i.e moves =  R,8,R,8,R,4
-            std::vector<int> inputs = convert_movements_to_inputs(moves, matrix);
-            return inputs;
-        }
-
-        void fill_with_zeros(std::vector<int> &elements, int index) {
-            int size = elements.size();
-            for(int i = size; i <= index; i++) {
-                elements.push_back(0);
-            }
-        }
+    }
 };
 
 std::vector<int> get_input_elements(std::string file_name) {
@@ -376,33 +420,33 @@ std::vector<std::vector<char>> build_map(Intcode_calculator &calc, std::vector<i
     std::vector<std::vector<char>> matrix;
     std::vector<char> tmp_vector;
     int j = 0, i = 0;
-    while(intcode_result != 0) {
+    while (intcode_result != 0) {
         intcode_result = calc.calculate(DEFAULT_INPUT, matrix);
         char intcode_result_char = static_cast<char>(intcode_result);
-        if(intcode_result_char == '^') {
+        if (intcode_result_char == '^') {
             start_coordinate = std::make_pair(j, i);
         }
         std::cout << intcode_result_char;
-        switch (intcode_result){
-        case 10:
-            if(tmp_vector.empty()) break;
-            matrix.push_back(tmp_vector);
-            j++;
-            i = 0;
-            tmp_vector.clear();
-            break;
-        default:
-            tmp_vector.push_back(intcode_result_char);
-            i++;
-            break;
+        switch (intcode_result) {
+            case 10:
+                if (tmp_vector.empty()) break;
+                matrix.push_back(tmp_vector);
+                j++;
+                i = 0;
+                tmp_vector.clear();
+                break;
+            default:
+                tmp_vector.push_back(intcode_result_char);
+                i++;
+                break;
         }
     }
     return matrix;
 }
 
 bool check_neighbours(int i, int j, std::vector<std::vector<char>> matrix) {
-    if(j-1 >= 0 && j+1 < matrix[i].size() && i-1 >= 0 && i+1 < matrix.size()) {
-        if(matrix[i-1][j] == '#' && matrix[i+1][j] == '#' && matrix[i][j+1] == '#' && matrix[i][j-1] == '#') {
+    if (j - 1 >= 0 && j + 1 < matrix[i].size() && i - 1 >= 0 && i + 1 < matrix.size()) {
+        if (matrix[i - 1][j] == '#' && matrix[i + 1][j] == '#' && matrix[i][j + 1] == '#' && matrix[i][j - 1] == '#') {
             return true;
         }
     }
@@ -411,9 +455,9 @@ bool check_neighbours(int i, int j, std::vector<std::vector<char>> matrix) {
 
 std::vector<std::pair<int, int>> get_intersections(std::vector<std::vector<char>> matrix) {
     std::vector<std::pair<int, int>> intersections;
-    for(int i = 0; i < matrix.size(); i++) {
-        for(int j = 0; j < matrix[i].size(); j++) {
-            if(matrix[i][j] == '#' && check_neighbours(i, j, matrix)) {
+    for (int i = 0; i < matrix.size(); i++) {
+        for (int j = 0; j < matrix[i].size(); j++) {
+            if (matrix[i][j] == '#' && check_neighbours(i, j, matrix)) {
                 intersections.push_back(std::make_pair(i, j));
             }
         }
@@ -428,7 +472,7 @@ inline long long int get_alignment_parameter(std::pair<int, int> element) {
 long long int get_sum_of_alignment_params(std::vector<std::pair<int, int>> intersections) {
     long long int sum = 0;
     std::for_each(intersections.begin(), intersections.end(), [&sum](const auto& el) {
-        sum += get_alignment_parameter(el);
+    sum += get_alignment_parameter(el);
     });
     return sum;
 }
