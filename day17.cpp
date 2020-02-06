@@ -342,13 +342,41 @@ class Intcode_calculator {
         return map_moves;
     }
 
-    std::vector<int> get_indexes(std::vector<char> v, int begin) {
-        std::vector<int> v1;
-        return v1;
+    std::string modify_string_and_map(std::vector<int> indexes, std::string str, char letter) {
+    // izbaci slova koja se nalaze na mjestima di i indeksi i stavi na ta mjesta letter, to update u map
+        std::string tmp = "";
+        for(int i = 0; i < str.size(); i++) {
+            if(std::find(indexes.begin(), indexes.end(), i) != indexes.end()) {
+                tmp += str[i];
+            } else {
+                tmp += letter;
+            }
+        }
+        return tmp;
     }
 
-    void modify_string_and_map(std::vector<int> indexes, std::string& str, char letter, std::unordered_map<std::string, char> map) {
-    // izbaci slova koja se nalaze na mjestima di i indeksi i stavi na ta mjesta letter, to update u map
+    std::string vector_of_char_to_string(std::vector<char> v) {
+        std::string str = "";
+        for(int i = 0; i < v.size(); i++) {
+            str += v[i];
+        }
+        return str;
+    }
+
+    std::vector<int> get_indexes(std::string str, std::vector<char> v, int begin) {
+        std::vector<int> indexes;
+        bool found = true;
+        for(int i = begin; i < str.size(); i++) {
+            found = true;
+            for(int j = 0; j < v.size(); j++) {
+                if(str[i+j] != v[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if(found) for(int k = 0; k < v.size(); k++) indexes.push_back(i+k);
+        }
+        return indexes;
     }
 
     // big letter, small letter
@@ -356,17 +384,20 @@ class Intcode_calculator {
         std::unordered_map<std::string, char> map;
         std::vector<char> tmp;
         int letter_counter;
-        for (int i = 0; i < str.size();) {
+        int i = 0;
+        while (i < str.size() - 1) {
             std::vector<int> indexes = {i, i+1}, tmp_indexes;
-            tmp.push_back(str[i]);
-            tmp.push_back(str[i+1]);
-            while ((tmp_indexes = get_indexes(tmp, i + 1)).size() > indexes.size()) {
+            tmp.push_back(str[i++]);
+            tmp.push_back(str[i++]);
+            while ((tmp_indexes = get_indexes(str, tmp, i)).size() > indexes.size()) {
                 indexes = tmp_indexes; // get indexes where analyzed part of str occured
-                tmp.push_back(str[++i]);
+                tmp.push_back(str[i++]);
             }
-            modify_string_and_map(indexes, str, 'A' + letter_counter, map);
+            map[vector_of_char_to_string(tmp)] = 'A' + letter_counter;
+            str = modify_string_and_map(indexes, str, 'A' + letter_counter);
             ++letter_counter;
         }
+        return map;
     }
 
     // input : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
@@ -374,11 +405,11 @@ class Intcode_calculator {
     std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves,
     std::vector<std::vector<char>> matrix) {
         std::string movements_string = "";
-        std::unordered_map<Move, char, hash_fn> mapping = simplify_moves(movements_string, moves);
+        std::unordered_map<Move, char, hash_fn> map_small_letters_and_moves = simplify_moves(movements_string, moves);
         // i.e. movements_string = aabccdab
-        // make big letters
-        std::unordered_map<std::string, char> pattern = get_pattern(movements_string);
-        std::vector<std::vector<int>> functions = get_functions();
+        // make big letters in movement_string and get map
+        std::unordered_map<std::string, char> map_big_and_small_letters = get_pattern(movements_string);
+        //std::vector<std::vector<int>> functions = get_functions();
         return inputs;
     }
 
