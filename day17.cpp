@@ -342,14 +342,15 @@ class Intcode_calculator {
         return map_moves;
     }
 
-    std::string modify_string_and_map(std::vector<int> indexes, std::string str, char letter) {
+    std::string modify_string_and_map(std::vector<int> indexes, std::string str, char letter, int len) {
     // izbaci slova koja se nalaze na mjestima di i indeksi i stavi na ta mjesta letter, to update u map
         std::string tmp = "";
         for(int i = 0; i < str.size(); i++) {
             if(std::find(indexes.begin(), indexes.end(), i) != indexes.end()) {
-                tmp += str[i];
-            } else {
                 tmp += letter;
+                i += (len-1);
+            } else {
+                tmp += str[i];
             }
         }
         return tmp;
@@ -374,7 +375,10 @@ class Intcode_calculator {
                     break;
                 }
             }
-            if(found) for(int k = 0; k < v.size(); k++) indexes.push_back(i+k);
+            if(found) {
+                for(int k = 0; k < v.size(); k++) 
+                    indexes.push_back(i+k);
+            }
         }
         return indexes;
     }
@@ -383,18 +387,27 @@ class Intcode_calculator {
     std::unordered_map<std::string, char> get_pattern(std::string& str) {
         std::unordered_map<std::string, char> map;
         std::vector<char> tmp;
-        int letter_counter;
+        int letter_counter = 0;
         int i = 0;
         while (i < str.size() - 1) {
             std::vector<int> indexes = {i, i+1}, tmp_indexes;
+            std::array<int, 2> start_indexes = {i, i+1};
             tmp.push_back(str[i++]);
             tmp.push_back(str[i++]);
-            while ((tmp_indexes = get_indexes(str, tmp, i)).size() > indexes.size()) {
+            while ((tmp_indexes = get_indexes(str, tmp, i)).size() > 0 && tmp.size() < 5) {
                 indexes = tmp_indexes; // get indexes where analyzed part of str occured
                 tmp.push_back(str[i++]);
             }
+            indexes.push_back(start_indexes[0]);
+            indexes.push_back(start_indexes[1]);
+
+            for(int k = 2; k < tmp.size()-1; k++) {
+                indexes.push_back(start_indexes[0] + k);
+            }
+
+            std::sort(indexes.begin(), indexes.end());
             map[vector_of_char_to_string(tmp)] = 'A' + letter_counter;
-            str = modify_string_and_map(indexes, str, 'A' + letter_counter);
+            str = modify_string_and_map(indexes, str, 'A' + letter_counter, tmp.size());
             ++letter_counter;
         }
         return map;
