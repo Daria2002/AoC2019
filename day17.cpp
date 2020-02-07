@@ -348,7 +348,7 @@ class Intcode_calculator {
         for(int i = 0; i < str.size(); i++) {
             if(std::find(indexes.begin(), indexes.end(), i) != indexes.end()) {
                 tmp += letter;
-                i += (len-1);
+                i += (len-2);
             } else {
                 tmp += str[i];
             }
@@ -409,6 +409,7 @@ class Intcode_calculator {
             map[vector_of_char_to_string(tmp)] = 'A' + letter_counter;
             str = modify_string_and_map(indexes, str, 'A' + letter_counter, tmp.size());
             ++letter_counter;
+            tmp.clear();
         }
         return map;
     }
