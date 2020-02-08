@@ -342,8 +342,19 @@ class Intcode_calculator {
         return map_moves;
     }
 
-    std::string modify_string_and_map(std::vector<int> indexes, std::string str, char letter, int len) {
+    int get_len_of_pattern(std::vector<int> indexes) {
+        int count = 0;
+        for(int i = 1; i < indexes.size(); i++) {
+            if(indexes[i] > indexes[i-1] + 1) return count;
+            count++;
+        }
+    }
+
+    std::string modify_string_and_map(std::unordered_map<char, std::vector<int>> replacement_map, std::string start_str) {
     // izbaci slova koja se nalaze na mjestima di i indeksi i stavi na ta mjesta letter, to update u map
+        std::string str;
+
+        int len = get_len_of_pattern(indexes);
         std::string tmp = "";
         for(int i = 0; i < str.size(); i++) {
             if(std::find(indexes.begin(), indexes.end(), i) != indexes.end()) {
@@ -386,6 +397,7 @@ class Intcode_calculator {
     // big letter, small letter
     std::unordered_map<std::string, char> get_pattern(std::string& str) {
         std::unordered_map<std::string, char> map;
+        std::unordered_map<char, std::vector<int>> replacement_map;
         std::vector<char> tmp;
         int letter_counter = 0;
         int i = 0;
@@ -407,10 +419,11 @@ class Intcode_calculator {
 
             std::sort(indexes.begin(), indexes.end());
             map[vector_of_char_to_string(tmp)] = 'A' + letter_counter;
-            str = modify_string_and_map(indexes, str, 'A' + letter_counter, tmp.size());
+            replacement_map['A' + letter_counter] = indexes;
             ++letter_counter;
             tmp.clear();
         }
+        str = modify_string_and_map(replacement_map, str);
         return map;
     }
 
