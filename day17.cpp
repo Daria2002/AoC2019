@@ -353,18 +353,14 @@ class Intcode_calculator {
     std::string modify_string_and_map(std::unordered_map<char, std::vector<int>> replacement_map, std::string start_str) {
     // izbaci slova koja se nalaze na mjestima di i indeksi i stavi na ta mjesta letter, to update u map
         std::string str;
-
-        int len = get_len_of_pattern(indexes);
-        std::string tmp = "";
-        for(int i = 0; i < str.size(); i++) {
-            if(std::find(indexes.begin(), indexes.end(), i) != indexes.end()) {
-                tmp += letter;
-                i += (len-2);
-            } else {
-                tmp += str[i];
+        std::vector<char> v;
+        int len = get_len_of_pattern(replacement_map['A']);
+        for(auto&[key, value] : replacement_map) {
+            for(int i = 0; i < value.size(); i = i + len) {
+                v[value[i]] = key;
             }
         }
-        return tmp;
+        return vector_of_char_to_string(v);
     }
 
     std::string vector_of_char_to_string(std::vector<char> v) {
