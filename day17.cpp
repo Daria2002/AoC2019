@@ -242,19 +242,19 @@ class Intcode_calculator {
     std::pair<int, int> start_coordinate;
 
     bool go_left(std::vector<std::vector<char>> matrix, int i, int j, int dir) {
-    if (dir == 0 && i > 0) {
-    return matrix[j][i - 1] == '#';
-    }
-    else if (dir == 1 && j > 0) {
-    return matrix[j - 1][i] == '#';
-    }
-    else if (dir == 2 && i + 1 < matrix[j].size() - 1) {
-    return matrix[j][i + 1] == '#';
-    }
-    else if (dir == 3 && j < matrix.size() - 1) {
-    return matrix[j + 1][i] == '#';
-    }
-    return false;
+        if (dir == 0 && i > 0) {
+            return matrix[j][i - 1] == '#';
+        }
+        else if (dir == 1 && j > 0) {
+            return matrix[j - 1][i] == '#';
+        }
+        else if (dir == 2 && i + 1 < matrix[j].size() - 1) {
+            return matrix[j][i + 1] == '#';
+        }
+        else if (dir == 3 && j < matrix.size() - 1) {
+            return matrix[j + 1][i] == '#';
+        }
+        return false;
     }
 
     bool go_right(std::vector<std::vector<char>> matrix, int i, int j, int dir) {
@@ -353,7 +353,7 @@ class Intcode_calculator {
     std::string modify_string_and_map(std::unordered_map<char, std::vector<int>> replacement_map, std::string start_str) {
     // izbaci slova koja se nalaze na mjestima di i indeksi i stavi na ta mjesta letter, to update u map
         std::string str;
-        std::vector<char> v;
+        std::vector<char> v(100);
         int len = get_len_of_pattern(replacement_map['A']);
         for(auto&[key, value] : replacement_map) {
             for(int i = 0; i < value.size(); i = i + len) {
@@ -391,7 +391,7 @@ class Intcode_calculator {
     }
 
     // big letter, small letter
-    std::unordered_map<std::string, char> get_pattern(std::string& str) {
+    std::unordered_map<std::string, char> get_pattern(std::string str) {
         std::unordered_map<std::string, char> map;
         std::unordered_map<char, std::vector<int>> replacement_map;
         std::vector<char> tmp;
