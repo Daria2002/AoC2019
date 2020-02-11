@@ -423,6 +423,14 @@ class Intcode_calculator {
         return map;
     }
 
+    std::unordered_map<char, std::vector<char>> process (
+        std::unordered_map<Move, char, hash_fn> map_small_letters_and_moves, 
+        std::unordered_map<std::string, char> map_big_and_small_letters) {
+            std::unordered_map<char, std::vector<char>> map;
+
+            return map;
+    }
+
     // input : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
     // output : ascii table value of(a, b, c, a, r, 2, l, 5, r, 6, l, 3)
     std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves,
@@ -432,6 +440,7 @@ class Intcode_calculator {
         // i.e. movements_string = aabccdab
         // make big letters in movement_string and get map
         std::unordered_map<std::string, char> map_big_and_small_letters = get_pattern(movements_string);
+        std::unordered_map<char, std::vector<char>> function_name_and_moves = process(map_small_letters_and_moves, map_big_and_small_letters);
         //std::vector<std::vector<int>> functions = get_functions();
         return inputs;
     }
