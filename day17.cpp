@@ -427,7 +427,10 @@ class Intcode_calculator {
         std::unordered_map<Move, char, hash_fn> map_small_letters_and_moves, 
         std::unordered_map<std::string, char> map_big_and_small_letters) {
             std::unordered_map<char, std::vector<char>> map;
-
+            // return map where key is equal to value from map_big_and_small_letters and 
+            // value is equal to vector of characters, where those characters are 
+            // received combining key and value from map_small_letters_and_moves and 
+            // key in map_big_and_small_letters
             return map;
     }
 
