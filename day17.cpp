@@ -297,7 +297,7 @@ class Intcode_calculator {
         std::string direction;
         int number_of_steps;
         Move(std::string _direction, int _number_of_steps) : direction(_direction), number_of_steps(_number_of_steps) {}
-
+        Move() {}
         bool operator==(const Move& move) const {
             return direction == move.direction && number_of_steps == move.number_of_steps;
         }
@@ -423,14 +423,21 @@ class Intcode_calculator {
         return map;
     }
 
+    // return map where key is equal to value from map_big_and_small_letters and 
+    // value is equal to vector of characters, where those characters are 
+    // received combining key and value from map_small_letters_and_moves and 
+    // key in map_big_and_small_letters
     std::unordered_map<char, std::vector<char>> process (
         std::unordered_map<Move, char, hash_fn> map_small_letters_and_moves, 
         std::unordered_map<std::string, char> map_big_and_small_letters) {
+            
             std::unordered_map<char, std::vector<char>> map;
-            // return map where key is equal to value from map_big_and_small_letters and 
-            // value is equal to vector of characters, where those characters are 
-            // received combining key and value from map_small_letters_and_moves and 
-            // key in map_big_and_small_letters
+            std::unordered_map<char, Move> tmp_map;
+
+            for(auto&[key, value] : map_small_letters_and_moves) {
+                tmp_map[value] = key;
+            }
+
             return map;
     }
 
