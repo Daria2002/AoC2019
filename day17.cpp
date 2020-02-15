@@ -431,6 +431,25 @@ class Intcode_calculator {
             // value is equal to vector of characters, where those characters are 
             // received combining key and value from map_small_letters_and_moves and 
             // key in map_big_and_small_letters
+            char small_letter;
+            // make std::unordered_map<char, Move> from map_small_letters_and_moves
+            std::unordered_map<char, Move> small_letter_move;
+            for(auto& [key, value] : map_small_letters_and_moves) {
+                std::cout << "key = " << key.direction << std::endl;
+                //small_letter_move[value] = key;
+            }
+
+            for(auto& [key1, value1] : map_small_letters_and_moves) {
+                for(auto& [key2, value2] : map_big_and_small_letters) {
+                    std::vector<char> tmp;
+                    for(int i = 0; i < key2.size(); i++) {
+                        small_letter = key2.at(i);
+
+                    }
+                    map[value2] = tmp;
+                }
+            }
+
             return map;
     }
 
