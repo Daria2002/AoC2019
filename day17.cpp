@@ -434,7 +434,7 @@ class Intcode_calculator {
             // make std::unordered_map<char, Move> from map_small_letters_and_moves
             std::unordered_map<char, Move> small_letter_move;
             for(auto& [key, value] : map_small_letters_and_moves) {
-                std::cout << "key = " << key.direction << std::endl;
+                std::cout << "key = " << value.direction << std::endl;
                 //small_letter_move[value] = key;
             }
 
