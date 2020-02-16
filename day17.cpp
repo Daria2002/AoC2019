@@ -63,9 +63,11 @@ class Intcode_calculator {
 
     public:
         std::map<int, std::function<void()>> functions;
+        bool over;
         Intcode_calculator(std::vector<int> _elements, std::pair<int, int> &_start_coordinate)
         : elements(_elements), start_coordinate(_start_coordinate)
         {
+            over = false;
             last_index = 0;
             // capture class members by saying 'this' in the capture list
             functions.emplace(Operations::SUM, [&]() {
@@ -83,16 +85,22 @@ class Intcode_calculator {
                     inputs = get_routine(matrix);
                     processed = true;
                 }
-                input = inputs[num_of_input];
-                num_of_input++;
-                num_of_params = 1;
+                if(num_of_input >= inputs.size()) {
+                    input = ((num_of_input  == inputs.size()) ? 121 : 10);
+                    over = true;
+                } else {
+                    input = inputs[num_of_input];
+                }
                 std::cout << "input = " << input << std::endl;
+                num_of_params = 1;
+                num_of_input++;
                 elements[params[0]] = input;
             });
 
             functions.emplace(Operations::OUTPUT, [&]() {
                 num_of_params = 1;
                 output = elements[params[0]];
+                // if(over) std::cout << "output = " << output << std::endl;
             });
 
             functions.emplace(Operations::JUMP_IF_TRUE, [&]() {
@@ -460,7 +468,7 @@ class Intcode_calculator {
             for(auto&[key, value] : map_big_and_small_letters) {
                 std::vector<char> tmp;
 
-                for(int k = 0; k < key.size(); k++) {
+                for(int k = 0; k < key.size()-1; k++) {
                     Move tmp_move = map_small_letter_and_move[key[k]];
                     tmp.push_back(tmp_move.direction[0]); // direction is string
                     tmp.push_back(',');
@@ -474,23 +482,66 @@ class Intcode_calculator {
 
                     // dodaj steps, pazi ako je dvoznamenkasti broj
                     // tmp.push_back(steps);
-                    if(k != key.size()-1) tmp.push_back(',');
+                    if(k != key.size()-2) tmp.push_back(',');
                 }
                 map[value] = tmp;
             }
             return map;
     }
 
-    std::vector<int> convert_function_names_and_moves_to_int_values(std::map<char, std::vector<char>> input_map) {
+    void findAllOccurances(std::vector<size_t> & vec, std::string data, std::string toSearch) {
+        // Get the first occurrence
+        toSearch = toSearch.substr(0, toSearch.size()-1);
+        size_t pos = data.find(toSearch);
+    
+        // Repeat till end is reached
+        while( pos != std::string::npos)
+        {
+            // Add position to the vector
+            vec.push_back(pos);
+    
+            // Get the next occurrence from the current position
+            pos =data.find(toSearch, pos + toSearch.size());
+        }
+    }
+
+    std::vector<int> convert_function_names_and_moves_to_int_values(
+        std::map<char, std::vector<char>> input_map, 
+        std::string movements_string, 
+        std::unordered_map<std::string, char> map_big_and_small_letters) {
         std::vector<int> result;
 
-        for(auto&[key, value] : input_map) {
-            result.push_back(key);
+        std::vector<size_t> occ_A;
+        std::vector<size_t> occ_B;
+        std::vector<size_t> occ_C;
+
+        for(auto&[key, value] : map_big_and_small_letters) {
+            if(value == 'A') findAllOccurances(occ_A, movements_string, key);
+            else if(value == 'B') findAllOccurances(occ_B, movements_string, key);
+            else if(value == 'C') findAllOccurances(occ_C, movements_string, key);
+        }
+
+        std::map<int, char> map;
+        for(int k = 0; k < occ_A.size(); k++) {
+            map[occ_A[k]] = 'A';
+        }
+        for(int k = 0; k < occ_B.size(); k++) {
+            map[occ_B[k]] = 'B';
+        }
+        for(int k = 0; k < occ_C.size(); k++) {
+            map[occ_C[k]] = 'C';
+        }
+
+
+        // add function names order
+        for(auto&[key, value] : map) {
+            result.push_back(value);
             result.push_back(',');
         }
         result.pop_back(); // remove last ,
         result.push_back(10);
 
+        // add moves for each function
         for(auto&[key, value] : input_map) {
             for(int k = 0; k < value.size(); k++) {
                 result.push_back(value[k]);
@@ -513,7 +564,7 @@ class Intcode_calculator {
         std::unordered_map<std::string, char> map_big_and_small_letters = get_pattern(movements_string);
         std::map<char, std::vector<char>> function_name_and_moves = process(map_small_letters_and_moves, map_big_and_small_letters);
 
-        result = convert_function_names_and_moves_to_int_values(function_name_and_moves);
+        result = convert_function_names_and_moves_to_int_values(function_name_and_moves, movements_string, map_big_and_small_letters);
         return result;
     }
 
