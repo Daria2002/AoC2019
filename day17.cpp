@@ -428,14 +428,29 @@ class Intcode_calculator {
     // received combining key and value from map_small_letters_and_moves and 
     // key in map_big_and_small_letters
     std::unordered_map<char, std::vector<char>> process (
-        std::unordered_map<Move, char, hash_fn> map_small_letters_and_moves, 
+        std::unordered_map<Move, char, hash_fn> map_moves_and_small_letter, 
         std::unordered_map<std::string, char> map_big_and_small_letters) {
             
             std::unordered_map<char, std::vector<char>> map;
-            std::unordered_map<char, Move> tmp_map;
+            std::unordered_map<char, Move> map_small_letter_and_move;
 
-            for(auto&[key, value] : map_small_letters_and_moves) {
-                tmp_map[value] = key;
+            for(auto&[key, value] : map_moves_and_small_letter) {
+                map_small_letter_and_move[value] = key;
+            }
+
+            for(auto&[key, value] : map_big_and_small_letters) {
+                std::vector<char> tmp;
+
+                for(int k = 0; k < key.size(); k++) {
+                    Move tmp_move = map_small_letter_and_move[key[k]];
+                    tmp.push_back(tmp_move.direction[0]); // direction is string
+                    tmp.push_back(',');
+                    // dodaj steps, pazi ako je dvoznamenkasti broj
+                    // tmp.push_back(steps);
+                    if(k != key.size()-1) tmp.push_back(',');
+                }
+
+                map[value] = tmp;
             }
 
             return map;
