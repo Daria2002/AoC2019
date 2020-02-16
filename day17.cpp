@@ -86,7 +86,7 @@ class Intcode_calculator {
                     processed = true;
                 }
                 if(num_of_input >= inputs.size()) {
-                    input = ((num_of_input  == inputs.size()) ? 121 : 10);
+                    input = ((num_of_input  == inputs.size()) ? 110 : 10); // 121 = y, 110 = n
                     over = true;
                 } else {
                     input = inputs[num_of_input];
@@ -100,7 +100,7 @@ class Intcode_calculator {
             functions.emplace(Operations::OUTPUT, [&]() {
                 num_of_params = 1;
                 output = elements[params[0]];
-                // if(over) std::cout << "output = " << output << std::endl;
+                if(over) std::cout << "output = " << output << std::endl;
             });
 
             functions.emplace(Operations::JUMP_IF_TRUE, [&]() {
