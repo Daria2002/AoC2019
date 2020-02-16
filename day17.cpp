@@ -391,6 +391,21 @@ class Intcode_calculator {
         return indexes;
     }
 
+    bool all_indexes_used(std::unordered_map<char, std::vector<int>> replacement_map, int size) {
+        int count = 0;
+        for(auto&[key, value] : replacement_map) {
+            count += value.size();
+        }
+        return count == size;
+    }
+
+    void check_and_modify_i(std::unordered_map<char, std::vector<int>> replacement_map, int& i) {
+        auto lambda = [&](auto const el) { if(el == i) i++;};
+        for(auto&[key, value] : replacement_map) {
+            std::for_each(value.begin(), value.end(), lambda);
+        }
+    }
+
     // big letter, small letter
     std::unordered_map<std::string, char> get_pattern(std::string str) {
         std::unordered_map<std::string, char> map;
@@ -398,15 +413,17 @@ class Intcode_calculator {
         std::vector<char> tmp;
         int letter_counter = 0;
         int i = 0;
-        while (i < str.size() - 1) {
+
+        while (i < str.size() - 1 && !all_indexes_used(replacement_map, str.size())) {
             std::vector<int> indexes = {i, i+1}, tmp_indexes;
             std::array<int, 2> start_indexes = {i, i+1};
             tmp.push_back(str[i++]);
             tmp.push_back(str[i++]);
-            while ((tmp_indexes = get_indexes(str, tmp, i)).size() > 0 && tmp.size() < 5) {
+            while ((tmp_indexes = get_indexes(str, tmp, i)).size() > 0 && tmp.size() <= 4) {
                 indexes = tmp_indexes; // get indexes where analyzed part of str occured
                 tmp.push_back(str[i++]);
             }
+            i--;
             indexes.push_back(start_indexes[0]);
             indexes.push_back(start_indexes[1]);
 
@@ -419,6 +436,7 @@ class Intcode_calculator {
             replacement_map['A' + letter_counter] = indexes;
             ++letter_counter;
             tmp.clear();
+            check_and_modify_i(replacement_map, i);
         }
         str = modify_string_and_map(replacement_map, str);
         return map;
