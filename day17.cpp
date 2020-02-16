@@ -86,6 +86,7 @@ class Intcode_calculator {
                 input = inputs[num_of_input];
                 num_of_input++;
                 num_of_params = 1;
+                std::cout << "input = " << input << std::endl;
                 elements[params[0]] = input;
             });
 
@@ -427,12 +428,12 @@ class Intcode_calculator {
     // value is equal to vector of characters, where those characters are 
     // received combining key and value from map_small_letters_and_moves and 
     // key in map_big_and_small_letters
-    std::unordered_map<char, std::vector<char>> process (
+    std::map<char, std::vector<char>> process (
         std::unordered_map<Move, char, hash_fn> map_moves_and_small_letter, 
         std::unordered_map<std::string, char> map_big_and_small_letters) {
             
-            std::unordered_map<char, std::vector<char>> map;
-            std::unordered_map<char, Move> map_small_letter_and_move;
+            std::map<char, std::vector<char>> map;
+            std::map<char, Move> map_small_letter_and_move;
 
             for(auto&[key, value] : map_moves_and_small_letter) {
                 map_small_letter_and_move[value] = key;
@@ -445,29 +446,57 @@ class Intcode_calculator {
                     Move tmp_move = map_small_letter_and_move[key[k]];
                     tmp.push_back(tmp_move.direction[0]); // direction is string
                     tmp.push_back(',');
+
+                    if(tmp_move.number_of_steps > 9) {
+                        tmp.push_back(tmp_move.number_of_steps / 10 + '0');
+                        tmp.push_back(tmp_move.number_of_steps % 10 + '0');
+                    } else {
+                        tmp.push_back(tmp_move.number_of_steps + '0');
+                    }
+
                     // dodaj steps, pazi ako je dvoznamenkasti broj
                     // tmp.push_back(steps);
                     if(k != key.size()-1) tmp.push_back(',');
                 }
-
                 map[value] = tmp;
             }
-
             return map;
+    }
+
+    std::vector<int> convert_function_names_and_moves_to_int_values(std::map<char, std::vector<char>> input_map) {
+        std::vector<int> result;
+
+        for(auto&[key, value] : input_map) {
+            result.push_back(key);
+            result.push_back(',');
+        }
+        result.pop_back(); // remove last ,
+        result.push_back(10);
+
+        for(auto&[key, value] : input_map) {
+            for(int k = 0; k < value.size(); k++) {
+                result.push_back(value[k]);
+            }
+            result.push_back(10);
+        }
+
+        return result;
     }
 
     // input : R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
     // output : ascii table value of(a, b, c, a, r, 2, l, 5, r, 6, l, 3)
     std::vector<int> convert_movements_to_inputs(std::vector<std::string> moves,
     std::vector<std::vector<char>> matrix) {
+        std::vector<int> result;
         std::string movements_string = "";
         std::unordered_map<Move, char, hash_fn> map_small_letters_and_moves = simplify_moves(movements_string, moves);
         // i.e. movements_string = aabccdab
         // make big letters in movement_string and get map
         std::unordered_map<std::string, char> map_big_and_small_letters = get_pattern(movements_string);
-        std::unordered_map<char, std::vector<char>> function_name_and_moves = process(map_small_letters_and_moves, map_big_and_small_letters);
-        //std::vector<std::vector<int>> functions = get_functions();
-        return inputs;
+        std::map<char, std::vector<char>> function_name_and_moves = process(map_small_letters_and_moves, map_big_and_small_letters);
+
+        result = convert_function_names_and_moves_to_int_values(function_name_and_moves);
+        return result;
     }
 
     // return inputs
