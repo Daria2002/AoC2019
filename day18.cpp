@@ -2,11 +2,16 @@
 #include <iostream>
 #include <vector>
 
-class Door {
+class Base {
+    // position
+    // add function for calculating distance from @ 
+};
+
+class Door : public Base {
 
 };
 
-class Key {
+class Key : public Base {
 
 };
 
