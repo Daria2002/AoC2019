@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <unordered_set>
+#include <algorithm>
 
 class Position {
     public:
@@ -13,6 +14,9 @@ class Base {
         Base() {}
         std::string name;
         Position position;
+        bool is_reachable(Position enterence_position) {
+            // check if rechable
+        }
 };
 
 bool operator==(const Base& x, const Base& y)
@@ -55,12 +59,21 @@ class Field {
             keys.insert(key);
         }
 
-        bool more_options(Position enterence_position) {
+        inline int count_options(const std::unordered_set<Door, hashBase>& available_doors, 
+        const std::unordered_set<Key, hashBase>& available_keys) {
+            int counter = 0;
+            counter = available_doors.size() + available_keys.size();
+            return counter;
+        }
 
+        bool more_options(Position enterence_position) {
+            std::unordered_set<Door, hashBase> available_doors = get_available_doors();
+            std::unordered_set<Key, hashBase> available_keys = get_available_keys();
+            return (count_options(available_doors, available_keys) > 1);
         }
 
         Position get_enterence_position() {
-
+            return enterence_position;
         }
 
         void set_enterence_position(Position position) {
@@ -72,6 +85,26 @@ class Field {
 
     private:   
         Position enterence_position;
+
+        std::unordered_set<Door, hashBase> get_available_doors() {
+            std::unordered_set<Door, hashBase> available_doors;
+            std::for_each(doors.begin(), doors.end(), [&](auto const& el) {
+                if(!el.is_locked() && el.is_reachable(enterence_position)) {
+                    available_doors.insert(el);
+                }
+            });
+            return available_doors;
+        }
+
+        std::unordered_set<Key, hashBase> get_available_keys() {
+            std::unordered_set<Key, hashBase> available_keys;
+            std::for_each(keys.begin(), keys.end(), [&](auto const& el) {
+                if(el.is_reachable(enterence_position)) {
+                    available_keys.insert(el);
+                }
+            });
+            return available_keys;
+        }
 };
 
 template <typename T>
