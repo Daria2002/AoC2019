@@ -2,25 +2,40 @@
 #include <iostream>
 #include <vector>
 #include <unordered_set>
+#include <fstream>
+#include <ctype.h>
 #include <algorithm>
 
 class Position {
     public:
-        int x, y; // 0 is first element inside od #
+        Position() {}
+        Position(int _x, int _y) : x(_x), y(_y) {}
+        int x, y;
 };
 
 class Base {
     public:
         Base() {}
+        Base(std::string _name, Position _position) : name(_name), position(_position) {}
         std::string name;
         Position position;
         bool is_reachable(Position enterence_position) {
             // check if rechable
+            if(position.x > enterence_position.x && position.y == enterence_position.y) {
+                return check_right();
+            } else if(position.x < enterence_position.x && position.y == enterence_position.y) {
+                return check_left();
+            } else if(position.y > enterence_position.y && position.x == enterence_position.x) {
+                return check_down();
+            } else if(position.y < enterence_position.y && position.x == enterence_position.x) {
+                return check_up();
+            } else {
+                
+            }
         }
 };
 
-bool operator==(const Base& x, const Base& y)
-{
+bool operator==(const Base& x, const Base& y) {
     return x.name == y.name;
 }
 
@@ -59,6 +74,16 @@ class Field {
             keys.insert(key);
         }
 
+        inline void open_door(Door door) {
+            doors.erase(door);
+            path.push_back(door.position);
+        }
+        
+        inline void pick_up_key(Key key) {
+            keys.erase(key);
+            path.push_back(key.position);
+        }
+
         inline int count_options(const std::unordered_set<Door, hashBase>& available_doors, 
         const std::unordered_set<Key, hashBase>& available_keys) {
             int counter = 0;
@@ -80,10 +105,24 @@ class Field {
             enterence_position = position;
         }
 
+        void process_row(const int& row_number, const std::string& row) {
+            int column = 0;
+            std::for_each(row.begin(), row.end(), [&] (auto const& el) {
+                Position position(row_number, column);
+                if(el == '.') path.push_back(position);
+                else if(el == '#') wall.push_back(position);
+                else if(isupper(el)) doors.insert(Door(el, position));
+                else keys.insert(Key(el, Position));
+                column++;
+            });
+        }
+
         std::unordered_set<Door, hashBase> doors;
         std::unordered_set<Key, hashBase> keys;
 
     private:   
+        std::vector<Position> wall;
+        std::vector<Position> path;
         Position enterence_position;
 
         std::unordered_set<Door, hashBase> get_available_doors() {
@@ -114,8 +153,14 @@ inline bool is_explored(std::unordered_set<T, hashBase> elements) {
 
 Field get_field() {
     Field field;
-    // open file
-    // read line by line and save in field
+    std::vector<std::string> lines;
+    std::string line;
+    std::ifstream in("day18.txt");
+    int row {0};
+    while(std::getline(in, line)) {
+        field.process_row(row, line);
+        row++;
+    }
     return field;
 }
 
@@ -131,7 +176,6 @@ int get_shortest_path() {
             // go further, don't split
         }
     }
-
     return counter;
 }
 
