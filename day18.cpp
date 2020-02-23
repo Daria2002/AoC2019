@@ -19,10 +19,10 @@ class Base {
         Base(std::string _name, Position _position) : name(_name), position(_position) {}
         std::string name;
         Position position;
-        bool is_reachable(Position enterence_position) {
+        bool is_reachable(const Position& enterence_position, const Field& field) {
             // check if rechable
             if(position.x > enterence_position.x && position.y == enterence_position.y) {
-                return check_right();
+                return check_right(enterence_position, field);
             } else if(position.x < enterence_position.x && position.y == enterence_position.y) {
                 return check_left();
             } else if(position.y > enterence_position.y && position.x == enterence_position.x) {
@@ -32,6 +32,11 @@ class Base {
             } else {
                 
             }
+        }
+    private:
+        bool check_right(const Position& enterence_position, const Field& field) {
+            // check that between enterence_position and position there are only .
+            // or keys or doors that can be unlocked
         }
 };
 
