@@ -22,7 +22,7 @@ class Base {
         bool is_reachable(const Position& enterence_position, const Field& field) {
             // check if rechable
             if(position.x > enterence_position.x && position.y == enterence_position.y) {
-                return check_right(enterence_position, field);
+                return check_right(enterence_position, field, position.y);
             } else if(position.x < enterence_position.x && position.y == enterence_position.y) {
                 return check_left();
             } else if(position.y > enterence_position.y && position.x == enterence_position.x) {
@@ -34,10 +34,17 @@ class Base {
             }
         }
     private:
-        bool check_right(const Position& enterence_position, const Field& field) {
+        bool check_right(const Position& enterence_position, const Field& field, int y) {
             // check that between enterence_position and position there are only .
             // or keys or doors that can be unlocked
+            for(int i = enterence_position.x; i < position.x; i++) {
+                if(field.check_position(Position(i, y), field.path)) {
+                    // check if position path
+                }
+            }
         }
+
+
 };
 
 bool operator==(const Base& x, const Base& y) {
@@ -71,6 +78,8 @@ class Key : public Base {
 
 class Field {
     public:
+        Field() {}
+
         inline void add_door(Door door) {
             doors.insert(door);
         }
@@ -122,12 +131,28 @@ class Field {
             });
         }
 
+        template <typename T>
+        bool check_if_element_to_process(const Position& position, std::unordered_set<T, hashBase> set) {
+            for(int i = 0; i < set.size(); i++) {
+                if(set[i].position == position) return true;
+            }
+            return false;
+        }
+
+        template <typename T>
+        bool check_position(const Position& position, std::vector<T> vector) const {
+            for(int i = 0; i < vector.size(); i++) {
+                if(vector[i].position == position) return true;
+            }
+            return false;
+        }
+
         std::unordered_set<Door, hashBase> doors;
         std::unordered_set<Key, hashBase> keys;
-
-    private:   
         std::vector<Position> wall;
         std::vector<Position> path;
+
+    private:   
         Position enterence_position;
 
         std::unordered_set<Door, hashBase> get_available_doors() {
