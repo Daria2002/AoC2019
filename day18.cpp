@@ -38,10 +38,12 @@ class Base {
             // check that between enterence_position and position there are only .
             // or keys or doors that can be unlocked
             for(int i = enterence_position.x; i < position.x; i++) {
-                if(field.check_position(Position(i, y), field.path)) {
-                    // check if position path
+                // if position == unlocked door return false
+                if(field.contains(Position(i, y), field.doors)) {
+                    return false;
                 }
             }
+            return true;
         }
 
 
@@ -140,10 +142,10 @@ class Field {
         }
 
         template <typename T>
-        bool check_position(const Position& position, std::vector<T> vector) const {
-            for(int i = 0; i < vector.size(); i++) {
-                if(vector[i].position == position) return true;
-            }
+        bool contains(const Position& position, std::unordered_set<T, hashBase> set) const {
+            std::for_each(set.begin(), set.end(), [&](const auto& el) {
+                if(el.position == position) return true;
+            })
             return false;
         }
 
