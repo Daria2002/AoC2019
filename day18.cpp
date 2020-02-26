@@ -24,13 +24,13 @@ class Base {
             if(position.x > enterence_position.x && position.y == enterence_position.y) {
                 return check_right(enterence_position, field, position.y);
             } else if(position.x < enterence_position.x && position.y == enterence_position.y) {
-                return check_left();
+                return check_left(enterence_position, field, position.y);
             } else if(position.y > enterence_position.y && position.x == enterence_position.x) {
-                return check_down();
+                return check_down(enterence_position, field, position.x);
             } else if(position.y < enterence_position.y && position.x == enterence_position.x) {
-                return check_up();
+                return check_up(enterence_position, field, position.x);
             } else {
-                
+                // if enterence and element is not in the same row either column
             }
         }
     private:
@@ -39,14 +39,31 @@ class Base {
             // or keys or doors that can be unlocked
             for(int i = enterence_position.x; i < position.x; i++) {
                 // if position == unlocked door return false
-                if(field.contains(Position(i, y), field.doors)) {
-                    return false;
-                }
+                if(field.contains(Position(i, y), field.doors)) return false;
             }
             return true;
         }
 
+        bool check_left(const Position& enterence_position, const Field& field, int y) {
+            for(int i = position.x + 1; i < enterence_position.x; i++) {
+                if(field.contains(Position(i, y), field.doors)) return false;
+            }
+            return true;
+        }
 
+        bool check_down(const Position& enterence_position, const Field& field, int x) {
+            for(int i = enterence_position.y + 1; i < position.y; i++) {
+                if(field.contains(Position(x, i), field.doors)) return false;
+            }
+            return true;
+        }
+
+        bool check_up(const Position& enterence_position, const Field& field, int x) {
+            for(int i = position.y + 1; i < enterence_position.y; i++) {
+                if(field.contains(Position(x, i), field.doors)) return false;
+            }
+            return true;
+        }
 };
 
 bool operator==(const Base& x, const Base& y) {
