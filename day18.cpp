@@ -39,28 +39,28 @@ class Base {
             // or keys or doors that can be unlocked
             for(int i = enterence_position.x; i < position.x; i++) {
                 // if position == unlocked door return false
-                if(field.contains(Position(i, y), field.doors)) return false;
+                if(field.contains(Position(i, y), field.doors) || field.contains(Position(i, y), field.wall)) return false;
             }
             return true;
         }
 
         bool check_left(const Position& enterence_position, const Field& field, int y) {
             for(int i = position.x + 1; i < enterence_position.x; i++) {
-                if(field.contains(Position(i, y), field.doors)) return false;
+                if(field.contains(Position(i, y), field.doors) || field.contains(Position(i, y), field.wall)) return false;
             }
             return true;
         }
 
         bool check_down(const Position& enterence_position, const Field& field, int x) {
             for(int i = enterence_position.y + 1; i < position.y; i++) {
-                if(field.contains(Position(x, i), field.doors)) return false;
+                if(field.contains(Position(x, i), field.doors) || field.contains(Position(x, i), field.wall)) return false;
             }
             return true;
         }
 
         bool check_up(const Position& enterence_position, const Field& field, int x) {
             for(int i = position.y + 1; i < enterence_position.y; i++) {
-                if(field.contains(Position(x, i), field.doors)) return false;
+                if(field.contains(Position(x, i), field.doors) || field.contains(Position(x, i), field.wall)) return false;
             }
             return true;
         }
@@ -163,6 +163,13 @@ class Field {
             std::for_each(set.begin(), set.end(), [&](const auto& el) {
                 if(el.position == position) return true;
             })
+            return false;
+        }
+
+        bool contains(const Position& position, std::vector<Position> vector) const {
+            std::for_each(vector.begin(), vector.end(), [&](const auto& el) {
+                if(el.position == position) return true;
+            });
             return false;
         }
 
