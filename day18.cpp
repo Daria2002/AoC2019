@@ -38,29 +38,28 @@ class Base {
             // check that between enterence_position and position there are only .
             // or keys or doors that can be unlocked
             for(int i = enterence_position.x; i < position.x; i++) {
-                // if position == unlocked door return false
-                if(field.contains(Position(i, y), field.doors) || field.contains(Position(i, y), field.wall)) return false;
+                if(field.has_obstacle(Position(i, y), field.doors, field.wall)) return false;
             }
             return true;
         }
 
         bool check_left(const Position& enterence_position, const Field& field, int y) {
             for(int i = position.x + 1; i < enterence_position.x; i++) {
-                if(field.contains(Position(i, y), field.doors) || field.contains(Position(i, y), field.wall)) return false;
+                if(field.has_obstacle(Position(i, y), field.doors, field.wall)) return false;
             }
             return true;
         }
 
         bool check_down(const Position& enterence_position, const Field& field, int x) {
             for(int i = enterence_position.y + 1; i < position.y; i++) {
-                if(field.contains(Position(x, i), field.doors) || field.contains(Position(x, i), field.wall)) return false;
+                if(field.has_obstacle(Position(x, i), field.doors, field.wall)) return false;
             }
             return true;
         }
 
         bool check_up(const Position& enterence_position, const Field& field, int x) {
             for(int i = position.y + 1; i < enterence_position.y; i++) {
-                if(field.contains(Position(x, i), field.doors) || field.contains(Position(x, i), field.wall)) return false;
+                if(field.has_obstacle(Position(x, i), field.doors, field.wall)) return false;
             }
             return true;
         }
@@ -171,6 +170,11 @@ class Field {
                 if(el.position == position) return true;
             });
             return false;
+        }
+
+        template <typename T>
+        bool has_obstacle(const Position& position, std::unordered_set<T, hashBase> set, std::vector<Position> vector) const {
+            return (contains(position, set) || contains(position, vector));
         }
 
         std::unordered_set<Door, hashBase> doors;
