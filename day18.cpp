@@ -31,9 +31,14 @@ class Base {
                 return check_up(enterence_position, field, position.x);
             } else {
                 // if enterence and element is not in the same row either column
+                return check_if_there_is_a_path(enterence_position, field, position);
             }
         }
     private:
+        bool check_if_there_is_a_path(const Position& enterence_position, const Field& field, Position position) {
+            // TODO
+        }
+
         bool check_right(const Position& enterence_position, const Field& field, int y) {
             // check that between enterence_position and position there are only .
             // or keys or doors that can be unlocked
