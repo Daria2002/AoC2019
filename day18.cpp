@@ -19,55 +19,6 @@ class Base {
         Base(std::string _name, Position _position) : name(_name), position(_position) {}
         std::string name;
         Position position;
-        bool is_reachable(const Position& enterence_position, const Field& field) {
-            // check if rechable
-            if(position.x > enterence_position.x && position.y == enterence_position.y) {
-                return check_right(enterence_position, field, position.y);
-            } else if(position.x < enterence_position.x && position.y == enterence_position.y) {
-                return check_left(enterence_position, field, position.y);
-            } else if(position.y > enterence_position.y && position.x == enterence_position.x) {
-                return check_down(enterence_position, field, position.x);
-            } else if(position.y < enterence_position.y && position.x == enterence_position.x) {
-                return check_up(enterence_position, field, position.x);
-            } else {
-                // if enterence and element is not in the same row either column
-                return check_if_there_is_a_path(enterence_position, field, position);
-            }
-        }
-    private:
-        bool check_if_there_is_a_path(const Position& enterence_position, const Field& field, Position position) {
-            // TODO
-        }
-
-        bool check_right(const Position& enterence_position, const Field& field, int y) {
-            // check that between enterence_position and position there are only .
-            // or keys or doors that can be unlocked
-            for(int i = enterence_position.x; i < position.x; i++) {
-                if(field.has_obstacle(Position(i, y), field.doors, field.wall)) return false;
-            }
-            return true;
-        }
-
-        bool check_left(const Position& enterence_position, const Field& field, int y) {
-            for(int i = position.x + 1; i < enterence_position.x; i++) {
-                if(field.has_obstacle(Position(i, y), field.doors, field.wall)) return false;
-            }
-            return true;
-        }
-
-        bool check_down(const Position& enterence_position, const Field& field, int x) {
-            for(int i = enterence_position.y + 1; i < position.y; i++) {
-                if(field.has_obstacle(Position(x, i), field.doors, field.wall)) return false;
-            }
-            return true;
-        }
-
-        bool check_up(const Position& enterence_position, const Field& field, int x) {
-            for(int i = position.y + 1; i < enterence_position.y; i++) {
-                if(field.has_obstacle(Position(x, i), field.doors, field.wall)) return false;
-            }
-            return true;
-        }
 };
 
 bool operator==(const Base& x, const Base& y) {
@@ -103,6 +54,22 @@ class Field {
     public:
         Field() {}
 
+        bool is_reachable(const Position& position, const Position& enterence_position, const Field& field) {
+            // check if rechable
+            if(position.x > enterence_position.x && position.y == enterence_position.y) {
+                return check_right(position, enterence_position, field, position.y);
+            } else if(position.x < enterence_position.x && position.y == enterence_position.y) {
+                return check_left(position, enterence_position, field, position.y);
+            } else if(position.y > enterence_position.y && position.x == enterence_position.x) {
+                return check_down(position, enterence_position, field, position.x);
+            } else if(position.y < enterence_position.y && position.x == enterence_position.x) {
+                return check_up(position, enterence_position, field, position.x);
+            } else {
+                // if enterence and element is not in the same row either column
+                return check_if_there_is_a_path(enterence_position, field, position);
+            }
+        }
+
         inline void add_door(Door door) {
             doors.insert(door);
         }
@@ -128,9 +95,9 @@ class Field {
             return counter;
         }
 
-        bool more_options(Position enterence_position) {
-            std::unordered_set<Door, hashBase> available_doors = get_available_doors();
-            std::unordered_set<Key, hashBase> available_keys = get_available_keys();
+        bool more_options(Position enterence_position, std::unordered_set<Door, hashBase>& available_doors, std::unordered_set<Key, hashBase>& available_keys) {
+            available_doors = get_available_doors();
+            available_keys = get_available_keys();
             return (count_options(available_doors, available_keys) > 1);
         }
 
@@ -188,6 +155,40 @@ class Field {
         std::vector<Position> path;
 
     private:   
+        bool check_if_there_is_a_path(const Position& enterence_position, const Field& field, Position position) {
+            // TODO
+        }
+
+        bool check_right(const Position& position, const Position& enterence_position, const Field& field, int y) {
+            // check that between enterence_position and position there are only .
+            // or keys or doors that can be unlocked
+            for(int i = enterence_position.x; i < position.x; i++) {
+                if(field.has_obstacle(Position(i, y), field.doors, field.wall)) return false;
+            }
+            return true;
+        }
+
+        bool check_left(const Position& position, const Position& enterence_position, const Field& field, int y) {
+            for(int i = position.x + 1; i < enterence_position.x; i++) {
+                if(field.has_obstacle(Position(i, y), field.doors, field.wall)) return false;
+            }
+            return true;
+        }
+
+        bool check_down(const Position& position, const Position& enterence_position, const Field& field, int x) {
+            for(int i = enterence_position.y + 1; i < position.y; i++) {
+                if(field.has_obstacle(Position(x, i), field.doors, field.wall)) return false;
+            }
+            return true;
+        }
+
+        bool check_up(const Position& position, const Position& enterence_position, const Field& field, int x) {
+            for(int i = position.y + 1; i < enterence_position.y; i++) {
+                if(field.has_obstacle(Position(x, i), field.doors, field.wall)) return false;
+            }
+            return true;
+        }
+
         Position enterence_position;
 
         std::unordered_set<Door, hashBase> get_available_doors() {
@@ -234,11 +235,20 @@ int get_shortest_path() {
     Field field = get_field();
     Position enterence_position = field.get_enterence_position();
 
+    std::unordered_set<Door, hashBase> available_doors;
+    std::unordered_set<Key, hashBase> available_keys;
     while(is_explored(field.doors) || is_explored(field.keys)) {
-        if(field.more_options(enterence_position)) {
+        if(field.more_options(enterence_position, available_doors, available_keys)) {
             // split in more cases
+
         } else {
-            // go further, don't split
+            // go further, don't split... there is only one option to go, so go there
+            if(available_doors.size() > 0) {
+                enterence_position = available_doors.begin() -> position;
+            } 
+            else {
+                enterence_position = available_keys.begin() -> position;
+            }
         }
     }
     return counter;
