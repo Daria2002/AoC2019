@@ -1,9 +1,9 @@
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <vector>
 #include <unordered_set>
 #include <fstream>
-#include <ctype.h>
+#include <cctype>
 #include <algorithm>
 
 class Position {
@@ -19,8 +19,7 @@ bool operator==(const Position& position1, const Position& position2) {
 
 class Base {
     public:
-        Base() {}
-        Base(std::string _name, Position _position) : name(_name), position(_position) {}
+        Base(std::string _name, Position _position) : name(std::move(_name)), position(_position) {}
         std::string name;
         Position position;
 };
@@ -31,14 +30,19 @@ bool operator==(const Base& x, const Base& y) {
 
 struct hashBase
 {
-    std::string operator()(const Base& base) const {
-        return base.name;
+    int operator()(const Base& base) const {
+        return base.position.x-base.position.y;
     }
 };
 
 class Door : public Base {
     public:
-        Door() {}
+        Door(std::string _name, Position _position) :
+            Base(std::move(_name), _position) 
+        {
+
+        }
+
         inline void unlock() {
             locked = false;
         }
@@ -51,13 +55,12 @@ class Door : public Base {
 
 class Key : public Base {
     public: 
-        Key() {}
+        Key(std::string _name, Position _position) : 
+            Base(std::move(_name), _position) {}
 };
 
 class Field {
     public:
-        Field() {}
-
         bool is_reachable(const Position& position) {
             // check if rechable
             if(position.x > enterence_position.x && position.y == enterence_position.y) {
@@ -99,7 +102,7 @@ class Field {
             return counter;
         }
 
-        bool more_options(Position enterence_position, std::unordered_set<Door, hashBase>& available_doors, std::unordered_set<Key, hashBase>& available_keys) {
+        bool more_options(std::unordered_set<Door, hashBase>& available_doors, std::unordered_set<Key, hashBase>& available_keys) {
             available_doors = get_available_doors();
             available_keys = get_available_keys();
             return (count_options(available_doors, available_keys) > 1);
@@ -117,10 +120,16 @@ class Field {
             int column = 0;
             std::for_each(row.begin(), row.end(), [&] (auto const& el) {
                 Position position(row_number, column);
-                if(el == '.') path.push_back(position);
-                else if(el == '#') wall.push_back(position);
-                else if(isupper(el)) doors.insert(Door(el, position));
-                else keys.insert(Key(el, Position));
+                std::string tmp(1, el);
+                if(el == '.') {
+                    path.push_back(position);
+                } else if(el == '#') {
+                    wall.push_back(position);
+                } else if(isupper(el)) {
+                    doors.insert(Door(tmp, position));
+                } else {
+                    keys.insert(Key(tmp, position));
+                } 
                 column++;
             });
         }
@@ -128,29 +137,27 @@ class Field {
         template <typename T>
         bool check_if_element_to_process(const Position& position, std::unordered_set<T, hashBase> set) {
             for(int i = 0; i < set.size(); i++) {
-                if(set[i].position == position) return true;
+                if(set[i].position == position) {
+                    return true;
+                }
             }
             return false;
         }
 
         template <typename T>
         bool contains(const Position& position, std::unordered_set<T, hashBase> set) const {
-            std::for_each(set.begin(), set.end(), [&](const auto& el) {
-                if(el.position == position) return true;
-            });
-            return false;
+            const auto contains_position = [&](const auto& el) { return el.position == position; };
+            return std::any_of(set.begin(), set.end(), contains_position);
         }
 
         bool contains(const Position& position, std::vector<Position> vector) const {
-            std::for_each(vector.begin(), vector.end(), [&](const auto& el) {
-                if(el == position) return true;
-            });
-            return false;
+            const auto contains_position = [&](const auto& el) { return el == position; };
+            return std::any_of(vector.begin(), vector.end(), contains_position);
         }
 
         template <typename T>
         bool has_obstacle(const Position& position, std::unordered_set<T, hashBase> set, std::vector<Position> vector) const {
-            return (contains(position, set) || contains(position, vector));
+            return (contains(position, set) || contains(position, std::move(vector)));
         }
 
         std::unordered_set<Door, hashBase> doors;
@@ -161,34 +168,43 @@ class Field {
     private:   
         bool check_if_there_is_a_path(Position position) {
             // TODO
+            return false;
         }
 
         bool check_right(const Position& position, int y) {
             // check that between enterence_position and position there are only .
             // or keys or doors that can be unlocked
             for(int i = enterence_position.x; i < position.x; i++) {
-                if(has_obstacle(Position(i, y), doors, wall)) return false;
+                if(has_obstacle(Position(i, y), doors, wall)) {
+                    return false;
+                }
             }
             return true;
         }
 
         bool check_left(const Position& position, int y) {
             for(int i = position.x + 1; i < enterence_position.x; i++) {
-                if(has_obstacle(Position(i, y), doors, wall)) return false;
+                if(has_obstacle(Position(i, y), doors, wall)) {
+                    return false;
+                }
             }
             return true;
         }
 
         bool check_down(const Position& position, int x) {
             for(int i = enterence_position.y + 1; i < position.y; i++) {
-                if(has_obstacle(Position(x, i), doors, wall)) return false;
+                if(has_obstacle(Position(x, i), doors, wall)) {
+                    return false;
+                } 
             }
             return true;
         }
 
         bool check_up(const Position& position, int x) {
             for(int i = position.y + 1; i < enterence_position.y; i++) {
-                if(has_obstacle(Position(x, i), doors, wall)) return false;
+                if(has_obstacle(Position(x, i), doors, wall)) {
+                    return false;
+                }
             }
             return true;
         }
@@ -198,7 +214,7 @@ class Field {
         std::unordered_set<Door, hashBase> get_available_doors() {
             std::unordered_set<Door, hashBase> available_doors;
             std::for_each(doors.begin(), doors.end(), [&](auto const& el) {
-                if(!el.is_locked() && is_reachable(enterence_position)) {
+                if(is_reachable(el.position)) {
                     available_doors.insert(el);
                 }
             });
@@ -208,7 +224,7 @@ class Field {
         std::unordered_set<Key, hashBase> get_available_keys() {
             std::unordered_set<Key, hashBase> available_keys;
             std::for_each(keys.begin(), keys.end(), [&](auto const& el) {
-                if(is_reachable(enterence_position)) {
+                if(is_reachable(el.position)) {
                     available_keys.insert(el);
                 }
             });
@@ -242,14 +258,14 @@ int get_shortest_path() {
     std::unordered_set<Door, hashBase> available_doors;
     std::unordered_set<Key, hashBase> available_keys;
     while(is_explored(field.doors) || is_explored(field.keys)) {
-        if(field.more_options(enterence_position, available_doors, available_keys)) {
+        if(field.more_options(available_doors, available_keys)) {
             // split in more cases
 
         } else {
             // go further, don't split... there is only one option to go, so go there
             if(available_doors.size() > 0) {
                 enterence_position = available_doors.begin() -> position;
-            } 
+            }
             else {
                 enterence_position = available_keys.begin() -> position;
             }
@@ -261,4 +277,5 @@ int get_shortest_path() {
 int main() {
     int shortest_path = get_shortest_path();
     std::cout << "shortest path = " << shortest_path << std::endl;
+    return 0;
 }
