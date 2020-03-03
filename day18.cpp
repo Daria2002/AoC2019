@@ -8,7 +8,7 @@
 
 class Position {
     public:
-        Position() {}
+        Position() = default;
         Position(int _x, int _y) : x(_x), y(_y) {}
         int x, y;
 };
@@ -61,6 +61,17 @@ class Key : public Base {
 
 class Field {
     public:
+        explicit Field(const std::string& file_name) {
+            std::vector<std::string> lines;
+            std::string line;
+            std::ifstream in(file_name);
+            int row {0};
+            while(std::getline(in, line)) {
+                process_row(row, line);
+                row++;
+            }
+        }
+
         bool is_reachable(const Position& position) {
             // check if rechable
             if(position.x > enterence_position.x && position.y == enterence_position.y) {
@@ -77,11 +88,11 @@ class Field {
             }
         }
 
-        inline void add_door(Door door) {
+        inline void add_door(const Door& door) {
             doors.insert(door);
         }
 
-        inline void add_key(Key key) {
+        inline void add_key(const Key& key) {
             keys.insert(key);
         }
 
@@ -234,25 +245,13 @@ class Field {
 
 template <typename T>
 inline bool is_explored(std::unordered_set<T, hashBase> elements) {
-    return elements.size() > 0;
-}
-
-Field get_field() {
-    Field field;
-    std::vector<std::string> lines;
-    std::string line;
-    std::ifstream in("day18.txt");
-    int row {0};
-    while(std::getline(in, line)) {
-        field.process_row(row, line);
-        row++;
-    }
-    return field;
+    return elements.empty();
 }
 
 int get_shortest_path() {
     int counter = 0;
-    Field field = get_field();
+    const std::string file_name = "day18.txt";
+    Field field(file_name);
     Position enterence_position = field.get_enterence_position();
 
     std::unordered_set<Door, hashBase> available_doors;
@@ -263,7 +262,7 @@ int get_shortest_path() {
 
         } else {
             // go further, don't split... there is only one option to go, so go there
-            if(available_doors.size() > 0) {
+            if(!available_doors.empty()) {
                 enterence_position = available_doors.begin() -> position;
             }
             else {
