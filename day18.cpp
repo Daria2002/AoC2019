@@ -123,7 +123,7 @@ class Field {
             return enterence_position;
         }
 
-        void set_enterence_position(Position position) {
+        void set_enterence_position(const Position& position) {
             enterence_position = position;
         }
 
@@ -136,6 +136,8 @@ class Field {
                     path.push_back(position);
                 } else if(el == '#') {
                     wall.push_back(position);
+                } else if(el == '@') {
+                    set_enterence_position(position);
                 } else if(isupper(el)) {
                     doors.insert(Door(tmp, position));
                 } else {
@@ -220,7 +222,7 @@ class Field {
             return true;
         }
 
-        Position enterence_position;
+        Position enterence_position = Position(-1, -1);
 
         std::unordered_set<Door, hashBase> get_available_doors() {
             std::unordered_set<Door, hashBase> available_doors;
