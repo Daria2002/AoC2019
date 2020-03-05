@@ -113,9 +113,7 @@ class Field {
             return counter;
         }
 
-        bool more_options(std::unordered_set<Door, hashBase>& available_doors, std::unordered_set<Key, hashBase>& available_keys) {
-            available_doors = get_available_doors();
-            available_keys = get_available_keys();
+        bool more_options(const std::unordered_set<Door, hashBase>& available_doors, const std::unordered_set<Key, hashBase>& available_keys) {
             return (count_options(available_doors, available_keys) > 1);
         }
 
@@ -178,6 +176,26 @@ class Field {
         std::vector<Position> wall;
         std::vector<Position> path;
 
+        std::unordered_set<Door, hashBase> get_available_doors() {
+            std::unordered_set<Door, hashBase> available_doors;
+            std::for_each(doors.begin(), doors.end(), [&](auto const& el) {
+                if(is_reachable(el.position)) {
+                    available_doors.insert(el);
+                }
+            });
+            return available_doors;
+        }
+
+        std::unordered_set<Key, hashBase> get_available_keys() {
+            std::unordered_set<Key, hashBase> available_keys;
+            std::for_each(keys.begin(), keys.end(), [&](auto const& el) {
+                if(is_reachable(el.position)) {
+                    available_keys.insert(el);
+                }
+            });
+            return available_keys;
+        }
+
     private:   
         bool check_if_there_is_a_path(Position position) {
             // TODO
@@ -223,59 +241,45 @@ class Field {
         }
 
         Position enterence_position = Position(-1, -1);
-
-        std::unordered_set<Door, hashBase> get_available_doors() {
-            std::unordered_set<Door, hashBase> available_doors;
-            std::for_each(doors.begin(), doors.end(), [&](auto const& el) {
-                if(is_reachable(el.position)) {
-                    available_doors.insert(el);
-                }
-            });
-            return available_doors;
-        }
-
-        std::unordered_set<Key, hashBase> get_available_keys() {
-            std::unordered_set<Key, hashBase> available_keys;
-            std::for_each(keys.begin(), keys.end(), [&](auto const& el) {
-                if(is_reachable(el.position)) {
-                    available_keys.insert(el);
-                }
-            });
-            return available_keys;
-        }
 };
 
 template <typename T>
-inline bool is_explored(std::unordered_set<T, hashBase> elements) {
+inline bool explored(std::unordered_set<T, hashBase> elements) {
     return elements.empty();
 }
 
-int get_shortest_path() {
-    int counter = 0;
-    const std::string file_name = "day18.txt";
-    Field field(file_name);
-    Position enterence_position = field.get_enterence_position();
+int search_and_count(Field field) {
+    if(explored(field.doors) && explored(field.keys)) {
+        // find smallest key;
 
-    std::unordered_set<Door, hashBase> available_doors;
-    std::unordered_set<Key, hashBase> available_keys;
-    while(is_explored(field.doors) || is_explored(field.keys)) {
+    } else {
+        std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
+        std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
+        
         if(field.more_options(available_doors, available_keys)) {
             // split in more cases
 
         } else {
             // go further, don't split... there is only one option to go, so go there
             if(!available_doors.empty()) {
-                enterence_position = available_doors.begin() -> position;
+                field.set_enterence_position(available_doors.begin() -> position);
             }
             else {
-                enterence_position = available_keys.begin() -> position;
+                field.set_enterence_position(available_keys.begin() -> position);
             }
         }
     }
-    return counter;
+    return 0; // return something
+}
+
+int get_shortest_path() {
+    const std::string file_name = "day18.txt";
+    Field field(file_name);
+    return search_and_count(field);
 }
 
 int main() {
+    std::vector<int> v;
     int shortest_path = get_shortest_path();
     std::cout << "shortest path = " << shortest_path << std::endl;
     return 0;
