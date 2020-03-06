@@ -255,9 +255,19 @@ int search_and_count(Field field) {
     } else {
         std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
         std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
-        
+        int min = 99999;
         if(field.more_options(available_doors, available_keys)) {
             // split in more cases
+            for(int i = 0; i < available_doors.size(); i++) {
+                // int tmp_result = search_and_count(available_doors[i]);
+                // check if min > search_and_count(available_doors[i]) {
+                    // min = result
+                // }
+            }
+
+            for(int i = 0; i < available_keys.size(); i++) {
+                
+            }
 
         } else {
             // go further, don't split... there is only one option to go, so go there
