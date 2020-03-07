@@ -17,6 +17,10 @@ bool operator==(const Position& position1, const Position& position2) {
     return (position1.x == position2.x && position1.y == position2.y);
 }
 
+bool operator!=(const Position& position1, const Position& position2) {
+    return !(position1 == position2);
+}
+
 class Base {
     public:
         Base(std::string _name, Position _position) : name(std::move(_name)), position(_position) {}
@@ -38,10 +42,7 @@ struct hashBase
 class Door : public Base {
     public:
         Door(std::string _name, Position _position) :
-            Base(std::move(_name), _position) 
-        {
-
-        }
+            Base(std::move(_name), _position) {}
 
         inline void unlock() {
             locked = false;
@@ -76,16 +77,18 @@ class Field {
             // check if rechable
             if(position.x > enterence_position.x && position.y == enterence_position.y) {
                 return check_right(position, position.y);
-            } else if(position.x < enterence_position.x && position.y == enterence_position.y) {
-                return check_left(position, position.y);
-            } else if(position.y > enterence_position.y && position.x == enterence_position.x) {
-                return check_down(position, position.x);
-            } else if(position.y < enterence_position.y && position.x == enterence_position.x) {
-                return check_up(position, position.x);
-            } else {
-                // if enterence and element is not in the same row either column
-                return check_if_there_is_a_path(position);
             }
+            if(position.x < enterence_position.x && position.y == enterence_position.y) {
+                return check_left(position, position.y);
+            }
+            if(position.y > enterence_position.y && position.x == enterence_position.x) {
+                return check_down(position, position.x);
+            } 
+            if(position.y < enterence_position.y && position.x == enterence_position.x) {
+                return check_up(position, position.x);
+            }
+            // if enterence and element is not in the same row either column
+            return check_if_there_is_a_path(position);
         }
 
         inline void add_door(const Door& door) {
@@ -199,6 +202,7 @@ class Field {
     private:   
         bool check_if_there_is_a_path(Position position) {
             // TODO
+            position = Position(0, 0); // just to remove warning
             return false;
         }
 
@@ -248,44 +252,53 @@ inline bool explored(std::unordered_set<T, hashBase> elements) {
     return elements.empty();
 }
 
-int search_and_count(Field field) {
+int search_and_count(Field field, Position new_enterence_position) {
     if(explored(field.doors) && explored(field.keys)) {
-        // find smallest key;
+        return 0; // or 1? 
+    }
+
+    std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
+    std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
+    int min = 99999;
+    int number_of_moves;
+    
+    Position old_enterence_position = field.get_enterence_position();
+    if(old_enterence_position != new_enterence_position) {
+        field.set_enterence_position(new_enterence_position);
+    }
+
+    if(field.more_options(available_doors, available_keys)) {
+        for(const auto& door : available_doors) {
+            number_of_moves = search_and_count(field, door.position);
+            if(number_of_moves < min) {
+                min = number_of_moves;
+            } 
+        }
+
+        for(const auto& key : available_keys) {
+            number_of_moves = search_and_count(field, key.position);
+            if(number_of_moves < min) {
+                min = number_of_moves;
+            } 
+        }
 
     } else {
-        std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
-        std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
-        int min = 99999;
-        if(field.more_options(available_doors, available_keys)) {
-            // split in more cases
-            for(int i = 0; i < available_doors.size(); i++) {
-                // int tmp_result = search_and_count(available_doors[i]);
-                // check if min > search_and_count(available_doors[i]) {
-                    // min = result
-                // }
-            }
-
-            for(int i = 0; i < available_keys.size(); i++) {
-                
-            }
-
-        } else {
-            // go further, don't split... there is only one option to go, so go there
-            if(!available_doors.empty()) {
-                field.set_enterence_position(available_doors.begin() -> position);
-            }
-            else {
-                field.set_enterence_position(available_keys.begin() -> position);
-            }
+        // go further, don't split... there is only one option to go, so go there
+        if(!available_doors.empty()) {
+            field.set_enterence_position(available_doors.begin() -> position);
+        }
+        else {
+            field.set_enterence_position(available_keys.begin() -> position);
         }
     }
-    return 0; // return something
+
+    return min + 1; // return something
 }
 
 int get_shortest_path() {
     const std::string file_name = "day18.txt";
     Field field(file_name);
-    return search_and_count(field);
+    return search_and_count(field, field.get_enterence_position());
 }
 
 int main() {
