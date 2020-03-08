@@ -267,29 +267,20 @@ int search_and_count(Field field, Position new_enterence_position) {
         field.set_enterence_position(new_enterence_position);
     }
 
-    if(field.more_options(available_doors, available_keys)) {
-        for(const auto& door : available_doors) {
-            number_of_moves = search_and_count(field, door.position);
-            if(number_of_moves < min) {
-                min = number_of_moves;
-            } 
-        }
+    for(const auto& door : available_doors) {
+        std::cout << "postoji vise mogucih vrata, sad se istrazuju : " << door.name << std::endl;
+        number_of_moves = search_and_count(field, door.position);
+        if(number_of_moves < min) {
+            min = number_of_moves;
+        } 
+    }
 
-        for(const auto& key : available_keys) {
-            number_of_moves = search_and_count(field, key.position);
-            if(number_of_moves < min) {
-                min = number_of_moves;
-            } 
-        }
-
-    } else {
-        // go further, don't split... there is only one option to go, so go there
-        if(!available_doors.empty()) {
-            field.set_enterence_position(available_doors.begin() -> position);
-        }
-        else {
-            field.set_enterence_position(available_keys.begin() -> position);
-        }
+    for(const auto& key : available_keys) {
+        std::cout << "postoji vise mogucih kljuceva, sad se istrazuju : " << key.name << std::endl;
+        number_of_moves = search_and_count(field, key.position);
+        if(number_of_moves < min) {
+            min = number_of_moves;
+        } 
     }
 
     return min + 1; // return something
@@ -302,7 +293,6 @@ int get_shortest_path() {
 }
 
 int main() {
-    std::vector<int> v;
     int shortest_path = get_shortest_path();
     std::cout << "shortest path = " << shortest_path << std::endl;
     return 0;
