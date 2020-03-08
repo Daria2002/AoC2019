@@ -74,6 +74,7 @@ class Field {
         }
 
         bool is_reachable(const Position& position) {
+            std::cout << "checking position: (" << position.x << ", " << position.y << ")" << std::endl;  
             // check if rechable
             if(position.x > enterence_position.x && position.y == enterence_position.y) {
                 return check_right(position, position.y);
@@ -202,6 +203,7 @@ class Field {
     private:   
         bool check_if_there_is_a_path(Position position) {
             // TODO
+            std::cout << "TODO" << std::endl;
             position = Position(0, 0); // just to remove warning
             return false;
         }
