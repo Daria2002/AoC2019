@@ -205,6 +205,9 @@ class Field {
             // TODO
             std::cout << "TODO" << std::endl;
             position = Position(0, 0); // just to remove warning
+
+            // recursion function that checks if enterence can reach position 
+
             return false;
         }
 
