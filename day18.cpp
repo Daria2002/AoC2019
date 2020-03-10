@@ -89,7 +89,7 @@ class Field {
                 return check_up(position, position.x);
             }
             // if enterence and element is not in the same row either column
-            return check_if_there_is_a_path(position);
+            return check_if_there_is_a_path(position, enterence_position);
         }
 
         inline void add_door(const Door& door) {
@@ -201,12 +201,12 @@ class Field {
         }
 
     private:   
-        bool check_if_there_is_a_path(Position position) {
+        bool check_if_there_is_a_path(const Position& position, Position imaginary_enterence) {
             // TODO
             std::cout << "TODO" << std::endl;
-            position = Position(0, 0); // just to remove warning
-
             // recursion function that checks if enterence can reach position 
+
+
 
             return false;
         }
