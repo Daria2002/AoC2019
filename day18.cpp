@@ -11,6 +11,9 @@ class Position {
         Position() = default;
         Position(int _x, int _y) : x(_x), y(_y) {}
         int x, y;
+        Position get_modified_position(int x_modification, int y_modification) {
+            return Position(x + x_modification, y + y_modification);
+        }
 };
 
 bool operator==(const Position& position1, const Position& position2) {
@@ -206,9 +209,13 @@ class Field {
             std::cout << "TODO" << std::endl;
             // recursion function that checks if enterence can reach position 
 
+            if(imaginary_enterence == position) {
+                // enterence can reach position
+                return true;
+            }
 
+            // check if there is possible path up, down, right or left
 
-            return false;
         }
 
         bool check_right(const Position& position, int y) {
