@@ -11,8 +11,8 @@ class Position {
         Position() = default;
         Position(int _x, int _y) : x(_x), y(_y) {}
         int x, y;
-        Position get_modified_position(int x_modification, int y_modification) {
-            return Position(x + x_modification, y + y_modification);
+        Position get_modified_position(int x_offset, int y_offset) const {
+            return Position(x + x_offset, y + y_offset);
         }
 };
 
@@ -78,11 +78,10 @@ class Field {
 
         bool is_reachable(const Position& position) {
             std::cout << "checking position: (" << position.x << ", " << position.y << ")" << std::endl;  
-            // check if rechable
-            if(position.x > enterence_position.x && position.y == enterence_position.y) {
+            if(position.x > enterence_position.x && position.y == enterence_position.y) { // if in same row, dest on right
                 return check_right(position, position.y);
             }
-            if(position.x < enterence_position.x && position.y == enterence_position.y) {
+            if(position.x < enterence_position.x && position.y == enterence_position.y) { // if in same row but dest is on the left
                 return check_left(position, position.y);
             }
             if(position.y > enterence_position.y && position.x == enterence_position.x) {
@@ -215,7 +214,19 @@ class Field {
             }
 
             // check if there is possible path up, down, right or left
+            Position position_up = position.get_modified_position(0, 1);
+            Position position_down = position.get_modified_position(0, -1);
+            Position position_right = position.get_modified_position(-1, 0);
+            Position position_left = position.get_modified_position(1, 0);
 
+            std::array<Position, 4> neighbours = {position_up, position_down, position_left, position_right}; 
+            
+            for(auto const neighbour : neighbours) {
+                // if neighbour is path or unlocked door or key call check_if_there is_a_path(neighbout)
+                // ako je rez true, return true
+            }
+            // none of the neighbours can reach destination
+            return false;
         }
 
         bool check_right(const Position& position, int y) {
