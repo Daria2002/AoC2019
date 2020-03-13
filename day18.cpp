@@ -91,7 +91,7 @@ class Field {
                 return check_up(position, position.x);
             }
             // if enterence and element is not in the same row either column
-            return check_if_there_is_a_path(position, enterence_position);
+            return check_if_there_is_a_path(position, enterence_position, false);
         }
 
         inline void add_door(const Door& door) {
@@ -182,6 +182,32 @@ class Field {
         std::vector<Position> wall;
         std::vector<Position> path;
 
+        bool is_wall(const Position& position) const {
+            return std::find(wall.begin(), wall.end(), position) != wall.end();
+        }
+
+        bool is_path(const Position& position) const {
+            return std::find(path.begin(), path.end(), position) != path.end();
+        }
+
+        bool is_locked_door(const Position& position) const {
+            for(const auto& door:doors) {
+                if(door.position == position) {
+                    return door.is_locked();
+                }
+            }
+            return false;
+        }
+
+        bool is_key(const Position& position) const {
+            for(const auto& key:keys) {
+                if(key.position == position) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         std::unordered_set<Door, hashBase> get_available_doors() {
             std::unordered_set<Door, hashBase> available_doors;
             std::for_each(doors.begin(), doors.end(), [&](auto const& el) {
@@ -202,32 +228,16 @@ class Field {
             return available_keys;
         }
 
-    private:   
-        bool check_if_there_is_a_path(const Position& position, Position imaginary_enterence) {
-            // TODO
-            std::cout << "TODO" << std::endl;
-            // recursion function that checks if enterence can reach position 
-
-            if(imaginary_enterence == position) {
-                // enterence can reach position
-                return true;
+        Key get_key_at_position(const Position& position) const {
+            for(const auto& key:keys) {
+                if(key.position == position) {
+                    return key;
+                }
             }
-
-            // check if there is possible path up, down, right or left
-            Position position_up = position.get_modified_position(0, 1);
-            Position position_down = position.get_modified_position(0, -1);
-            Position position_right = position.get_modified_position(-1, 0);
-            Position position_left = position.get_modified_position(1, 0);
-
-            std::array<Position, 4> neighbours = {position_up, position_down, position_left, position_right}; 
-            
-            for(auto const neighbour : neighbours) {
-                // if neighbour is path or unlocked door or key call check_if_there is_a_path(neighbout)
-                // ako je rez true, return true
-            }
-            // none of the neighbours can reach destination
-            return false;
+            return Key("-1", Position(-1, -1));
         }
+
+    private:  
 
         bool check_right(const Position& position, int y) {
             // check that between enterence_position and position there are only .
@@ -268,7 +278,48 @@ class Field {
         }
 
         Position enterence_position = Position(-1, -1);
-};
+}; 
+
+bool check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
+                             bool key_processing, const Key& key = Key("", Position(-1,-1))) {
+    
+    if(key_processing) {
+        field.pick_up_key(key);
+    }
+
+    if(imaginary_enterence == position) {
+        // enterence can reach position
+        return true;
+    }
+
+    // check if there is possible path up, down, right or left
+    Position position_up = imaginary_enterence.get_modified_position(0, 1);
+    Position position_down = imaginary_enterence.get_modified_position(0, -1);
+    Position position_right = imaginary_enterence.get_modified_position(-1, 0);
+    Position position_left = imaginary_enterence.get_modified_position(1, 0);
+
+    std::array<Position, 4> neighbours = {position_up, position_down, position_left, position_right}; 
+    
+    for(auto const neighbour : neighbours) {
+        // if neighbour is path or unlocked door or key call check_if_there is_a_path(neighbout)
+        // ako je rez true, return true
+        if(field.is_wall(neighbour) || field.is_locked_door(neighbour)) {
+            continue;
+        } 
+        if(field.is_path(neighbour)) {
+            // if path -> recursive call
+            check_if_there_is_a_path(field, position, neighbour, false);
+        } else { // key
+        // if key, pick up it and convert it to path and unlock door, but only in next call..in this call
+        // nothing changes
+            Key key = field.get_key_at_position(neighbour);
+            check_if_there_is_a_path(field, position, neighbour, true, key);
+            // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
+        }
+    }
+    // none of the neighbours can reach destination
+    return false;
+}
 
 template <typename T>
 inline bool explored(std::unordered_set<T, hashBase> elements) {
