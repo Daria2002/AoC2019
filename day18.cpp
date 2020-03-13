@@ -76,6 +76,9 @@ class Field {
             }
         }
 
+        bool check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
+                             bool key_processing, const Key& key = Key("", Position(-1,-1)));
+
         bool is_reachable(const Position& position) {
             std::cout << "checking position: (" << position.x << ", " << position.y << ")" << std::endl;  
             if(position.x > enterence_position.x && position.y == enterence_position.y) { // if in same row, dest on right
@@ -91,7 +94,7 @@ class Field {
                 return check_up(position, position.x);
             }
             // if enterence and element is not in the same row either column
-            return check_if_there_is_a_path(position, enterence_position, false);
+            return check_if_there_is_a_path(*this, position, enterence_position, false);
         }
 
         inline void add_door(const Door& door) {
