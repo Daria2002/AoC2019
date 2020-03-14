@@ -283,8 +283,8 @@ class Field {
         Position enterence_position = Position(-1, -1);
 }; 
 
-bool check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
-                             bool key_processing, const Key& key = Key("", Position(-1,-1))) {
+bool Field::check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
+                             bool key_processing, const Key& key) {
     
     if(key_processing) {
         field.pick_up_key(key);
