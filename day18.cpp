@@ -115,9 +115,9 @@ class Field {
             path.push_back(key.position);
         }
 
-        inline int count_options(const std::unordered_set<Door, hashBase>& available_doors, 
+        inline long unsigned int count_options(const std::unordered_set<Door, hashBase>& available_doors, 
         const std::unordered_set<Key, hashBase>& available_keys) {
-            int counter = 0;
+            long unsigned int counter = 0;
             counter = available_doors.size() + available_keys.size();
             return counter;
         }
@@ -315,7 +315,7 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
         } else { // key
         // if key, pick up it and convert it to path and unlock door, but only in next call..in this call
         // nothing changes
-            Key key = field.get_key_at_position(neighbour);
+            Key tmp_key = field.get_key_at_position(neighbour);
             check_if_there_is_a_path(field, position, neighbour, true, key);
             // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
         }
