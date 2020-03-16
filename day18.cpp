@@ -5,6 +5,10 @@
 #include <fstream>
 #include <cctype>
 #include <algorithm>
+#include <iostream>       
+#include <string>         
+#include <locale>
+#include <cctype>
 
 class Position {
     public:
@@ -110,9 +114,31 @@ class Field {
             path.push_back(door.position);
         }
         
-        inline void pick_up_key(Key key) {
+        bool unlock_door(const std::string& door_name) {
+            for(Door door : doors) {
+                if(door.name == door_name) {
+                    doors.erase(door);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        std::string str_to_upper(const std::string& str) {
+            std::string result;
+            int i = 0;
+            for(const auto el:str) {
+                result[i++] = toupper(el);
+            }
+            return result;
+        }
+
+        void pick_up_key(Key key) {
             keys.erase(key);
             path.push_back(key.position);
+            if(!unlock_door(str_to_upper(key.name))) {
+                std::cout << "!! door can't be unlocked." << std::endl;
+            }
         }
 
         inline long unsigned int count_options(const std::unordered_set<Door, hashBase>& available_doors, 
@@ -211,10 +237,14 @@ class Field {
             return false;
         }
 
+        inline bool is_unlocked(const Door& door) {
+            return !door.is_locked();
+        }
+
         std::unordered_set<Door, hashBase> get_available_doors() {
             std::unordered_set<Door, hashBase> available_doors;
             std::for_each(doors.begin(), doors.end(), [&](auto const& el) {
-                if(is_reachable(el.position)) {
+                if(is_reachable(el.position) && is_unlocked(el)) {
                     available_doors.insert(el);
                 }
             });
@@ -279,7 +309,7 @@ class Field {
             }
             return true;
         }
-
+        // (y, x)
         Position enterence_position = Position(-1, -1);
 }; 
 
@@ -329,11 +359,11 @@ inline bool explored(std::unordered_set<T, hashBase> elements) {
     return elements.empty();
 }
 
-int search_and_count(Field field, Position new_enterence_position) {
+int search_and_count(Field field, Position new_enterence_position, bool is_key_position) {
     if(explored(field.doors) && explored(field.keys)) {
         return 0; // or 1? 
     }
-
+    // available doors are only the one that are unlocked
     std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
     std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
     int min = 99999;
@@ -342,11 +372,14 @@ int search_and_count(Field field, Position new_enterence_position) {
     Position old_enterence_position = field.get_enterence_position();
     if(old_enterence_position != new_enterence_position) {
         field.set_enterence_position(new_enterence_position);
+        if(is_key_position) {
+            
+        }
     }
 
     for(const auto& door : available_doors) {
         std::cout << "postoji vise mogucih vrata, sad se istrazuju : " << door.name << std::endl;
-        number_of_moves = search_and_count(field, door.position);
+        number_of_moves = search_and_count(field, door.position, false);
         if(number_of_moves < min) {
             min = number_of_moves;
         } 
@@ -354,7 +387,7 @@ int search_and_count(Field field, Position new_enterence_position) {
 
     for(const auto& key : available_keys) {
         std::cout << "postoji vise mogucih kljuceva, sad se istrazuju : " << key.name << std::endl;
-        number_of_moves = search_and_count(field, key.position);
+        number_of_moves = search_and_count(field, key.position, true);
         if(number_of_moves < min) {
             min = number_of_moves;
         } 
@@ -366,7 +399,7 @@ int search_and_count(Field field, Position new_enterence_position) {
 int get_shortest_path() {
     const std::string file_name = "day18.txt";
     Field field(file_name);
-    return search_and_count(field, field.get_enterence_position());
+    return search_and_count(field, field.get_enterence_position(), false);
 }
 
 int main() {
