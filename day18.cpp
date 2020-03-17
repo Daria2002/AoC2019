@@ -125,15 +125,31 @@ class Field {
         }
 
         std::string str_to_upper(const std::string& str) {
-            std::string result;
+            std::string result = "";
             int i = 0;
             for(const auto el:str) {
-                result[i++] = toupper(el);
+                result += ((int)el - 97 + 65);
             }
+
             return result;
         }
 
-        void pick_up_key(Key key) {
+        void pick_up_key(const Position& position) {
+            std::string name;
+            for(Key key:keys) {
+                if(key.position == position) {
+                    keys.erase(key);
+                    name = key.name;
+                    break;
+                }
+            }
+            path.push_back(position);
+            if(!unlock_door(str_to_upper(name))) {
+                std::cout << "!! door can't be unlocked." << std::endl;
+            }
+        }
+
+        void pick_up_key(const Key& key) {
             keys.erase(key);
             path.push_back(key.position);
             if(!unlock_door(str_to_upper(key.name))) {
@@ -363,19 +379,20 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     if(explored(field.doors) && explored(field.keys)) {
         return 0; // or 1? 
     }
-    // available doors are only the one that are unlocked
-    std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
-    std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
-    int min = 99999;
-    int number_of_moves;
     
     Position old_enterence_position = field.get_enterence_position();
     if(old_enterence_position != new_enterence_position) {
         field.set_enterence_position(new_enterence_position);
         if(is_key_position) {
-            
+            field.pick_up_key(new_enterence_position);
         }
     }
+
+    // available doors are only the one that are unlocked
+    std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
+    std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
+    int min = 99999;
+    int number_of_moves;
 
     for(const auto& door : available_doors) {
         std::cout << "postoji vise mogucih vrata, sad se istrazuju : " << door.name << std::endl;
