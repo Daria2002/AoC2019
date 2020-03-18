@@ -126,7 +126,6 @@ class Field {
 
         std::string str_to_upper(const std::string& str) {
             std::string result = "";
-            int i = 0;
             for(const auto el:str) {
                 result += ((int)el - 97 + 65);
             }
@@ -375,13 +374,23 @@ inline bool explored(std::unordered_set<T, hashBase> elements) {
     return elements.empty();
 }
 
+int distance_between_elements(const Position& position_start, const Position& position_end) {
+    const int distance_x = abs(position_end.x - position_start.x);
+    const int distance_y = abs(position_end.y - position_start.y);
+    return distance_x + distance_y;
+}
+
 int search_and_count(Field field, Position new_enterence_position, bool is_key_position) {
+    const int initial_value = 1;
+
     if(explored(field.doors) && explored(field.keys)) {
-        return 0; // or 1? 
+        return initial_value; // or 1? 
     }
     
     Position old_enterence_position = field.get_enterence_position();
+    int basic_distance;
     if(old_enterence_position != new_enterence_position) {
+        basic_distance = distance_between_elements(old_enterence_position, new_enterence_position);
         field.set_enterence_position(new_enterence_position);
         if(is_key_position) {
             field.pick_up_key(new_enterence_position);
@@ -393,12 +402,14 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
     int min = 99999;
     int number_of_moves;
+    bool return_initial_value = true;
 
     for(const auto& door : available_doors) {
         std::cout << "postoji vise mogucih vrata, sad se istrazuju : " << door.name << std::endl;
         number_of_moves = search_and_count(field, door.position, false);
         if(number_of_moves < min) {
-            min = number_of_moves;
+            min = number_of_moves + distance_between_elements(door.position, new_enterence_position) + basic_distance;
+            return_initial_value = false;
         } 
     }
 
@@ -406,11 +417,12 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
         std::cout << "postoji vise mogucih kljuceva, sad se istrazuju : " << key.name << std::endl;
         number_of_moves = search_and_count(field, key.position, true);
         if(number_of_moves < min) {
-            min = number_of_moves;
+            min = number_of_moves + 1;
+            return_initial_value = false;
         } 
     }
 
-    return min + 1; // return something
+    return return_initial_value ? initial_value : min; // return something
 }
 
 int get_shortest_path() {
