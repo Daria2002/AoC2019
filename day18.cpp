@@ -49,16 +49,20 @@ struct hashBase
 class Door : public Base {
     public:
         Door(std::string _name, Position _position) :
-            Base(std::move(_name), _position) {}
+            Base(std::move(_name), _position) {
+                locked = true;
+            }
 
-        inline void unlock() {
+        inline void unlock() const {
             locked = false;
         }
+
         inline bool is_locked() const {
             return locked;
         }
+
     private:
-        bool locked = true;
+        mutable bool locked;
 };
 
 class Key : public Base {
@@ -84,7 +88,7 @@ class Field {
                              bool key_processing, const Key& key = Key("", Position(-1,-1)));
 
         bool is_reachable(const Position& position) {
-            std::cout << "checking position: (" << position.x << ", " << position.y << ")" << std::endl;  
+            std::cout << "checking if position is reachable: (" << position.x << ", " << position.y << ")" << std::endl;  
             if(position.x > enterence_position.x && position.y == enterence_position.y) { // if in same row, dest on right
                 return check_right(position, position.y);
             }
@@ -115,9 +119,9 @@ class Field {
         }
         
         bool unlock_door(const std::string& door_name) {
-            for(Door door : doors) {
+            for(const Door& door : doors) {
                 if(door.name == door_name) {
-                    doors.erase(door);
+                    door.unlock();
                     return true;
                 }
             }
@@ -131,6 +135,15 @@ class Field {
             }
 
             return result;
+        }
+
+        void enter_the_door(const Position& position) {
+            for(Door door : doors) {
+                if(door.position == position) {
+                    doors.erase(door);
+                    return;
+                }
+            }
         }
 
         void pick_up_key(const Position& position) {
@@ -235,7 +248,7 @@ class Field {
         }
 
         bool is_locked_door(const Position& position) const {
-            for(const auto& door:doors) {
+            for(auto& door:doors) {
                 if(door.position == position) {
                     return door.is_locked();
                 }
@@ -259,6 +272,10 @@ class Field {
         std::unordered_set<Door, hashBase> get_available_doors() {
             std::unordered_set<Door, hashBase> available_doors;
             std::for_each(doors.begin(), doors.end(), [&](auto const& el) {
+                bool reachable = is_reachable(el.position);
+                bool unlocked = is_unlocked(el);
+                if(!reachable) std::cout << "vrata " << el.name << " nisu dohvatljiva" << std::endl;
+                if(!unlocked) std::cout << "vrata " << el.name << " su zakljucana" << std::endl;
                 if(is_reachable(el.position) && is_unlocked(el)) {
                     available_doors.insert(el);
                 }
@@ -397,6 +414,8 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
         field.set_enterence_position(new_enterence_position);
         if(is_key_position) {
             field.pick_up_key(new_enterence_position);
+        } else {
+            field.enter_the_door(new_enterence_position);
         }
     }
 
