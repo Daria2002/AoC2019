@@ -369,19 +369,19 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
     for(auto const neighbour : neighbours) {
         // if neighbour is path or unlocked door or key call check_if_there is_a_path(neighbout)
         // ako je rez true, return true
-        if(field.is_wall(neighbour) || field.is_locked_door(neighbour) || field.is_path(neighbour)) {
+        if(field.is_wall(neighbour) || field.is_locked_door(neighbour)) {
             continue;
-        } 
-        if(field.is_path(neighbour)) {
-            // if path -> recursive call
-            check_if_there_is_a_path(field, position, neighbour, false);
-        } else { // key
+        }
+        // key or unlocked door or path
         // if key, pick up it and convert it to path and unlock door, but only in next call..in this call
         // nothing changes
+        if(field.is_key(neighbour)) {
             Key tmp_key = field.get_key_at_position(neighbour);
-            check_if_there_is_a_path(field, position, neighbour, true, key);
-            // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
+            return check_if_there_is_a_path(field, position, neighbour, true, key);
         }
+        // unlocked door or path
+        return check_if_there_is_a_path(field, position, neighbour, false);
+        // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
     }
     // none of the neighbours can reach destination
     return false;
