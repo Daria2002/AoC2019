@@ -357,7 +357,7 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
         // enterence can reach position
         return true;
     }
-
+    bool result; // TODO: how to check? implement that 
     // check if there is possible path up, down, right or left
     Position position_up = imaginary_enterence.get_modified_position(0, 1);
     Position position_down = imaginary_enterence.get_modified_position(0, -1);
@@ -377,14 +377,14 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
         // nothing changes
         if(field.is_key(neighbour)) {
             Key tmp_key = field.get_key_at_position(neighbour);
-            return check_if_there_is_a_path(field, position, neighbour, true, key);
+            check_if_there_is_a_path(field, position, neighbour, true, key);
         }
         // unlocked door or path
-        return check_if_there_is_a_path(field, position, neighbour, false);
+        check_if_there_is_a_path(field, position, neighbour, false);
         // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
     }
     // none of the neighbours can reach destination
-    return false;
+    return result;
 }
 
 template <typename T>
