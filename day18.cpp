@@ -407,10 +407,10 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     }
     
     Position old_enterence_position = field.get_enterence_position();
-    int basic_distance;
+    int distance = 0;
     if(old_enterence_position != new_enterence_position) {
         std::cout << "premjestanje" << std::endl;
-        basic_distance = distance_between_elements(old_enterence_position, new_enterence_position);
+        distance = distance_between_elements(old_enterence_position, new_enterence_position);
         field.set_enterence_position(new_enterence_position);
         if(is_key_position) {
             field.pick_up_key(new_enterence_position);
@@ -422,29 +422,26 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     // available doors are only the one that are unlocked
     std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
     std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
-    int min = 99999;
+    int min = -1;
     int number_of_moves;
-    bool return_initial_value = true;
 
     for(const auto& door : available_doors) {
         std::cout << "istrazuju se vrata: " << door.name << std::endl;
         number_of_moves = search_and_count(field, door.position, false);
-        if(number_of_moves < min) {
-            min = number_of_moves + distance_between_elements(door.position, new_enterence_position) + basic_distance;
-            return_initial_value = false;
+        if(number_of_moves < min || min == -1) {
+            min = number_of_moves;
         } 
     }
 
     for(const auto& key : available_keys) {
         std::cout << "istrazuje se kljuc: " << key.name << std::endl;
         number_of_moves = search_and_count(field, key.position, true);
-        if(number_of_moves < min) {
-            min = number_of_moves + distance_between_elements(key.position, new_enterence_position) + basic_distance;
-            return_initial_value = false;
+        if(number_of_moves < min || min == -1) {
+            min = number_of_moves;
         } 
     }
 
-    return return_initial_value ? initial_value : number_of_moves; // return something
+    return min == -1 ? distance : distance + min;
 }
 
 int get_shortest_path() {
