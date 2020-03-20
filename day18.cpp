@@ -345,9 +345,10 @@ class Field {
         Position enterence_position = Position(-1, -1);
 }; 
 
+// todo: fix bugs in this recursion function
 bool Field::check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
                              bool key_processing, const Key& key) {
-    
+    bool result = false;
     if(key_processing) {
         field.pick_up_key(key);
     }
@@ -368,22 +369,17 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
     for(auto const neighbour : neighbours) {
         // if neighbour is path or unlocked door or key call check_if_there is_a_path(neighbout)
         // ako je rez true, return true
-        if(field.is_wall(neighbour) || field.is_locked_door(neighbour)) {
+        if(field.is_wall(neighbour) || field.is_locked_door(neighbour) || field.is_path(neighbour)) {
             continue;
-        } 
-        if(field.is_path(neighbour)) {
-            // if path -> recursive call
-            check_if_there_is_a_path(field, position, neighbour, false);
-        } else { // key
+        }
         // if key, pick up it and convert it to path and unlock door, but only in next call..in this call
         // nothing changes
-            Key tmp_key = field.get_key_at_position(neighbour);
-            check_if_there_is_a_path(field, position, neighbour, true, key);
-            // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
-        }
+        Key tmp_key = field.get_key_at_position(neighbour);
+        result = check_if_there_is_a_path(field, position, neighbour, true, key);
+        // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
     }
     // none of the neighbours can reach destination
-    return false;
+    return result;
 }
 
 template <typename T>
