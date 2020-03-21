@@ -357,7 +357,7 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
         // enterence can reach position
         return true;
     }
-    bool result; // TODO: how to check? implement that 
+    bool result; // TODO: how to check? implement that .... return true,when?
     // check if there is possible path up, down, right or left
     Position position_up = imaginary_enterence.get_modified_position(0, 1);
     Position position_down = imaginary_enterence.get_modified_position(0, -1);
@@ -384,7 +384,7 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
         // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
     }
     // none of the neighbours can reach destination
-    return result;
+    return false;
 }
 
 template <typename T>
