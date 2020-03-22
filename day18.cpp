@@ -377,10 +377,14 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
         // nothing changes
         if(field.is_key(neighbour)) {
             Key tmp_key = field.get_key_at_position(neighbour);
-            check_if_there_is_a_path(field, position, neighbour, true, key);
+            if(check_if_there_is_a_path(field, position, neighbour, true, key)) {
+                return true;
+            }
         }
         // unlocked door or path
-        check_if_there_is_a_path(field, position, neighbour, false);
+        if(check_if_there_is_a_path(field, position, neighbour, false)) {
+            return true;
+        }
         // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
     }
     // none of the neighbours can reach destination
