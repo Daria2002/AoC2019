@@ -10,16 +10,22 @@
 #include <locale>
 #include <cctype>
 
-// (y, x)
+// (x, y)
 class Position {
     public:
         Position() = default;
         Position(int _x, int _y) : x(_x), y(_y) {}
         int x, y;
         Position get_modified_position(int x_offset, int y_offset) const {
-            return Position(y + y_offset, x + x_offset);
+            return Position(x + x_offset, y + y_offset);
         }
 };
+
+std::ostream& operator<<(std::ostream& os, const Position& position)
+{
+    os << "(" << position.y << ", " << position.x << ")";
+    return os;
+}
 
 bool operator==(const Position& position1, const Position& position2) {
     return (position1.x == position2.x && position1.y == position2.y);
@@ -194,7 +200,7 @@ class Field {
         void process_row(const int& row_number, const std::string& row) {
             int column = 0;
             std::for_each(row.begin(), row.end(), [&] (auto const& el) {
-                Position position(row_number, column);
+                Position position(column, row_number);
                 std::string tmp(1, el);
                 if(el == '.') {
                     path.push_back(position);
@@ -356,16 +362,21 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
         return true;
     }
 
-    Position position_up = imaginary_enterence.get_modified_position(0, 1);
-    Position position_down = imaginary_enterence.get_modified_position(0, -1);
-    Position position_right = imaginary_enterence.get_modified_position(-1, 0);
-    Position position_left = imaginary_enterence.get_modified_position(1, 0);
+    Position position_up = imaginary_enterence.get_modified_position(0, -1);
+    Position position_down = imaginary_enterence.get_modified_position(0, 1);
+    Position position_right = imaginary_enterence.get_modified_position(1, 0);
+    Position position_left = imaginary_enterence.get_modified_position(-1, 0);
 
     std::array<Position, 4> neighbours = {position_up, position_down, position_left, position_right}; 
     
     for(auto const neighbour : neighbours) {
-        if(former_position != neighbour || field.is_path(neighbour)) {
-            field.check_if_there_is_a_path(field, position, neighbour, imaginary_enterence);
+        if(former_position != neighbour && field.is_path(neighbour)) {
+            std::cout << neighbour << " nije preskocen" << std::endl;
+            if(field.check_if_there_is_a_path(field, position, neighbour, imaginary_enterence)) {
+                return true;
+            }
+        } else {
+            std::cout << neighbour << " je preskocen" << std::endl;
         }
     }
     // none of the neighbours can reach destination
