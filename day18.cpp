@@ -86,7 +86,7 @@ class Field {
         }
 
         bool check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
-                                const Position& former_position, bool key_processing, const Key& key = Key("", Position(-1,-1)));
+                                const Position& former_position);
 
         bool is_reachable(const Position& position) {
             std::cout << "checking if position is reachable: (" << position.x << ", " << position.y << ")" << std::endl;  
@@ -103,7 +103,7 @@ class Field {
                 return check_up(position, position.x);
             }
             // if enterence and element is not in the same row either column
-            return check_if_there_is_a_path(*this, position, enterence_position, enterence_position, false);
+            return check_if_there_is_a_path(*this, position, enterence_position, enterence_position);
         }
 
         inline void add_door(const Door& door) {
@@ -348,20 +348,14 @@ class Field {
         Position enterence_position = Position(-1, -1);
 }; 
 
-// todo: fix bugs in this recursion function
+// this function checks if there is a path to some position, but only using path, not picking up keys, opening doors
 bool Field::check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence, 
-                                    const Position& former_position, bool key_processing, const Key& key) {
-    
-    if(key_processing) {
-        field.pick_up_key(key);
-    }
-
+                                    const Position& former_position) {
     if(imaginary_enterence == position) {
         // enterence can reach position
         return true;
     }
-    bool result; // TODO: how to check? implement that .... return true,when?
-    // check if there is possible path up, down, right or left
+
     Position position_up = imaginary_enterence.get_modified_position(0, 1);
     Position position_down = imaginary_enterence.get_modified_position(0, -1);
     Position position_right = imaginary_enterence.get_modified_position(-1, 0);
@@ -370,26 +364,9 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
     std::array<Position, 4> neighbours = {position_up, position_down, position_left, position_right}; 
     
     for(auto const neighbour : neighbours) {
-        // if neighbour already discovered or neighbour is path or unlocked door or key call check_if_there is_a_path(neighbout)
-        // ako je rez true, return true
-        if(former_position == neighbour || field.is_wall(neighbour) || field.is_locked_door(neighbour)) {
-            continue;
+        if(former_position != neighbour || field.is_path(neighbour)) {
+            field.check_if_there_is_a_path(field, position, neighbour, imaginary_enterence);
         }
-        // key or unlocked door or path
-        // if key, pick up it and convert it to path and unlock door, but only in next call..in this call
-        // nothing changes
-        if(field.is_key(neighbour)) {
-            Key tmp_key = field.get_key_at_position(neighbour);
-            if(check_if_there_is_a_path(field, position, neighbour, imaginary_enterence, true, tmp_key)) {
-                return true;
-            }
-        }
-        // unlocked door or path
-        // imaginary enterence param is current neighbour and position param is position we want to check
-        if(check_if_there_is_a_path(field, position, neighbour, imaginary_enterence, false)) {
-            return true;
-        }
-        // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
     }
     // none of the neighbours can reach destination
     return false;
