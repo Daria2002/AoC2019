@@ -354,6 +354,8 @@ class Field {
         Position enterence_position = Position(-1, -1);
 }; 
 
+// TODO: fix this function so there it returns true in case when key "d" is the only one that is not picked up
+
 // this function checks if there is a path to some position, but only using path, not picking up keys, opening doors
 bool Field::check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence, 
                                     const Position& former_position) {
@@ -371,12 +373,9 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
     
     for(auto const neighbour : neighbours) {
         if(former_position != neighbour && field.is_path(neighbour)) {
-            std::cout << neighbour << " nije preskocen" << std::endl;
             if(field.check_if_there_is_a_path(field, position, neighbour, imaginary_enterence)) {
                 return true;
             }
-        } else {
-            std::cout << neighbour << " je preskocen" << std::endl;
         }
     }
     // none of the neighbours can reach destination
@@ -419,6 +418,7 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     // available doors are only the one that are unlocked
     std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
     std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
+
     int min = -1;
     int number_of_moves;
 
