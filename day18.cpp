@@ -10,13 +10,14 @@
 #include <locale>
 #include <cctype>
 
+// (y, x)
 class Position {
     public:
         Position() = default;
         Position(int _x, int _y) : x(_x), y(_y) {}
         int x, y;
         Position get_modified_position(int x_offset, int y_offset) const {
-            return Position(x + x_offset, y + y_offset);
+            return Position(y + y_offset, x + x_offset);
         }
 };
 
@@ -85,7 +86,7 @@ class Field {
         }
 
         bool check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
-                             bool key_processing, const Key& key = Key("", Position(-1,-1)));
+                                const Position& former_position, bool key_processing, const Key& key = Key("", Position(-1,-1)));
 
         bool is_reachable(const Position& position) {
             std::cout << "checking if position is reachable: (" << position.x << ", " << position.y << ")" << std::endl;  
@@ -102,7 +103,7 @@ class Field {
                 return check_up(position, position.x);
             }
             // if enterence and element is not in the same row either column
-            return check_if_there_is_a_path(*this, position, enterence_position, false);
+            return check_if_there_is_a_path(*this, position, enterence_position, enterence_position, false);
         }
 
         inline void add_door(const Door& door) {
@@ -156,16 +157,18 @@ class Field {
                 }
             }
             path.push_back(position);
-            if(!unlock_door(str_to_upper(name))) {
-                std::cout << "!! door can't be unlocked." << std::endl;
+            std::string door_name = str_to_upper(name);
+            if(!unlock_door(door_name)) {
+                std::cout << "!! door " << door_name << " can't be unlocked." << std::endl;
             }
         }
 
         void pick_up_key(const Key& key) {
             keys.erase(key);
             path.push_back(key.position);
-            if(!unlock_door(str_to_upper(key.name))) {
-                std::cout << "!! door can't be unlocked." << std::endl;
+            std::string door_name = str_to_upper(key.name);
+            if(!unlock_door(door_name)) {
+                std::cout << "!! door " << door_name << " can't be unlocked." << std::endl;
             }
         }
 
@@ -346,8 +349,8 @@ class Field {
 }; 
 
 // todo: fix bugs in this recursion function
-bool Field::check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
-                             bool key_processing, const Key& key) {
+bool Field::check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence, 
+                                    const Position& former_position, bool key_processing, const Key& key) {
     
     if(key_processing) {
         field.pick_up_key(key);
@@ -367,9 +370,9 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
     std::array<Position, 4> neighbours = {position_up, position_down, position_left, position_right}; 
     
     for(auto const neighbour : neighbours) {
-        // if neighbour is path or unlocked door or key call check_if_there is_a_path(neighbout)
+        // if neighbour already discovered or neighbour is path or unlocked door or key call check_if_there is_a_path(neighbout)
         // ako je rez true, return true
-        if(field.is_wall(neighbour) || field.is_locked_door(neighbour)) {
+        if(former_position == neighbour || field.is_wall(neighbour) || field.is_locked_door(neighbour)) {
             continue;
         }
         // key or unlocked door or path
@@ -377,12 +380,13 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
         // nothing changes
         if(field.is_key(neighbour)) {
             Key tmp_key = field.get_key_at_position(neighbour);
-            if(check_if_there_is_a_path(field, position, neighbour, true, key)) {
+            if(check_if_there_is_a_path(field, position, neighbour, imaginary_enterence, true, tmp_key)) {
                 return true;
             }
         }
         // unlocked door or path
-        if(check_if_there_is_a_path(field, position, neighbour, false)) {
+        // imaginary enterence param is current neighbour and position param is position we want to check
+        if(check_if_there_is_a_path(field, position, neighbour, imaginary_enterence, false)) {
             return true;
         }
         // add third arg where it will be indicated if door need to be unlocked, key picked up etc.
