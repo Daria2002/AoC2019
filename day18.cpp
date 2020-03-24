@@ -1,5 +1,4 @@
 #include <cstdio>
-#include <iostream>
 #include <vector>
 #include <unordered_set>
 #include <fstream>
@@ -9,6 +8,7 @@
 #include <string>         
 #include <locale>
 #include <cctype>
+#include <unordered_map>
 
 // (x, y)
 class Position {
@@ -19,6 +19,16 @@ class Position {
         Position get_modified_position(int x_offset, int y_offset) const {
             return Position(x + x_offset, y + y_offset);
         }
+};
+
+class MyHashFunction { 
+    public: 
+        // Use sum of lengths of first and last names 
+        // as hash function. 
+        size_t operator()(const Position& p) const
+        { 
+            return p.x + p.y; 
+        } 
 };
 
 std::ostream& operator<<(std::ostream& os, const Position& position)
@@ -91,7 +101,7 @@ class Field {
             }
         }
 
-        bool check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
+        int check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
                                 const Position& former_position);
 
         bool is_reachable(const Position& position) {
@@ -313,7 +323,19 @@ class Field {
             return Key("-1", Position(-1, -1));
         }
 
+        int get_distance_from_enterence(const Position& position) const {
+            if(distance.find(position) != distance.end()) {
+                return distance.at(position);
+            }
+            return -1;
+        }
+
+        void set_distance_from_enterence(const Position& position, const int& steps_num) {
+            distance[position] = steps_num;
+        }
+
     private:  
+        std::unordered_map<Position, int, MyHashFunction> distance;
 
         bool check_right(const Position& position, int y) {
             // check that between enterence_position and position there are only .
@@ -359,11 +381,10 @@ class Field {
 // TODO: fix this function so there it returns true in case when key "d" is the only one that is not picked up
 
 // this function checks if there is a path to some position, but only using path, not picking up keys, opening doors
-bool Field::check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence, 
+int Field::check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence, 
                                     const Position& former_position) {
     if(imaginary_enterence == position) {
-        // enterence can reach position
-        return true;
+        return 1;
     }
 
     Position position_up = imaginary_enterence.get_modified_position(0, -1);
@@ -371,23 +392,32 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
     Position position_right = imaginary_enterence.get_modified_position(1, 0);
     Position position_left = imaginary_enterence.get_modified_position(-1, 0);
 
-    std::cout << "position_right = " << position_right << std::endl;
     std::array<Position, 4> neighbours = {position_up, position_down, position_left, position_right}; 
     
     for(auto const neighbour : neighbours) {
         if(former_position != neighbour && field.is_path(neighbour)) {
-            if(field.check_if_there_is_a_path(field, position, neighbour, imaginary_enterence)) {
-                return true;
+            int num_of_steps = field.check_if_there_is_a_path(field, position, neighbour, imaginary_enterence);
+            if(num_of_steps > 0) {
+                distance[position] = num_of_steps + 1;
+                return num_of_steps + 1;
             }
+        } else if(neighbour == position) { // if neighbour is destination
+            return 1;
         }
     }
     // none of the neighbours can reach destination
-    return false;
+    return 0;
 }
 
 template <typename T>
 inline bool explored(std::unordered_set<T, hashBase> elements) {
     return elements.empty();
+}
+
+// TODO: distance_between_elements is not ok, i.e. in case when enterence is on position "E", and 
+// has to calculate distance from "d"
+int distance_from_enterence(const Field& field, const Position& position) {
+    return field.get_distance_from_enterence(position);
 }
 
 int distance_between_elements(const Position& position_start, const Position& position_end) {
@@ -409,7 +439,10 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     int distance = 0;
     if(old_enterence_position != new_enterence_position) {
         std::cout << "premjestanje" << std::endl;
-        distance = distance_between_elements(old_enterence_position, new_enterence_position);
+        distance = field.get_distance_from_enterence(new_enterence_position);
+        if(distance == -1) {
+            distance = distance_between_elements(new_enterence_position, old_enterence_position);
+        }
         field.set_enterence_position(new_enterence_position);
         if(is_key_position) {
             field.pick_up_key(new_enterence_position);
