@@ -195,6 +195,7 @@ class Field {
         }
 
         void set_enterence_position(const Position& position) {
+            path.push_back(enterence_position);
             enterence_position = position;
         }
 
@@ -370,6 +371,7 @@ bool Field::check_if_there_is_a_path(Field field, const Position& position, Posi
     Position position_right = imaginary_enterence.get_modified_position(1, 0);
     Position position_left = imaginary_enterence.get_modified_position(-1, 0);
 
+    std::cout << "position_right = " << position_right << std::endl;
     std::array<Position, 4> neighbours = {position_up, position_down, position_left, position_right}; 
     
     for(auto const neighbour : neighbours) {
