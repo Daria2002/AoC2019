@@ -148,6 +148,7 @@ class Field {
             for(Door door : doors) {
                 if(door.position == position) {
                     doors.erase(door);
+                    path.push_back(door.position);
                     return;
                 }
             }
@@ -159,10 +160,10 @@ class Field {
                 if(key.position == position) {
                     keys.erase(key);
                     name = key.name;
+                    path.push_back(key.position);
                     break;
                 }
             }
-            path.push_back(position);
             std::string door_name = str_to_upper(name);
             if(!unlock_door(door_name)) {
                 std::cout << "!! door " << door_name << " can't be unlocked." << std::endl;
@@ -416,6 +417,7 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     }
 
     // available doors are only the one that are unlocked
+
     std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
     std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
 
