@@ -173,19 +173,13 @@ class Field {
                     break;
                 }
             }
-            std::string door_name = str_to_upper(name);
-            if(!unlock_door(door_name)) {
-                std::cout << "!! door " << door_name << " can't be unlocked." << std::endl;
-            }
+            unlock_door(str_to_upper(name));
         }
 
         void pick_up_key(const Key& key) {
             keys.erase(key);
             path.push_back(key.position);
-            std::string door_name = str_to_upper(key.name);
-            if(!unlock_door(door_name)) {
-                std::cout << "!! door " << door_name << " can't be unlocked." << std::endl;
-            }
+            unlock_door(str_to_upper(str_to_upper(key.name)));
         }
 
         inline long unsigned int count_options(const std::unordered_set<Door, hashBase>& available_doors, 
@@ -294,8 +288,6 @@ class Field {
             std::for_each(doors.begin(), doors.end(), [&](auto const& el) {
                 if(is_reachable(el.position) && is_unlocked(el)) {
                     available_doors.insert(el);
-                } else {
-                    std::cout << "vrata " << el.name << " su zakljucana ili nisu dohvatljiva" << std::endl;
                 }
             });
             return available_doors;
@@ -447,8 +439,7 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
         }
     }
 
-    // available doors are only the one that are unlocked
-
+    // TODO: how is it possible that after a->b->B there are a,d and A available
     std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
     std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
 
@@ -459,8 +450,8 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
         std::cout << "nema ni vrata, ni kljuceva" << std::endl;
     } else {
         for(const auto& door : available_doors) {
-        std::cout << "istrazuju se vrata: " << door.name << std::endl;
-        number_of_moves = search_and_count(field, door.position, false);
+            std::cout << "istrazuju se vrata: " << door.name << std::endl;
+            number_of_moves = search_and_count(field, door.position, false);
             if(number_of_moves < min || min == -1) {
                 min = number_of_moves;
             } 
