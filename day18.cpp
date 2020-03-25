@@ -368,8 +368,6 @@ class Field {
         Position enterence_position = Position(-1, -1);
 }; 
 
-// TODO: fix this function so there it returns true in case when key "d" is the only one that is not picked up
-
 // this function checks if there is a path to some position, but only using path, not picking up keys, opening doors
 int Field::check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence, 
                                     const Position& former_position) {
@@ -440,7 +438,6 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
         }
     }
 
-    // TODO: how is it possible that after a->b->B there is A reachable
     std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
     std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
 
@@ -459,8 +456,9 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
         }
 
         for(const auto& key : available_keys) {
-            std::cout << "istrazuje se kljuc: " << key.name << std::endl;
+            std::cout << "----istrazuje se kljuc: " << key.name << std::endl;
             number_of_moves = search_and_count(field, key.position, true);
+            std::cout << "----vracen iz rekurzije kljuc: " << key.name << std::endl;
             if(number_of_moves < min || min == -1) {
                 min = number_of_moves;
             } 
