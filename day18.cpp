@@ -243,9 +243,10 @@ class Field {
             return std::any_of(vector.begin(), vector.end(), contains_position);
         }
 
-        template <typename T>
-        bool has_obstacle(const Position& position, std::unordered_set<T, hashBase> set, std::vector<Position> vector) const {
-            return (contains(position, set) || contains(position, std::move(vector)));
+        template <typename T1, typename T2>
+        bool has_obstacle(const Position& position, const std::unordered_set<T1, hashBase>& doors,
+            const std::unordered_set<T2, hashBase>& keys, std::vector<Position> vector) const {
+            return (contains(position, doors) || contains(position, keys) || contains(position, std::move(vector)));
         }
 
         std::unordered_set<Door, hashBase> doors;
@@ -330,7 +331,7 @@ class Field {
             // check that between enterence_position and position there are only .
             // or keys or doors that can be unlocked
             for(int i = enterence_position.x; i < position.x; i++) {
-                if(has_obstacle(Position(i, y), doors, wall)) {
+                if(has_obstacle(Position(i, y), doors, keys, wall)) {
                     return false;
                 }
             }
@@ -339,7 +340,7 @@ class Field {
 
         bool check_left(const Position& position, int y) {
             for(int i = position.x + 1; i < enterence_position.x; i++) {
-                if(has_obstacle(Position(i, y), doors, wall)) {
+                if(has_obstacle(Position(i, y), doors, keys, wall)) {
                     return false;
                 }
             }
@@ -348,7 +349,7 @@ class Field {
 
         bool check_down(const Position& position, int x) {
             for(int i = enterence_position.y + 1; i < position.y; i++) {
-                if(has_obstacle(Position(x, i), doors, wall)) {
+                if(has_obstacle(Position(x, i), doors, keys, wall)) {
                     return false;
                 } 
             }
@@ -357,7 +358,7 @@ class Field {
 
         bool check_up(const Position& position, int x) {
             for(int i = position.y + 1; i < enterence_position.y; i++) {
-                if(has_obstacle(Position(x, i), doors, wall)) {
+                if(has_obstacle(Position(x, i), doors, keys, wall)) {
                     return false;
                 }
             }
@@ -439,7 +440,7 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
         }
     }
 
-    // TODO: how is it possible that after a->b->B there are a,d and A available
+    // TODO: how is it possible that after a->b->B there is A reachable
     std::unordered_set<Door, hashBase> available_doors = field.get_available_doors();
     std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
 
