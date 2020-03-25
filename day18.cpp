@@ -104,8 +104,7 @@ class Field {
         int check_if_there_is_a_path(Field field, const Position& position, Position imaginary_enterence,
                                 const Position& former_position);
 
-        bool is_reachable(const Position& position) {
-            std::cout << "checking if position is reachable: (" << position.x << ", " << position.y << ")" << std::endl;  
+        bool is_reachable(const Position& position) { 
             if(position.x > enterence_position.x && position.y == enterence_position.y) { // if in same row, dest on right
                 return check_right(position, position.y);
             }
@@ -293,12 +292,10 @@ class Field {
         std::unordered_set<Door, hashBase> get_available_doors() {
             std::unordered_set<Door, hashBase> available_doors;
             std::for_each(doors.begin(), doors.end(), [&](auto const& el) {
-                bool reachable = is_reachable(el.position);
-                bool unlocked = is_unlocked(el);
-                if(!reachable) std::cout << "vrata " << el.name << " nisu dohvatljiva" << std::endl;
-                if(!unlocked) std::cout << "vrata " << el.name << " su zakljucana" << std::endl;
                 if(is_reachable(el.position) && is_unlocked(el)) {
                     available_doors.insert(el);
+                } else {
+                    std::cout << "vrata " << el.name << " su zakljucana ili nisu dohvatljiva" << std::endl;
                 }
             });
             return available_doors;
@@ -423,8 +420,8 @@ int distance_from_enterence(const Field& field, const Position& position) {
 int distance_between_elements(const Position& position_start, const Position& position_end) {
     const int distance_x = abs(position_end.x - position_start.x);
     const int distance_y = abs(position_end.y - position_start.y);
-    std::cout << "udaljenost izmedju (" << position_end.x << "," << position_end.y << ") i (" << 
-    position_start.x << "," << position_start.y << ") je " << distance_x + distance_y << std::endl;
+    std::cout << "premjestanje: udaljenost izmedju " << position_start << " i " << 
+    position_end << " je " << distance_x + distance_y << std::endl;
     return distance_x + distance_y;
 }
 
@@ -438,7 +435,6 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     Position old_enterence_position = field.get_enterence_position();
     int distance = 0;
     if(old_enterence_position != new_enterence_position) {
-        std::cout << "premjestanje" << std::endl;
         distance = field.get_distance_from_enterence(new_enterence_position);
         if(distance == -1) {
             distance = distance_between_elements(new_enterence_position, old_enterence_position);
@@ -459,20 +455,24 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     int min = -1;
     int number_of_moves;
 
-    for(const auto& door : available_doors) {
+    if(available_doors.empty() && available_keys.empty()) {
+        std::cout << "nema ni vrata, ni kljuceva" << std::endl;
+    } else {
+        for(const auto& door : available_doors) {
         std::cout << "istrazuju se vrata: " << door.name << std::endl;
         number_of_moves = search_and_count(field, door.position, false);
-        if(number_of_moves < min || min == -1) {
-            min = number_of_moves;
-        } 
-    }
+            if(number_of_moves < min || min == -1) {
+                min = number_of_moves;
+            } 
+        }
 
-    for(const auto& key : available_keys) {
-        std::cout << "istrazuje se kljuc: " << key.name << std::endl;
-        number_of_moves = search_and_count(field, key.position, true);
-        if(number_of_moves < min || min == -1) {
-            min = number_of_moves;
-        } 
+        for(const auto& key : available_keys) {
+            std::cout << "istrazuje se kljuc: " << key.name << std::endl;
+            number_of_moves = search_and_count(field, key.position, true);
+            if(number_of_moves < min || min == -1) {
+                min = number_of_moves;
+            } 
+        }
     }
 
     return min == -1 ? distance : distance + min;
@@ -481,6 +481,7 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
 int get_shortest_path() {
     const std::string file_name = "day18.txt";
     Field field(file_name);
+    std::cout << "pocetak" << std::endl;
     return search_and_count(field, field.get_enterence_position(), false);
 }
 
