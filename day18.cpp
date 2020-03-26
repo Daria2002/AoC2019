@@ -428,6 +428,7 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     if(old_enterence_position != new_enterence_position) {
         distance = field.get_distance_from_enterence(new_enterence_position);
         if(distance == -1) {
+            // todo add get_distance_from_enterence?
             distance = distance_between_elements(new_enterence_position, old_enterence_position);
         }
         field.set_enterence_position(new_enterence_position);
