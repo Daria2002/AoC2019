@@ -118,7 +118,7 @@ class Field {
                 return check_up(position, position.x);
             }
             // if enterence and element is not in the same row either column
-            return check_if_there_is_a_path(*this, position, enterence_position, enterence_position);
+            return check_if_there_is_a_path(*this, position, enterence_position, enterence_position) > 0;
         }
 
         inline void add_door(const Door& door) {
@@ -244,9 +244,9 @@ class Field {
         }
 
         template <typename T1, typename T2>
-        bool has_obstacle(const Position& position, const std::unordered_set<T1, hashBase>& doors,
-            const std::unordered_set<T2, hashBase>& keys, std::vector<Position> vector) const {
-            return (contains(position, doors) || contains(position, keys) || contains(position, std::move(vector)));
+        bool has_obstacle(const Position& position, const std::unordered_set<T1, hashBase>& doors_to_check,
+            const std::unordered_set<T2, hashBase>& keys_to_check, std::vector<Position> wall_to_check) const {
+            return (contains(position, doors_to_check) || contains(position, keys_to_check) || contains(position, std::move(wall_to_check)));
         }
 
         std::unordered_set<Door, hashBase> doors;
