@@ -9,6 +9,7 @@
 #include <locale>
 #include <cctype>
 #include <unordered_map>
+#include <boost/algorithm/string.hpp>
 
 // (x, y)
 class Position {
@@ -144,15 +145,6 @@ class Field {
             return false;
         }
 
-        std::string str_to_upper(const std::string& str) {
-            std::string result;
-            for(const auto el:str) {
-                result += ((int)el - 97 + 65);
-            }
-
-            return result;
-        }
-
         void enter_the_door(const Position& position) {
             for(Door door : doors) {
                 if(door.position == position) {
@@ -173,13 +165,16 @@ class Field {
                     break;
                 }
             }
-            unlock_door(str_to_upper(name));
+            boost::to_upper(name);
+            unlock_door(name);
         }
 
         void pick_up_key(const Key& key) {
             keys.erase(key);
             path.push_back(key.position);
-            unlock_door(str_to_upper(str_to_upper(key.name)));
+            std::string door_name = key.name;
+            boost::to_upper(door_name);
+            unlock_door(door_name);
         }
 
         inline long unsigned int count_options(const std::unordered_set<Door, hashBase>& available_doors, 
