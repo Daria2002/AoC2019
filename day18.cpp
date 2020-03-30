@@ -309,6 +309,9 @@ class Field {
         }
 
         int get_distance_from_enterence(const Position& position) const {
+            if(!distance.empty()) {
+                std::cout << "distance map is not empty " << std::endl; // todo: what is wrong with distance map
+            }
             if(distance.find(position) != distance.end()) {
                 return distance.at(position);
             }
@@ -438,7 +441,7 @@ int search_and_count(Field field, Position new_enterence_position, bool is_key_p
     std::unordered_set<Key, hashBase> available_keys = field.get_available_keys();
 
     int min = -1;
-    int number_of_moves;
+    int number_of_moves = 0;
 
     if(available_doors.empty() && available_keys.empty()) {
         std::cout << "nema ni vrata, ni kljuceva" << std::endl;
