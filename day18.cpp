@@ -24,8 +24,6 @@ class Position {
 
 class MyHashFunction { 
     public: 
-        // Use sum of lengths of first and last names 
-        // as hash function. 
         size_t operator()(const Position& p) const
         { 
             return p.x + p.y; 
