@@ -77,5 +77,5 @@ void build_board(const std::string& file_name, Board& board) {
 
 int main() {
     Board board;
-    build_board("input18.txt", board);
+    build_board("day18.txt", board);
 }
