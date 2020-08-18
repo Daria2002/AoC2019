@@ -2,9 +2,12 @@
 #include <fstream>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 class Element {
     public:
+        Element() = default;
+        Element(int _x, int _y) : x(_x), y(_y) {}
         int x, y;
         bool path; // true for keys, unlocked doors and passages, otherwise false (for stone walls and locked doors)
 };
@@ -58,6 +61,14 @@ class Board {
         std::vector<StoneWall> stone_walls;
         std::unordered_map<Key, Door, KeyHasher> map;
         Element entrance;
+        bool is_path(const Element& element) {
+            for(const Element& el : all_elements) {
+                if(el.x == element.x && el.y == element.y) {
+                    return el.path;
+                }
+            }
+            return false;
+        }
 };
 
 void build_board(const std::string& file_name, Board& board) {
@@ -75,7 +86,27 @@ void build_board(const std::string& file_name, Board& board) {
     ifs.close();
 }
 
+// x - column, y - row
+int collect_keys(Board board, Element entrance) {
+    // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
+    if(board.is_path(Element(entrance.x, entrance.y - 1))) { // up
+        
+    } else if(board.is_path(Element(entrance.x, entrance.y + 1))) { // down
+
+    } else if(board.is_path(Element(entrance.x - 1, entrance.y))) { // left
+
+    } else if(board.is_path(Element(entrance.x + 1, entrance.y))) { // right
+
+    }
+}
+
+int collect_keys(const Board& board) {
+    return collect_keys(board, board.entrance);
+}
+
 int main() {
     Board board;
     build_board("day18.txt", board);
+    int shortest_path = collect_keys(board);
+    std::cout << "Shortest path = " << shortest_path << '\n';
 }
