@@ -69,6 +69,18 @@ class Board {
             }
             return false;
         }
+        // move recursively the entrance to the destination
+        bool move_to(Element destination) {
+            if(are_neighbours(entrance, destination)) {
+                // just move
+                return true;
+            }
+            // TODO: recursively go to the destination
+        }
+    private:
+        bool are_neighbours(const Element& source, const Element& destination) {
+            return !(std::abs(source.x - destination.x) > 1 || std::abs(source.y - destination.y) > 1);
+        }
 };
 
 void build_board(const std::string& file_name, Board& board) {
@@ -92,6 +104,7 @@ int collect_keys(Board board, Element entrance) {
     Element neighbour = Element(entrance.x, entrance.y - 1); 
     if(board.is_path(neighbour)) { // up
         // TODO: move up on board
+        board.move_to(neighbour);
         collect_keys(board, neighbour);
     } 
     neighbour = Element(entrance.x, entrance.y + 1); 
