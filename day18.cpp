@@ -89,15 +89,26 @@ void build_board(const std::string& file_name, Board& board) {
 // x - column, y - row
 int collect_keys(Board board, Element entrance) {
     // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
-    if(board.is_path(Element(entrance.x, entrance.y - 1))) { // up
-        
-    } else if(board.is_path(Element(entrance.x, entrance.y + 1))) { // down
-
-    } else if(board.is_path(Element(entrance.x - 1, entrance.y))) { // left
-
-    } else if(board.is_path(Element(entrance.x + 1, entrance.y))) { // right
-
-    }
+    Element neighbour = Element(entrance.x, entrance.y - 1); 
+    if(board.is_path(neighbour)) { // up
+        // TODO: move up on board
+        collect_keys(board, neighbour);
+    } 
+    neighbour = Element(entrance.x, entrance.y + 1); 
+    if(board.is_path(neighbour)) { // down
+        // TODO: move down on board
+        collect_keys(board, neighbour);
+    } 
+    neighbour = Element(entrance.x - 1, entrance.y); 
+    if(board.is_path(neighbour)) { // left
+        // TODO: move left on board
+        collect_keys(board, neighbour);
+    } 
+    neighbour = Element(entrance.x + 1, entrance.y); 
+    if(board.is_path(neighbour)) { // right
+        // TODO: move right on board
+        collect_keys(board, neighbour);
+    } 
 }
 
 int collect_keys(const Board& board) {
