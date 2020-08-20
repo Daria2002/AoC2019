@@ -8,6 +8,7 @@ class Element {
     public:
         Element() = default;
         Element(int _x, int _y) : x(_x), y(_y) {}
+        Element(const Element& el) { x = el.x; y = el.y; }
         int x, y;
         bool path; // true for keys, unlocked doors and passages, otherwise false (for stone walls and locked doors)
 };
@@ -73,13 +74,18 @@ class Board {
         bool move_to(Element destination) {
             if(are_neighbours(entrance, destination)) {
                 // just move
+                entrance = destination;
                 return true;
             }
             // TODO: recursively go to the destination
         }
     private:
         bool are_neighbours(const Element& source, const Element& destination) {
-            return !(std::abs(source.x - destination.x) > 1 || std::abs(source.y - destination.y) > 1);
+            if(std::abs(source.x - destination.x) > 1 || std::abs(source.y - destination.y) > 1) {
+                return false;
+            }
+            // if diagonal move return false, otherwise true
+            return !(std::abs(source.x - destination.x) == 1 && std::abs(source.y - destination.y) == 1);
         }
 };
 
@@ -99,28 +105,35 @@ void build_board(const std::string& file_name, Board& board) {
 }
 
 // x - column, y - row
-int collect_keys(Board board, Element entrance) {
+int collect_keys(Board board, Element entrance) { // entrance is send so step can be reverted
     // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
     Element neighbour = Element(entrance.x, entrance.y - 1); 
     if(board.is_path(neighbour)) { // up
-        // TODO: move up on board
+        // TODO: add step counter
         board.move_to(neighbour);
         collect_keys(board, neighbour);
+        board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x, entrance.y + 1); 
     if(board.is_path(neighbour)) { // down
-        // TODO: move down on board
+        // TODO: add step counter
+        board.move_to(neighbour);
         collect_keys(board, neighbour);
+        board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x - 1, entrance.y); 
     if(board.is_path(neighbour)) { // left
-        // TODO: move left on board
+        // TODO: add step counter
+        board.move_to(neighbour);
         collect_keys(board, neighbour);
+        board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x + 1, entrance.y); 
     if(board.is_path(neighbour)) { // right
-        // TODO: move right on board
+        // TODO: add step counter
+        board.move_to(neighbour);
         collect_keys(board, neighbour);
+        board.move_to(entrance); // move back (revert)
     } 
 }
 
