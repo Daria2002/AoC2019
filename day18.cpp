@@ -105,40 +105,41 @@ void build_board(const std::string& file_name, Board& board) {
 }
 
 // x - column, y - row
-int collect_keys(Board board, Element entrance) { // entrance is send so step can be reverted
+int collect_keys(Board board, Element entrance, int& number_of_steps) { // entrance is send so step can be reverted
     // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
     Element neighbour = Element(entrance.x, entrance.y - 1); 
     if(board.is_path(neighbour)) { // up
-        // TODO: add step counter
+        // TODO: add step counter and return value
         board.move_to(neighbour);
-        collect_keys(board, neighbour);
+        collect_keys(board, neighbour, number_of_steps);
         board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x, entrance.y + 1); 
     if(board.is_path(neighbour)) { // down
-        // TODO: add step counter
+        // TODO: add step counter and return value
         board.move_to(neighbour);
-        collect_keys(board, neighbour);
+        collect_keys(board, neighbour, number_of_steps);
         board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x - 1, entrance.y); 
     if(board.is_path(neighbour)) { // left
-        // TODO: add step counter
+        // TODO: add step counter and return value
         board.move_to(neighbour);
-        collect_keys(board, neighbour);
+        collect_keys(board, neighbour, number_of_steps);
         board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x + 1, entrance.y); 
     if(board.is_path(neighbour)) { // right
-        // TODO: add step counter
+        // TODO: add step counter and return value
         board.move_to(neighbour);
-        collect_keys(board, neighbour);
+        collect_keys(board, neighbour, number_of_steps);
         board.move_to(entrance); // move back (revert)
     } 
 }
 
 int collect_keys(const Board& board) {
-    return collect_keys(board, board.entrance);
+    int number_of_steps = 0;
+    return collect_keys(board, board.entrance, number_of_steps);
 }
 
 int main() {
