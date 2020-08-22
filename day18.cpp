@@ -79,6 +79,9 @@ class Board {
             }
             // TODO: recursively go to the destination
         }
+        bool all_elements_collected() {
+            return all_elements.size() == 0; // there are no elements on the board
+        }
     private:
         bool are_neighbours(const Element& source, const Element& destination) {
             if(std::abs(source.x - destination.x) > 1 || std::abs(source.y - destination.y) > 1) {
@@ -106,6 +109,10 @@ void build_board(const std::string& file_name, Board& board) {
 
 // x - column, y - row
 int collect_keys(Board board, Element entrance, int& number_of_steps) { // entrance is send so step can be reverted
+    // special case : all elements collected
+    if(board.all_elements_collected()) {
+        
+    }
     // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
     Element neighbour = Element(entrance.x, entrance.y - 1); 
     if(board.is_path(neighbour)) { // up
