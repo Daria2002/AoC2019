@@ -1,4 +1,5 @@
 #include <iostream>
+#include <list>
 #include <fstream>
 #include <vector>
 #include <unordered_map>
@@ -55,7 +56,8 @@ struct KeyHasher {
 
 class Board {
     public:
-        std::vector<Element> all_elements;
+        // TODO: add elements when board initialized, remove elements when collected
+        std::list<Element> all_elements; 
         std::vector<Door> doors;
         std::vector<Key> keys;
         std::vector<Passage> passages;
@@ -111,35 +113,43 @@ void build_board(const std::string& file_name, Board& board) {
 int collect_keys(Board board, Element entrance, int& number_of_steps) { // entrance is send so step can be reverted
     // special case : all elements collected
     if(board.all_elements_collected()) {
-        
+        // TODO: think about what to do in the last step and implement it 
     }
     // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
     Element neighbour = Element(entrance.x, entrance.y - 1); 
     if(board.is_path(neighbour)) { // up
         // TODO: add step counter and return value
         board.move_to(neighbour);
+        board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
         collect_keys(board, neighbour, number_of_steps);
+        board.all_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x, entrance.y + 1); 
     if(board.is_path(neighbour)) { // down
         // TODO: add step counter and return value
         board.move_to(neighbour);
+        board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
         collect_keys(board, neighbour, number_of_steps);
+        board.all_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x - 1, entrance.y); 
     if(board.is_path(neighbour)) { // left
         // TODO: add step counter and return value
         board.move_to(neighbour);
+        board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
         collect_keys(board, neighbour, number_of_steps);
+        board.all_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x + 1, entrance.y); 
     if(board.is_path(neighbour)) { // right
         // TODO: add step counter and return value
         board.move_to(neighbour);
+        board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
         collect_keys(board, neighbour, number_of_steps);
+        board.all_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
 }
