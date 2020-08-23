@@ -10,9 +10,14 @@ class Element {
         Element() = default;
         Element(int _x, int _y) : x(_x), y(_y) {}
         Element(const Element& el) { x = el.x; y = el.y; }
+        Element(Element&&) = default;
+        Element& operator=(const Element&) = default;
+        Element& operator=(Element&&) = default;
         int x, y;
         bool path; // true for keys, unlocked doors and passages, otherwise false (for stone walls and locked doors)
 };
+
+inline bool operator==(const Element& el1, const Element& el2) { return el1.x == el2.x && el1.y == el2.y; }
 
 class Door : public Element {
     public:
@@ -64,7 +69,7 @@ class Board {
         std::vector<StoneWall> stone_walls;
         std::unordered_map<Key, Door, KeyHasher> map;
         Element entrance;
-        bool is_path(const Element& element) {
+        bool is_path(Element& element) {
             for(const Element& el : all_elements) {
                 if(el.x == element.x && el.y == element.y) {
                     return el.path;
@@ -80,6 +85,7 @@ class Board {
                 return true;
             }
             // TODO: recursively go to the destination
+            return false;
         }
         bool all_elements_collected() {
             return all_elements.size() == 0; // there are no elements on the board
@@ -152,6 +158,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         board.all_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
+    return 0; // TODO: return valid value
 }
 
 int collect_keys(const Board& board) {
