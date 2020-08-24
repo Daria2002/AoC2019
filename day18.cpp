@@ -105,12 +105,32 @@ void build_board(const std::string& file_name, Board& board) {
 
     char c = ifs.get();
 
+    int row = 0, column = 0;
+
     while (ifs.good()) {
-        std::cout << c;
+        std::cout << c << '\n';
+        Element el(column, row);
+        if(c == '.') { // path
+            el.path = true;
+        } else if(c == '@') { // entrance
+            el.path = true;
+            board.entrance = el;
+        } else if(c == '#') { // wall
+            el.path = false;
+        } else if(c >= 'a' && c <= 'z') { // key
+            el.path = true;
+        } else if(c >= 'A' && c <= 'Z') { // door
+            el.path = false;
+        } else { // new row
+            row++;
+            column = 0; // initialize column to 0 and continue
+            c = ifs.get();
+            continue;
+        }
+        column++;
+        board.all_elements.push_back(el);
         c = ifs.get();
     }
-
-    // TODO : build board
 
     ifs.close();
 }
