@@ -108,7 +108,7 @@ void build_board(const std::string& file_name, Board& board) {
     int row = 0, column = 0;
 
     while (ifs.good()) {
-        std::cout << c << '\n';
+        std::cout << c;
         Element el(column, row);
         if(c == '.') { // path
             el.path = true;
@@ -137,6 +137,7 @@ void build_board(const std::string& file_name, Board& board) {
 
 // x - column, y - row
 int collect_keys(Board board, Element entrance, int& number_of_steps) { // entrance is send so step can be reverted
+    std::cout << "collect keys\n";
     // special case : all elements collected
     if(board.all_elements_collected()) {
         // TODO: think about what to do in the last step and implement it 
@@ -144,6 +145,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
     // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
     Element neighbour = Element(entrance.x, entrance.y - 1); 
     if(board.is_path(neighbour)) { // up
+        std::cout << "visit neighbour up\n";
         // TODO: add step counter and return value
         board.move_to(neighbour);
         board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
@@ -153,6 +155,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
     } 
     neighbour = Element(entrance.x, entrance.y + 1); 
     if(board.is_path(neighbour)) { // down
+        std::cout << "visit neighbour down\n";
         // TODO: add step counter and return value
         board.move_to(neighbour);
         board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
@@ -162,6 +165,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
     } 
     neighbour = Element(entrance.x - 1, entrance.y); 
     if(board.is_path(neighbour)) { // left
+        std::cout << "visit neighbour left\n";
         // TODO: add step counter and return value
         board.move_to(neighbour);
         board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
@@ -171,6 +175,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
     } 
     neighbour = Element(entrance.x + 1, entrance.y); 
     if(board.is_path(neighbour)) { // right
+        std::cout << "visit neighbour right\n";
         // TODO: add step counter and return value
         board.move_to(neighbour);
         board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
