@@ -9,11 +9,13 @@ class Element {
     public:
         Element() = default;
         Element(int _x, int _y) : x(_x), y(_y) {}
+        Element(int _x, int _y, char c) : x(_x), y(_y), symbol(c) {}
         Element(const Element& el) { x = el.x; y = el.y; }
         Element(Element&&) = default;
         Element& operator=(const Element&) = default;
         Element& operator=(Element&&) = default;
         int x, y;
+        char symbol;
         bool path; // true for keys, unlocked doors and passages, otherwise false (for stone walls and locked doors)
 };
 
@@ -72,6 +74,8 @@ class Board {
         bool is_path(Element& element) {
             for(const Element& el : all_elements) {
                 if(el.x == element.x && el.y == element.y) {
+                    std::cout << "el symbol = " << el.symbol << '\n';
+                    std::cout << "element symbol = " << element.symbol << '\n';
                     return el.path;
                 }
             }
@@ -109,7 +113,7 @@ void build_board(const std::string& file_name, Board& board) {
 
     while (ifs.good()) {
         std::cout << c;
-        Element el(column, row);
+        Element el(column, row, c);
         if(c == '.') { // path
             el.path = true;
         } else if(c == '@') { // entrance
