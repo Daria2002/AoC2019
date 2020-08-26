@@ -148,6 +148,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
     }
     // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
     Element neighbour = Element(entrance.x, entrance.y - 1); 
+    // TODO: if neighbour is key, unlock a door associated with it
     if(board.is_path(neighbour)) { // up
         std::cout << "visit neighbour up\n";
         // TODO: add step counter and return value
@@ -158,6 +159,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x, entrance.y + 1); 
+    // TODO: if neighbour is key, unlock a door associated with it
     if(board.is_path(neighbour)) { // down
         std::cout << "visit neighbour down\n";
         // TODO: add step counter and return value
@@ -168,6 +170,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x - 1, entrance.y); 
+    // TODO: if neighbour is key, unlock a door associated with it
     if(board.is_path(neighbour)) { // left
         std::cout << "visit neighbour left\n";
         // TODO: add step counter and return value
@@ -178,6 +181,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         board.move_to(entrance); // move back (revert)
     } 
     neighbour = Element(entrance.x + 1, entrance.y); 
+    // TODO: if neighbour is key, unlock a door associated with it
     if(board.is_path(neighbour)) { // right
         std::cout << "visit neighbour right\n";
         // TODO: add step counter and return value
