@@ -8,12 +8,11 @@
 class Element {
     public:
         Element() = default;
-        Element(int _x, int _y) : x(_x), y(_y) {}
         Element(int _x, int _y, char c) : x(_x), y(_y), symbol(c) {}
-        Element(const Element& el) { x = el.x; y = el.y; }
+        Element(const Element& el) { x = el.x; y = el.y; symbol = el.symbol; }
         Element(Element&&) = default;
-        Element& operator=(const Element&) = default;
-        Element& operator=(Element&&) = default;
+        Element& operator=(const Element& el) { x = el.x; y = el.y; symbol = el.symbol; return *this; }
+        Element& operator=(Element&& el) { x = el.x; y = el.y; symbol = el.symbol; return *this; }
         int x, y;
         char symbol;
         bool path; // true for keys, unlocked doors and passages, otherwise false (for stone walls and locked doors)
@@ -71,14 +70,17 @@ class Board {
         std::vector<StoneWall> stone_walls;
         std::unordered_map<Key, Door, KeyHasher> map;
         Element entrance;
-        bool is_path(Element& element) {
+        bool get_element(int x, int y, Element& element) {
             for(const Element& el : all_elements) {
-                if(el.x == element.x && el.y == element.y) {
-                    std::cout << "el symbol = " << el.symbol << '\n';
-                    std::cout << "element symbol = " << element.symbol << '\n';
-                    return el.path;
+                if(el.x == x && el.y == y) {
+                    element = el;
+                    return true;
                 }
-            }
+            }    
+            return false;
+        }
+        bool is_path(Element element) {
+            if(get_element(element.x, element.y, element)) return element.path;
             return false;
         }
         // move recursively the entrance to the destination
@@ -106,11 +108,8 @@ class Board {
 
 void build_board(const std::string& file_name, Board& board) {
     std::ifstream ifs (file_name, std::ifstream::in);
-
     char c = ifs.get();
-
     int row = 0, column = 0;
-
     while (ifs.good()) {
         std::cout << c;
         Element el(column, row, c);
@@ -135,19 +134,19 @@ void build_board(const std::string& file_name, Board& board) {
         board.all_elements.push_back(el);
         c = ifs.get();
     }
-
+    std::cout << '\n';
     ifs.close();
 }
 
 // x - column, y - row
 int collect_keys(Board board, Element entrance, int& number_of_steps) { // entrance is send so step can be reverted
-    std::cout << "collect keys\n";
     // special case : all elements collected
     if(board.all_elements_collected()) {
         // TODO: think about what to do in the last step and implement it 
     }
     // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
-    Element neighbour = Element(entrance.x, entrance.y - 1); 
+    Element neighbour;
+    board.get_element(entrance.x, entrance.y - 1, neighbour); 
     // TODO: if neighbour is key, unlock a door associated with it
     if(board.is_path(neighbour)) { // up
         std::cout << "visit neighbour up\n";
@@ -158,7 +157,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         board.all_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
-    neighbour = Element(entrance.x, entrance.y + 1); 
+    board.get_element(entrance.x, entrance.y + 1, neighbour);
     // TODO: if neighbour is key, unlock a door associated with it
     if(board.is_path(neighbour)) { // down
         std::cout << "visit neighbour down\n";
@@ -169,7 +168,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         board.all_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
-    neighbour = Element(entrance.x - 1, entrance.y); 
+    board.get_element(entrance.x - 1, entrance.y, neighbour);
     // TODO: if neighbour is key, unlock a door associated with it
     if(board.is_path(neighbour)) { // left
         std::cout << "visit neighbour left\n";
@@ -180,7 +179,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         board.all_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
-    neighbour = Element(entrance.x + 1, entrance.y); 
+    board.get_element(entrance.x + 1, entrance.y, neighbour);
     // TODO: if neighbour is key, unlock a door associated with it
     if(board.is_path(neighbour)) { // right
         std::cout << "visit neighbour right\n";
