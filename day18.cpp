@@ -111,7 +111,6 @@ void build_board(const std::string& file_name, Board& board) {
     char c = ifs.get();
     int row = 0, column = 0;
     while (ifs.good()) {
-        std::cout << c;
         Element el(column, row, c);
         if(c == '.') { // path
             el.path = true;
@@ -134,7 +133,6 @@ void build_board(const std::string& file_name, Board& board) {
         board.all_elements.push_back(el);
         c = ifs.get();
     }
-    std::cout << '\n';
     ifs.close();
 }
 
@@ -143,6 +141,7 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
     // special case : all elements collected
     if(board.all_elements_collected()) {
         // TODO: think about what to do in the last step and implement it 
+        std::cout << "all elements on the board are collected\n";
     }
     // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
     Element neighbour;
