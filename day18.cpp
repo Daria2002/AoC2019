@@ -63,7 +63,9 @@ struct KeyHasher {
 class Board {
     public:
         // TODO: add elements when board initialized, remove elements when collected
-        std::list<Element> all_elements; 
+        std::list<Element> uncollected_elements;
+        // all elements contains uncollected and collected elements
+        std::vector<std::vector<Element>> all_elements;
         std::vector<Door> doors;
         std::vector<Key> keys;
         std::vector<Passage> passages;
@@ -71,7 +73,7 @@ class Board {
         std::unordered_map<Key, Door, KeyHasher> map;
         Element entrance;
         bool get_element(int x, int y, Element& element) {
-            for(const Element& el : all_elements) {
+            for(const Element& el : uncollected_elements) {
                 if(el.x == x && el.y == y) {
                     element = el;
                     return true;
@@ -94,7 +96,17 @@ class Board {
             return false;
         }
         bool all_elements_collected() {
-            return all_elements.size() == 0; // there are no elements on the board
+            return uncollected_elements.size() == 0; // there are no elements on the board
+        }
+        // TODO: update all_elements when entrance moves
+        void print_board() {
+            int num_of_columns = all_elements[0].size();
+            for(int row = 0; row < all_elements.size(); row++) {
+                for(int column = 0; column < num_of_columns; column++) {
+                    std::cout << (all_elements[row][column]).symbol;
+                }
+                std::cout << '\n';
+            }
         }
     private:
         bool are_neighbours(const Element& source, const Element& destination) {
@@ -110,6 +122,7 @@ void build_board(const std::string& file_name, Board& board) {
     std::ifstream ifs (file_name, std::ifstream::in);
     char c = ifs.get();
     int row = 0, column = 0;
+    std::vector<Element> row_elements;
     while (ifs.good()) {
         Element el(column, row, c);
         if(c == '.') { // path
@@ -127,10 +140,13 @@ void build_board(const std::string& file_name, Board& board) {
             row++;
             column = 0; // initialize column to 0 and continue
             c = ifs.get();
+            board.all_elements.push_back(row_elements);
+            row_elements.clear();
             continue;
         }
         column++;
-        board.all_elements.push_back(el);
+        board.uncollected_elements.push_back(el);
+        row_elements.push_back(el);
         c = ifs.get();
     }
     ifs.close();
@@ -138,6 +154,7 @@ void build_board(const std::string& file_name, Board& board) {
 
 // x - column, y - row
 int collect_keys(Board board, Element entrance, int& number_of_steps) { // entrance is send so step can be reverted
+    board.print_board();
     // special case : all elements collected
     if(board.all_elements_collected()) {
         // TODO: think about what to do in the last step and implement it 
@@ -151,9 +168,9 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         std::cout << "visit neighbour up\n";
         // TODO: add step counter and return value
         board.move_to(neighbour);
-        board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
+        board.uncollected_elements.remove(neighbour); // remove neighbour from all elements because it's collected
         collect_keys(board, neighbour, number_of_steps);
-        board.all_elements.push_back(neighbour); // revert back like it has never been collected
+        board.uncollected_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
     board.get_element(entrance.x, entrance.y + 1, neighbour);
@@ -162,9 +179,9 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         std::cout << "visit neighbour down\n";
         // TODO: add step counter and return value
         board.move_to(neighbour);
-        board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
+        board.uncollected_elements.remove(neighbour); // remove neighbour from all elements because it's collected
         collect_keys(board, neighbour, number_of_steps);
-        board.all_elements.push_back(neighbour); // revert back like it has never been collected
+        board.uncollected_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
     board.get_element(entrance.x - 1, entrance.y, neighbour);
@@ -173,9 +190,9 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         std::cout << "visit neighbour left\n";
         // TODO: add step counter and return value
         board.move_to(neighbour);
-        board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
+        board.uncollected_elements.remove(neighbour); // remove neighbour from all elements because it's collected
         collect_keys(board, neighbour, number_of_steps);
-        board.all_elements.push_back(neighbour); // revert back like it has never been collected
+        board.uncollected_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
     board.get_element(entrance.x + 1, entrance.y, neighbour);
@@ -184,9 +201,9 @@ int collect_keys(Board board, Element entrance, int& number_of_steps) { // entra
         std::cout << "visit neighbour right\n";
         // TODO: add step counter and return value
         board.move_to(neighbour);
-        board.all_elements.remove(neighbour); // remove neighbour from all elements because it's collected
+        board.uncollected_elements.remove(neighbour); // remove neighbour from all elements because it's collected
         collect_keys(board, neighbour, number_of_steps);
-        board.all_elements.push_back(neighbour); // revert back like it has never been collected
+        board.uncollected_elements.push_back(neighbour); // revert back like it has never been collected
         board.move_to(entrance); // move back (revert)
     } 
     return 0; // TODO: return valid value
