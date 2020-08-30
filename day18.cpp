@@ -149,6 +149,8 @@ void build_board(const std::string& file_name, Board& board) {
         row_elements.push_back(el);
         c = ifs.get();
     }
+    // add last row
+    board.all_elements.push_back(row_elements);
     ifs.close();
 }
 
