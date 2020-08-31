@@ -10,7 +10,6 @@ class Element {
         Element() = default;
         Element(int _x, int _y, char c) : x(_x), y(_y), symbol(c) {}
         Element(const Element& el) { x = el.x; y = el.y; symbol = el.symbol; }
-        Element(Element&&) = default;
         Element& operator=(const Element& el) { x = el.x; y = el.y; symbol = el.symbol; return *this; }
         Element& operator=(Element&& el) { x = el.x; y = el.y; symbol = el.symbol; return *this; }
         int x, y;
