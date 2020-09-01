@@ -71,6 +71,7 @@ class Board {
         std::vector<StoneWall> stone_walls;
         std::unordered_map<Key, Door, KeyHasher> map;
         Element entrance;
+
         bool get_element(int x, int y, Element& element) {
             for(const Element& el : uncollected_elements) {
                 if(el.x == x && el.y == y) {
@@ -80,10 +81,12 @@ class Board {
             }    
             return false;
         }
+
         bool is_path(Element element) {
             if(get_element(element.x, element.y, element)) return element.path;
             return false;
         }
+
         // move recursively the entrance to the destination
         bool move_to(Element destination) {
             if(are_neighbours(entrance, destination)) {
@@ -94,9 +97,11 @@ class Board {
             // TODO: recursively go to the destination
             return false;
         }
+
         bool all_elements_collected() {
             return uncollected_elements.size() == 0; // there are no elements on the board
         }
+        
         // TODO: update all_elements when entrance moves
         void print_board() {
             int num_of_columns = all_elements[0].size();
