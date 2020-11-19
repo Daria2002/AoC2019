@@ -4,14 +4,13 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <map>
+#include <unordered_set>
 
 class Element {
     public:
         Element() = default;
         Element(int _x, int _y, char c) : x(_x), y(_y), symbol(c) {}
-        Element(const Element& el) { x = el.x; y = el.y; symbol = el.symbol; }
-        Element& operator=(const Element& el) { x = el.x; y = el.y; symbol = el.symbol; return *this; }
-        Element& operator=(Element&& el) { x = el.x; y = el.y; symbol = el.symbol; return *this; }
         int x, y;
         char symbol;
         bool path; // true for keys, unlocked doors and passages, otherwise false (for stone walls and locked doors)
@@ -21,6 +20,8 @@ inline bool operator==(const Element& el1, const Element& el2) { return el1.x ==
 
 class Door : public Element {
     public:
+        Door(int _x, int _y) : Element(_x, _y, '-') {}
+        Door(int _x, int _y, char c) : Element(_x, _y, c) {}
         Door() {
             path = false;
         }
@@ -29,15 +30,9 @@ class Door : public Element {
         }
 };
 
-class StoneWall : public Element {
-    public:
-        StoneWall() {
-            path = false;
-        }
-};
-
 class Passage : public Element {
     public:
+        Passage(int _x, int _y) : Element(_x, _y, '.') {}
         Passage() {
             path = true;
         }
@@ -45,63 +40,46 @@ class Passage : public Element {
 
 class Key : public Element {
     public:
+        Key(int _x, int _y, char c) : Element(_x, _y, c) {}
+        Key(char c) {
+            symbol = c;
+        }
         Key() {
             path = true;
         }
 };
+
+inline bool operator==(const Key& el1, const Key& el2) { return el1.symbol == el2.symbol; }
 
 struct KeyHasher {
     std::size_t operator()(const Key& k) const {
         using std::size_t;
         using std::hash;
         using std::string;
-        return ((hash<int>()(k.x) ^ (hash<int>()(k.y) << 1)) >> 1);
+        return hash<char>()(k.symbol);
     }
 };
 
 class Board {
     public:
-        // TODO: add elements when board initialized, remove elements when collected
-        std::list<Element> uncollected_elements;
-        // all elements contains uncollected and collected elements
-        std::vector<std::vector<Element>> all_elements;
-        std::vector<Door> doors;
-        std::vector<Key> keys;
         std::vector<Passage> passages;
-        std::vector<StoneWall> stone_walls;
+        std::vector<std::vector<Element>> all_elements;
         std::unordered_map<Key, Door, KeyHasher> map;
         Element entrance;
-
-        bool get_element(int x, int y, Element& element) {
-            for(const Element& el : uncollected_elements) {
-                if(el.x == x && el.y == y) {
-                    element = el;
-                    return true;
-                }
-            }    
-            return false;
-        }
-
-        bool is_path(Element element) {
-            if(get_element(element.x, element.y, element)) return element.path;
-            return false;
-        }
-
-        // move recursively the entrance to the destination
-        bool move_to(Element destination) {
-            if(are_neighbours(entrance, destination)) {
-                // just move
-                entrance = destination;
-                return true;
-            }
-            // TODO: recursively go to the destination
-            return false;
-        }
-
-        bool all_elements_collected() {
-            return uncollected_elements.size() == 0; // there are no elements on the board
-        }
         
+        void print_passages() {
+            std::cout << "Passages:\n";
+            for(Passage pass : passages) std::cout << "x = " << pass.x << ", y = " << pass.y << '\n';
+        }
+
+        void print_keys_and_doors() {
+            std::cout << "Keys and Doors:\n";
+            for(std::pair<const Key, Door>& pair : map) {
+                std::cout << "Key.x = " << pair.first.x << ", Key.y = " << pair.first.y << ", Key.symbol = " << pair.first.symbol << '\n';
+                std::cout << "Door.x = " << pair.second.x << ", Door.y = " << pair.second.y << '\n';
+            }
+        }
+
         // TODO: update all_elements when entrance moves
         void print_board() {
             int num_of_columns = all_elements[0].size();
@@ -113,13 +91,6 @@ class Board {
             }
         }
     private:
-        bool are_neighbours(const Element& source, const Element& destination) {
-            if(std::abs(source.x - destination.x) > 1 || std::abs(source.y - destination.y) > 1) {
-                return false;
-            }
-            // if diagonal move return false, otherwise true
-            return !(std::abs(source.x - destination.x) == 1 && std::abs(source.y - destination.y) == 1);
-        }
 };
 
 void build_board(const std::string& file_name, Board& board) {
@@ -131,6 +102,7 @@ void build_board(const std::string& file_name, Board& board) {
         Element el(column, row, c);
         if(c == '.') { // path
             el.path = true;
+            board.passages.push_back(Passage(column, row));
         } else if(c == '@') { // entrance
             el.path = true;
             board.entrance = el;
@@ -138,7 +110,23 @@ void build_board(const std::string& file_name, Board& board) {
             el.path = false;
         } else if(c >= 'a' && c <= 'z') { // key
             el.path = true;
+            Key key_tmp(column, row, c);
+            std::unordered_map<Key, Door, KeyHasher>::iterator it = board.map.find(c);
+            if(board.map.find(c) != board.map.end()) {
+                Door tmp = board.map[c];
+                board.map.erase(key_tmp);
+                board.map.emplace(key_tmp, tmp);
+            } else {
+                board.map[key_tmp] = Door(-1, -1);
+            }
         } else if(c >= 'A' && c <= 'Z') { // door
+            if(board.map.find(c + 32) != board.map.end()) {
+                // key already exists
+                board.map[c + 32] = Door(column, row, c);
+            } else {
+                // key doesn't exist
+                board.map.emplace(c + 32, Door(column, row, c));
+            }
             el.path = false;
         } else { // new row
             row++;
@@ -149,7 +137,6 @@ void build_board(const std::string& file_name, Board& board) {
             continue;
         }
         column++;
-        board.uncollected_elements.push_back(el);
         row_elements.push_back(el);
         c = ifs.get();
     }
@@ -158,61 +145,8 @@ void build_board(const std::string& file_name, Board& board) {
     ifs.close();
 }
 
-// x - column, y - row
-int collect_keys(Board board, Element entrance, int& number_of_steps) { // entrance is send so step can be reverted
-    board.print_board();
-    // special case : all elements collected
-    if(board.all_elements_collected()) {
-        // TODO: think about what to do in the last step and implement it 
-        std::cout << "all elements on the board are collected\n";
-    }
-    // go recursively in all directions (up, down, right and left) if there is a path, unlocked door or a key
-    Element neighbour;
-    board.get_element(entrance.x, entrance.y - 1, neighbour); 
-    // TODO: if neighbour is key, unlock a door associated with it
-    if(board.is_path(neighbour)) { // up
-        std::cout << "visit neighbour up\n";
-        // TODO: add step counter and return value
-        board.move_to(neighbour);
-        board.uncollected_elements.remove(neighbour); // remove neighbour from all elements because it's collected
-        collect_keys(board, neighbour, number_of_steps);
-        board.uncollected_elements.push_back(neighbour); // revert back like it has never been collected
-        board.move_to(entrance); // move back (revert)
-    } 
-    board.get_element(entrance.x, entrance.y + 1, neighbour);
-    // TODO: if neighbour is key, unlock a door associated with it
-    if(board.is_path(neighbour)) { // down
-        std::cout << "visit neighbour down\n";
-        // TODO: add step counter and return value
-        board.move_to(neighbour);
-        board.uncollected_elements.remove(neighbour); // remove neighbour from all elements because it's collected
-        collect_keys(board, neighbour, number_of_steps);
-        board.uncollected_elements.push_back(neighbour); // revert back like it has never been collected
-        board.move_to(entrance); // move back (revert)
-    } 
-    board.get_element(entrance.x - 1, entrance.y, neighbour);
-    // TODO: if neighbour is key, unlock a door associated with it
-    if(board.is_path(neighbour)) { // left
-        std::cout << "visit neighbour left\n";
-        // TODO: add step counter and return value
-        board.move_to(neighbour);
-        board.uncollected_elements.remove(neighbour); // remove neighbour from all elements because it's collected
-        collect_keys(board, neighbour, number_of_steps);
-        board.uncollected_elements.push_back(neighbour); // revert back like it has never been collected
-        board.move_to(entrance); // move back (revert)
-    } 
-    board.get_element(entrance.x + 1, entrance.y, neighbour);
-    // TODO: if neighbour is key, unlock a door associated with it
-    if(board.is_path(neighbour)) { // right
-        std::cout << "visit neighbour right\n";
-        // TODO: add step counter and return value
-        board.move_to(neighbour);
-        board.uncollected_elements.remove(neighbour); // remove neighbour from all elements because it's collected
-        collect_keys(board, neighbour, number_of_steps);
-        board.uncollected_elements.push_back(neighbour); // revert back like it has never been collected
-        board.move_to(entrance); // move back (revert)
-    } 
-    return 0; // TODO: return valid value
+int collect_keys(Board board, Element entrance, int& number_of_steps) {
+    // todo
 }
 
 int collect_keys(const Board& board) {
@@ -223,6 +157,6 @@ int collect_keys(const Board& board) {
 int main() {
     Board board;
     build_board("day18.txt", board);
-    int shortest_path = collect_keys(board);
-    std::cout << "Shortest path = " << shortest_path << '\n';
+    // int shortest_path = collect_keys(board);
+    // std::cout << "Shortest path = " << shortest_path << '\n';
 }
