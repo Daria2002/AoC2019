@@ -60,6 +60,12 @@ class Board {
         std::unordered_map<Key, Door, KeyHasher> map;
         Element current_position;
         
+        char get_key(int x, int y) {
+            for(std::pair<Key, Door> pair : map) {
+                if(pair.first.x == x && pair.first.y == y) return pair.first.symbol;
+            }
+        }
+
         // this function returns upper neighbour of current position
         Element up() {
             return Element(current_position.x, current_position.y - 1);
@@ -81,11 +87,15 @@ class Board {
         }
 
         bool is_passable(Element el) {
-            for(std::pair<Key, Door> pair : map) {
-                if(pair.first.x == el.x && pair.first.y == el.y) return true;
-            }
             for(Passage pass : passages) {
                 if(pass.x == el.x && pass.y == el.y) return true;
+            }
+            return is_key(el);
+        }
+
+        bool is_key(Element el) {
+            for(std::pair<Key, Door> pair : map) {
+                if(pair.first.x == el.x && pair.first.y == el.y) return true;
             }
             return false;
         }
@@ -127,6 +137,7 @@ void build_board(const std::string& file_name, Board& board) {
             board.passages.push_back(Passage(column, row));
         } else if(c == '@') { // entrance
             board.current_position = el;
+            board.passages.push_back(Passage(column, row)); // entrance is on the passage
         } else if(c == '#') { // wall
             std::cout << "wall\n";
         } else if(c >= 'a' && c <= 'z') { // key
@@ -164,36 +175,54 @@ void build_board(const std::string& file_name, Board& board) {
     ifs.close();
 }
 
-int collect_keys(Board board, Element current_position, Element previous_position, int& number_of_steps) {
+int collect_keys(Board& board, Element current_position, Element previous_position, int& number_of_steps) {
     std::cout << "x = " << current_position.x << ", y = " << current_position.y << " is current position.\n";
-    if(Element up = board.up(); up != previous_position && board.is_passable(up)) {
+    bool is_key = board.is_key(current_position);
+    bool has_pair = false;
+    if(is_key) {
+        Key key = board.get_key(current_position.x, current_position.y);
+        Door unlocked_door = board.map[key];
+        has_pair = unlocked_door.x != -1 && unlocked_door.y != -1;
+        board.passages.push_back(Passage(current_position.x, current_position.y));
+        board.passages.push_back(Passage(unlocked_door.x, unlocked_door.y));
+        board.map.erase(key);
+    }
+    if(Element up = board.up(); (up != previous_position || (is_key && has_pair)) && board.is_passable(up)) {
         std::cout << "x = " << up.x << ", y = " << up.y << " is passable.\n";
         number_of_steps++;
         board.current_position = up;
         collect_keys(board, up, current_position, number_of_steps);
+        board.current_position = current_position;
+        std::cout << "Back from up\n";
     }
-    if(Element under = board.under(); under != previous_position && board.is_passable(under)) {
+    if(Element under = board.under(); (under != previous_position || (is_key && has_pair)) && board.is_passable(under)) {
         std::cout << "x = " << under.x << ", y = " << under.y << " is passable.\n";
         number_of_steps++;
         board.current_position = under;
         collect_keys(board, under, current_position, number_of_steps);
+        board.current_position = current_position;
+        std::cout << "Back from under\n";
     }
-    if(Element left = board.left(); left != previous_position && board.is_passable(left)) {
+    if(Element left = board.left(); (left != previous_position || (is_key && has_pair)) && board.is_passable(left)) {
         std::cout << "x = " << left.x << ", y = " << left.y << " is passable.\n";
         number_of_steps++;
         board.current_position = left;
         collect_keys(board, left, current_position, number_of_steps);
+        board.current_position = current_position;
+        std::cout << "Back from left\n";
     }
-    if(Element right = board.right(); right != previous_position && board.is_passable(right)) {
+    if(Element right = board.right(); (right != previous_position || (is_key && has_pair)) && board.is_passable(right)) {
         std::cout << "x = " << right.x << ", y = " << right.y << " is passable.\n";
         number_of_steps++;
         board.current_position = right;
         collect_keys(board, right, current_position, number_of_steps);
+        board.current_position = current_position;
+        std::cout << "Back from right\n";
     }
     return -1;
 }
 
-int collect_keys(const Board& board) {
+int collect_keys(Board board) {
     int number_of_steps = 0;
     return collect_keys(board, board.current_position, board.current_position, number_of_steps);
 }
