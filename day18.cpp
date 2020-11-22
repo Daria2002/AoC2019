@@ -6,6 +6,7 @@
 #include <memory>
 #include <map>
 #include <unordered_set>
+#include <limits>
 #include <algorithm>
 
 class Element {
@@ -138,8 +139,6 @@ void build_board(const std::string& file_name, Board& board) {
         } else if(c == '@') { // entrance
             board.current_position = el;
             board.passages.push_back(Passage(column, row)); // entrance is on the passage
-        } else if(c == '#') { // wall
-            std::cout << "wall\n";
         } else if(c >= 'a' && c <= 'z') { // key
             Key key_tmp(column, row, c);
             std::unordered_map<Key, Door, KeyHasher>::iterator it = board.map.find(c);
@@ -158,7 +157,7 @@ void build_board(const std::string& file_name, Board& board) {
                 // key doesn't exist
                 board.map.emplace(c + 32, Door(column, row, c));
             }
-        } else { // new row
+        } else if(c != '#') { // new row
             row++;
             column = 0; // initialize column to 0 and continue
             c = ifs.get();
@@ -175,10 +174,11 @@ void build_board(const std::string& file_name, Board& board) {
     ifs.close();
 }
 
-int collect_keys(Board& board, Element current_position, Element previous_position, int& number_of_steps) {
+int collect_keys(Board board, Element current_position, Element previous_position, int& number_of_steps) {
     std::cout << "x = " << current_position.x << ", y = " << current_position.y << " is current position.\n";
     bool is_key = board.is_key(current_position);
     bool has_pair = false;
+    int min = std::numeric_limits<int>::max();
     if(is_key) {
         Key key = board.get_key(current_position.x, current_position.y);
         Door unlocked_door = board.map[key];
@@ -188,38 +188,38 @@ int collect_keys(Board& board, Element current_position, Element previous_positi
         board.map.erase(key);
     }
     if(Element up = board.up(); (up != previous_position || (is_key && has_pair)) && board.is_passable(up)) {
-        std::cout << "x = " << up.x << ", y = " << up.y << " is passable.\n";
-        number_of_steps++;
         board.current_position = up;
+        number_of_steps++;
         collect_keys(board, up, current_position, number_of_steps);
+        if(number_of_steps < min) min = number_of_steps;
+        std::cout << "up, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
-        std::cout << "Back from up\n";
     }
     if(Element under = board.under(); (under != previous_position || (is_key && has_pair)) && board.is_passable(under)) {
-        std::cout << "x = " << under.x << ", y = " << under.y << " is passable.\n";
-        number_of_steps++;
         board.current_position = under;
-        collect_keys(board, under, current_position, number_of_steps);
-        board.current_position = current_position;
-        std::cout << "Back from under\n";
-    }
-    if(Element left = board.left(); (left != previous_position || (is_key && has_pair)) && board.is_passable(left)) {
-        std::cout << "x = " << left.x << ", y = " << left.y << " is passable.\n";
         number_of_steps++;
-        board.current_position = left;
-        collect_keys(board, left, current_position, number_of_steps);
+        collect_keys(board, under, current_position, number_of_steps);
+        if(number_of_steps < min) min = number_of_steps;
+        std::cout << "under, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
-        std::cout << "Back from left\n";
     }
     if(Element right = board.right(); (right != previous_position || (is_key && has_pair)) && board.is_passable(right)) {
-        std::cout << "x = " << right.x << ", y = " << right.y << " is passable.\n";
-        number_of_steps++;
         board.current_position = right;
+        number_of_steps++;
         collect_keys(board, right, current_position, number_of_steps);
+        if(number_of_steps < min) min = number_of_steps;
+        std::cout << "right, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
-        std::cout << "Back from right\n";
     }
-    return -1;
+    if(Element left = board.left(); (left != previous_position || (is_key && has_pair)) && board.is_passable(left)) {
+        board.current_position = left;
+        number_of_steps++;
+        collect_keys(board, left, current_position, number_of_steps);
+        if(number_of_steps < min) min = number_of_steps;
+        std::cout << "left, number of step = " << number_of_steps << '\n';
+        board.current_position = current_position;
+    }
+    return min;
 }
 
 int collect_keys(Board board) {
