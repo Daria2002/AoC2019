@@ -174,13 +174,20 @@ void build_board(const std::string& file_name, Board& board) {
     ifs.close();
 }
 
-int collect_keys(Board board, Element current_position, Element previous_position, int& number_of_steps) {
-    std::cout << "x = " << current_position.x << ", y = " << current_position.y << " is current position.\n";
+struct Result {
+    int min;
+    bool end;
+};
+
+Result collect_keys(Board board, Element current_position, Element previous_position, int& number_of_steps) {
+    // std::cout << "x = " << current_position.x << ", y = " << current_position.y << " is current position.\n";
     bool is_key = board.is_key(current_position);
     bool has_pair = false;
     int min = std::numeric_limits<int>::max();
+    int end = false;
     if(is_key) {
         Key key = board.get_key(current_position.x, current_position.y);
+        std::cout << "Key = " << key.symbol << '\n';
         Door unlocked_door = board.map[key];
         has_pair = unlocked_door.x != -1 && unlocked_door.y != -1;
         board.passages.push_back(Passage(current_position.x, current_position.y));
@@ -190,41 +197,64 @@ int collect_keys(Board board, Element current_position, Element previous_positio
     if(Element up = board.up(); (up != previous_position || (is_key && has_pair)) && board.is_passable(up)) {
         board.current_position = up;
         number_of_steps++;
-        collect_keys(board, up, current_position, number_of_steps);
-        if(number_of_steps < min) min = number_of_steps;
-        std::cout << "up, number of step = " << number_of_steps << '\n';
+        Result tmp_result = collect_keys(board, up, current_position, number_of_steps);
+        if(number_of_steps < min && tmp_result.end) {
+            min = number_of_steps;
+            end = true;
+        }
+        // std::cout << "up, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
     }
     if(Element under = board.under(); (under != previous_position || (is_key && has_pair)) && board.is_passable(under)) {
         board.current_position = under;
         number_of_steps++;
-        collect_keys(board, under, current_position, number_of_steps);
-        if(number_of_steps < min) min = number_of_steps;
-        std::cout << "under, number of step = " << number_of_steps << '\n';
-        board.current_position = current_position;
-    }
-    if(Element right = board.right(); (right != previous_position || (is_key && has_pair)) && board.is_passable(right)) {
-        board.current_position = right;
-        number_of_steps++;
-        collect_keys(board, right, current_position, number_of_steps);
-        if(number_of_steps < min) min = number_of_steps;
-        std::cout << "right, number of step = " << number_of_steps << '\n';
+        Result tmp_result = collect_keys(board, under, current_position, number_of_steps);
+        if(number_of_steps < min && tmp_result.end) {
+            min = number_of_steps;
+            end = true;
+        }
+        // std::cout << "under, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
     }
     if(Element left = board.left(); (left != previous_position || (is_key && has_pair)) && board.is_passable(left)) {
         board.current_position = left;
         number_of_steps++;
-        collect_keys(board, left, current_position, number_of_steps);
-        if(number_of_steps < min) min = number_of_steps;
-        std::cout << "left, number of step = " << number_of_steps << '\n';
+        Result tmp_result = collect_keys(board, left, current_position, number_of_steps);
+        if(number_of_steps < min && tmp_result.end) {
+            min = number_of_steps;
+            end = true;
+        }
+        // std::cout << "left, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
     }
-    return min;
+    if(Element right = board.right(); (right != previous_position || (is_key && has_pair)) && board.is_passable(right)) {
+        board.current_position = right;
+        number_of_steps++;
+        Result tmp_result = collect_keys(board, right, current_position, number_of_steps);
+        if(number_of_steps < min && tmp_result.end) {
+            min = number_of_steps;
+            end = true;
+        }
+        // std::cout << "right, number of step = " << number_of_steps << '\n';
+        board.current_position = current_position;
+    }
+    Result result;
+    // std::cout << "board size = " << board.map.size() << '\n';
+    if(board.map.size() != 0 && min == std::numeric_limits<int>::max()) {
+        number_of_steps--;
+        min = std::numeric_limits<int>::max();
+        result.end = false;
+    } else if(board.map.size() == 0 || min != std::numeric_limits<int>::max()) {
+        result.min = min;
+        result.end = true;
+    }
+    std::cout << "min = " << min << '\n';
+    return result;
 }
 
 int collect_keys(Board board) {
     int number_of_steps = 0;
-    return collect_keys(board, board.current_position, board.current_position, number_of_steps);
+    return collect_keys(board, board.current_position, board.current_position, number_of_steps).min;
 }
 
 int main() {
