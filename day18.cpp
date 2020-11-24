@@ -179,53 +179,87 @@ struct Result {
     bool end;
 };
 
+bool only_way(std::vector<bool> passages, int index) {
+    for(int i = 0; i < passages.size(); i++) {
+        if(i != index && passages[i] == true) return false;
+    }
+    return true;
+}
+
 Result collect_keys(Board board, Element current_position, Element previous_position) {
-    // std::cout << "x = " << current_position.x << ", y = " << current_position.y << " is current position.\n";
+    // std::cout << "current position: x = " << current_position.x << ", y = " << current_position.y << '\n';
     bool is_key = board.is_key(current_position);
     bool has_pair = false;
     int min = std::numeric_limits<int>::max();
+    bool end = false;
     if(is_key) {
         Key key = board.get_key(current_position.x, current_position.y);
-        // std::cout << "Key = " << key.symbol << '\n';
+        std::cout << "Key = " << key.symbol << '\n';
         Door unlocked_door = board.map[key];
         has_pair = unlocked_door.x != -1 && unlocked_door.y != -1;
         board.passages.push_back(Passage(current_position.x, current_position.y));
-        board.passages.push_back(Passage(unlocked_door.x, unlocked_door.y));
+        if(has_pair) {
+            board.passages.push_back(Passage(unlocked_door.x, unlocked_door.y));
+        }
         board.map.erase(key);
     }
-    if(Element up = board.up(); (up != previous_position || (is_key && has_pair)) && board.is_passable(up)) {
+    Element up = board.up();
+    Element under = board.under(); 
+    Element left = board.left(); 
+    Element right = board.right(); 
+
+    // up - 0, under - 1, left - 2, right - 3
+    std::vector<bool> is_passable = {
+        board.is_passable(up), board.is_passable(under), board.is_passable(left), board.is_passable(right)
+    };
+
+    if((up != previous_position || is_key && has_pair || is_key && only_way(is_passable, 0) && board.map.size() != 0) && is_passable[0]) {
         board.current_position = up;
         Result tmp_result = collect_keys(board, up, current_position);
-        if(tmp_result.min < min && tmp_result.end) min = tmp_result.min + 1; 
+        if(tmp_result.min < min && tmp_result.end) {
+            min = tmp_result.min + 1; 
+            end = true;
+        }
         // std::cout << "up, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
     }
-    if(Element under = board.under(); (under != previous_position || (is_key && has_pair)) && board.is_passable(under)) {
+    if((under != previous_position || is_key && has_pair || is_key && only_way(is_passable, 1) && board.map.size() != 0) && is_passable[1]) {
         board.current_position = under;
         Result tmp_result = collect_keys(board, under, current_position);
-        if(tmp_result.min < min && tmp_result.end) min = tmp_result.min + 1; 
+        if(tmp_result.min < min && tmp_result.end) {
+            min = tmp_result.min + 1; 
+            end = true;
+        }
         // std::cout << "under, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
     }
-    if(Element left = board.left(); (left != previous_position || (is_key && has_pair)) && board.is_passable(left)) {
+    if((left != previous_position || is_key && has_pair || is_key && only_way(is_passable, 2) && board.map.size() != 0) && is_passable[2]) {
         board.current_position = left;
         Result tmp_result = collect_keys(board, left, current_position);
-        if(tmp_result.min < min && tmp_result.end) min = tmp_result.min + 1; 
+        if(tmp_result.min < min && tmp_result.end) {
+            min = tmp_result.min + 1; 
+            end = true;
+        }
         // std::cout << "left, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
     }
-    if(Element right = board.right(); (right != previous_position || (is_key && has_pair)) && board.is_passable(right)) {
+    if((right != previous_position || is_key && has_pair || is_key && only_way(is_passable, 3) && board.map.size() != 0) && is_passable[3]) {
         board.current_position = right;
         Result tmp_result = collect_keys(board, right, current_position);
-        if(tmp_result.min < min && tmp_result.end) min = tmp_result.min + 1; 
+        if(tmp_result.min < min && tmp_result.end) {
+            min = tmp_result.min + 1; 
+            end = true;
+        }
         // std::cout << "right, number of step = " << number_of_steps << '\n';
         board.current_position = current_position;
     }
     if(min == std::numeric_limits<int>::max() && board.map.size() == 0) {
         min = 0;
+        end = true;
     }
     Result result;
     result.min = min;
+    result.end = end;
     return result;
 }
 
