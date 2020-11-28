@@ -2,6 +2,7 @@
 #include <list>
 #include <fstream>
 #include <vector>
+#include <chrono>
 #include <unordered_map>
 #include <memory>
 #include <map>
@@ -269,7 +270,12 @@ int collect_keys(Board board) {
 
 int main() {
     Board board;
+    auto start = std::chrono::high_resolution_clock::now(); 
     build_board("day18.txt", board);
+    auto stop = std::chrono::high_resolution_clock::now(); 
+    std::cout << "start\n";
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
+    std::cout << duration.count() << std::endl; 
     int shortest_path = collect_keys(board);
     std::cout << "Shortest path = " << shortest_path << '\n';
 }
