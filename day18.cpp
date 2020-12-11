@@ -226,7 +226,7 @@ bool is_wall(char c)
     return c == '#';
 }
 
-bool is_repeated(int x, int y, long long visited, std::set<std::tuple<int, int, long long>> repeated)
+bool is_repeated(int y, int x, long long visited, std::set<std::tuple<int, int, long long>> repeated)
 {
     bool result = repeated.find(std::make_tuple(y, x, visited)) != repeated.end();
     std::cout << "repeated = " << (result == true ? "true" : "false") << '\n'; 
@@ -255,6 +255,7 @@ int collect_keys(Board board, Element current_position)
         visited = curr.visited;
         if(visited.all()) 
         {
+            std::cout << "steps = " << curr.steps << '\n';
             return curr.steps;
         }
         for(int i = 0; i < 4; i++)
@@ -280,6 +281,7 @@ int collect_keys(Board board, Element current_position)
             std::cout << "**curr.x = " << curr.curr_x + x_delta[i] << ", curr.y = " << curr.curr_y + y_delta[i] << '\n';
             states.push(State(curr.curr_y + y_delta[i], curr.curr_x + x_delta[i], curr.steps + 1, visited.to_ullong()));
             repeated.insert(std::make_tuple(curr.curr_y + y_delta[i], curr.curr_x + x_delta[i], visited.to_ullong()));
+            std::cout << "symbol = " << board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol << '\n';
             if(islower(board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol))
             {
                 visited[board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol - 'a'] = false;
