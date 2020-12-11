@@ -216,44 +216,41 @@ class State
 bool check_in_map(int x, int y, int lines, int columns)
 {
     bool res = x >= 0 && y >= 0 && x < lines && y < columns;
-    std::cout << "in map = " << (res ? "true" : "false") << '\n';
+    // std::cout << "in map = " << (res ? "true" : "false") << '\n';
     return res;
 }
 
 bool is_wall(char c)
 {
-    std::cout << "is wall = " << ((c == '#') ? "true" : "false") << '\n';
+    // std::cout << "is wall = " << ((c == '#') ? "true" : "false") << '\n';
     return c == '#';
 }
 
 bool is_repeated(int y, int x, long long visited, std::set<std::tuple<int, int, long long>> repeated)
 {
     bool result = repeated.find(std::make_tuple(y, x, visited)) != repeated.end();
-    std::cout << "repeated = " << (result == true ? "true" : "false") << '\n'; 
+    // std::cout << "repeated = " << (result == true ? "true" : "false") << '\n'; 
     return result;
 }
 
 /**
  * BTS algorithm for calculating the shortest path
  */
-int collect_keys(Board board, Element current_position) 
+int collect_keys(Board board, Element current_position, const int num_of_letters) 
 {
-    int min = std::numeric_limits<int>::max();
-    constexpr int num_of_letters = 26;
-	std::bitset<num_of_letters> visited;
+    constexpr int total_num_of_letters = 26;
+	std::bitset<total_num_of_letters> visited;
     std::set<std::tuple<int, int, long long>> repeated;
     std::queue<State> states;
     std::vector<int> x_delta = {0, 0, -1, 1};
     std::vector<int> y_delta = {-1, 1, 0, 0};
-    std::cout << "initial state: x = " << current_position.x << ", y = " << current_position.y << '\n';
     states.push(State(current_position.y, current_position.x, 0, visited.to_ullong()));
     while (!states.empty())
     {
         State curr = states.front();
-        std::cout << "curr.x = " << curr.curr_x << ", curr.y = " << curr.curr_y << '\n';
         states.pop();
         visited = curr.visited;
-        if(visited.all()) 
+        if(visited.count() == num_of_letters) 
         {
             std::cout << "steps = " << curr.steps << '\n';
             return curr.steps;
@@ -264,36 +261,30 @@ int collect_keys(Board board, Element current_position)
             || is_wall(board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol)
             || is_repeated(curr.curr_y + y_delta[i], curr.curr_x + x_delta[i], curr.visited, repeated)) 
             {
-                std::cout << "out of range\n";
                 continue;
             }
             if(isupper(board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol) && 
             (!visited[board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol - 'A']))
             {
-                std::cout << "upper\n";
                 continue;
             }
             if(islower(board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol))
             {
-                std::cout << "lower\n";
                 visited[board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol - 'a'] = true;
             }
-            std::cout << "**curr.x = " << curr.curr_x + x_delta[i] << ", curr.y = " << curr.curr_y + y_delta[i] << '\n';
             states.push(State(curr.curr_y + y_delta[i], curr.curr_x + x_delta[i], curr.steps + 1, visited.to_ullong()));
             repeated.insert(std::make_tuple(curr.curr_y + y_delta[i], curr.curr_x + x_delta[i], visited.to_ullong()));
-            std::cout << "symbol = " << board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol << '\n';
             if(islower(board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol))
             {
                 visited[board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol - 'a'] = false;
             }
         }
     }
-    return min;
 }
 
 int collect_keys(Board board) 
 {
-    return collect_keys(board, board.current_position);
+    return collect_keys(board, board.current_position, board.map.size());
 }
 
 int main() 
@@ -302,9 +293,6 @@ int main()
     auto start = std::chrono::high_resolution_clock::now(); 
     build_board("day18.txt", board);
     auto stop = std::chrono::high_resolution_clock::now(); 
-    std::cout << "start\n";
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
-    std::cout << duration.count() << std::endl; 
     int shortest_path = collect_keys(board);
     std::cout << "Shortest path = " << shortest_path << '\n';
 }
