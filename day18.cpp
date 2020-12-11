@@ -10,14 +10,15 @@
 #include <bitset>
 #include <limits>
 #include <queue>
+#include <set>
 #include <algorithm>
 
 class Element 
 {
     public:
         Element() = default;
-        Element(int _x, int _y) : x(_x), y(_y) {}
-        Element(int _x, int _y, char c) : x(_x), y(_y), symbol(c) {}
+        Element(int _y, int _x) : x(_x), y(_y) {}
+        Element(int _y, int _x, char c) : x(_x), y(_y), symbol(c) {}
         int x, y;
         char symbol;
 };
@@ -29,21 +30,21 @@ class Door : public Element
 {
     public:
         Door() = default;
-        Door(int _x, int _y) : Element(_x, _y, '-') {}
-        Door(int _x, int _y, char c) : Element(_x, _y, c) {}
+        Door(int _y, int _x) : Element(_x, _y, '-') {}
+        Door(int _y, int _x, char c) : Element(_x, _y, c) {}
 };
 
 class Passage : public Element 
 {
     public:
-        Passage(int _x, int _y) : Element(_x, _y, '.') {}
+        Passage(int _y, int _x)  : Element(_x, _y, '.') {}
         Passage() = default;
 };
 
 class Key : public Element 
 {
     public:
-        Key(int _x, int _y, char c) : Element(_x, _y, c) {}
+        Key(int _y, int _x, char c) : Element(_x, _y, c) {}
         Key(char c) 
         {
             symbol = c;
@@ -71,37 +72,29 @@ class Board
         std::vector<std::vector<Element>> all_elements;
         std::unordered_map<Key, Door, KeyHasher> map;
         Element current_position;
-        
-        char get_key(int x, int y) 
-        {
-            for(std::pair<Key, Door> pair : map) 
-            {
-                if(pair.first.x == x && pair.first.y == y) return pair.first.symbol;
-            }
-        }
 
         // this function returns upper neighbour of current position
         Element up() 
         {
-            return Element(current_position.x, current_position.y - 1);
+            return Element(current_position.y - 1, current_position.x);
         }
 
         // this function returns neighbour under the current position
         Element under() 
         {
-            return Element(current_position.x, current_position.y + 1);
+            return Element(current_position.y + 1, current_position.x);
         }
 
         // this function returns left neighbour of current position
         Element left() 
         {
-            return Element(current_position.x - 1, current_position.y);
+            return Element(current_position.y, current_position.x - 1);
         }
 
         // this function returns right neighbour of current position
         Element right() 
         {
-            return Element(current_position.x + 1, current_position.y);
+            return Element(current_position.y, current_position.x + 1);
         }
 
         bool is_passable(Element el) 
@@ -162,14 +155,14 @@ void build_board(const std::string& file_name, Board& board)
     std::vector<Element> row_elements;
     while (ifs.good()) 
     {
-        Element el(column, row, c);
+        Element el(row, column, c);
         if(c == '.') { // path
-            board.passages.push_back(Passage(column, row));
+            board.passages.push_back(Passage(row, column));
         } else if(c == '@') { // entrance
             board.current_position = el;
-            board.passages.push_back(Passage(column, row)); // entrance is on the passage
+            board.passages.push_back(Passage(row, column)); // entrance is on the passage
         } else if(c >= 'a' && c <= 'z') { // key
-            Key key_tmp(column, row, c);
+            Key key_tmp(row, column, c);
             std::unordered_map<Key, Door, KeyHasher>::iterator it = board.map.find(c);
             if(board.map.find(c) != board.map.end()) {
                 Door tmp = board.map[c];
@@ -181,10 +174,10 @@ void build_board(const std::string& file_name, Board& board)
         } else if(c >= 'A' && c <= 'Z') { // door
             if(board.map.find(c + 32) != board.map.end()) {
                 // key already exists
-                board.map[c + 32] = Door(column, row, c);
+                board.map[c + 32] = Door(row, column, c);
             } else {
                 // key doesn't exist
-                board.map.emplace(c + 32, Door(column, row, c));
+                board.map.emplace(c + 32, Door(row, column, c));
             }
         } else if(c != '#') { // new row
             row++;
@@ -215,10 +208,30 @@ bool only_way(std::vector<bool> passages, int index)
 class State 
 {
     public:
-        State(int x, int y, int s, long long v) : curr_x(x), curr_y(y), steps(s), visited(v) {}
+        State(int y, int x, int s, long long v) : curr_x(x), curr_y(y), steps(s), visited(v) {}
         int curr_x, curr_y, steps;
         long long visited;
 };
+
+bool check_in_map(int x, int y, int lines, int columns)
+{
+    bool res = x >= 0 && y >= 0 && x < lines && y < columns;
+    std::cout << "in map = " << (res ? "true" : "false") << '\n';
+    return res;
+}
+
+bool is_wall(char c)
+{
+    std::cout << "is wall = " << ((c == '#') ? "true" : "false") << '\n';
+    return c == '#';
+}
+
+bool is_repeated(int x, int y, long long visited, std::set<std::tuple<int, int, long long>> repeated)
+{
+    bool result = repeated.find(std::make_tuple(y, x, visited)) != repeated.end();
+    std::cout << "repeated = " << (result == true ? "true" : "false") << '\n'; 
+    return result;
+}
 
 /**
  * BTS algorithm for calculating the shortest path
@@ -228,14 +241,50 @@ int collect_keys(Board board, Element current_position)
     int min = std::numeric_limits<int>::max();
     constexpr int num_of_letters = 26;
 	std::bitset<num_of_letters> visited;
+    std::set<std::tuple<int, int, long long>> repeated;
     std::queue<State> states;
-    // up, down, left, right
     std::vector<int> x_delta = {0, 0, -1, 1};
     std::vector<int> y_delta = {-1, 1, 0, 0};
-    states.push(State(current_position.x, current_position.y, 0, visited.to_ullong()));
+    std::cout << "initial state: x = " << current_position.x << ", y = " << current_position.y << '\n';
+    states.push(State(current_position.y, current_position.x, 0, visited.to_ullong()));
     while (!states.empty())
     {
-        // todo
+        State curr = states.front();
+        std::cout << "curr.x = " << curr.curr_x << ", curr.y = " << curr.curr_y << '\n';
+        states.pop();
+        visited = curr.visited;
+        if(visited.all()) 
+        {
+            return curr.steps;
+        }
+        for(int i = 0; i < 4; i++)
+        {
+            if(!check_in_map(curr.curr_y + y_delta[i], curr.curr_x + x_delta[i], board.all_elements.size(), board.all_elements[0].size())
+            || is_wall(board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol)
+            || is_repeated(curr.curr_y + y_delta[i], curr.curr_x + x_delta[i], curr.visited, repeated)) 
+            {
+                std::cout << "out of range\n";
+                continue;
+            }
+            if(isupper(board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol) && 
+            (!visited[board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol - 'A']))
+            {
+                std::cout << "upper\n";
+                continue;
+            }
+            if(islower(board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol))
+            {
+                std::cout << "lower\n";
+                visited[board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol - 'a'] = true;
+            }
+            std::cout << "**curr.x = " << curr.curr_x + x_delta[i] << ", curr.y = " << curr.curr_y + y_delta[i] << '\n';
+            states.push(State(curr.curr_y + y_delta[i], curr.curr_x + x_delta[i], curr.steps + 1, visited.to_ullong()));
+            repeated.insert(std::make_tuple(curr.curr_y + y_delta[i], curr.curr_x + x_delta[i], visited.to_ullong()));
+            if(islower(board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol))
+            {
+                visited[board.all_elements[curr.curr_y + y_delta[i]][curr.curr_x + x_delta[i]].symbol - 'a'] = false;
+            }
+        }
     }
     return min;
 }
